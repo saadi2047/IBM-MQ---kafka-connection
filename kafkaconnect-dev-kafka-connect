@@ -1,0 +1,153 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: '9'
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+    strimzi.io/use-connector-resources: 'true'
+  resourceVersion: '541839871'
+  name: dev-kafka-connect
+  uid: a459160a-37a8-49b2-9579-0ba7661b3170
+  creationTimestamp: '2025-12-19T07:53:14Z'
+  generation: 1
+  managedFields:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:argocd.argoproj.io/sync-wave': {}
+            'f:meta.helm.sh/release-name': {}
+            'f:meta.helm.sh/release-namespace': {}
+            'f:strimzi.io/use-connector-resources': {}
+          'f:labels':
+            .: {}
+            'f:app.kubernetes.io/component': {}
+            'f:app.kubernetes.io/instance': {}
+            'f:app.kubernetes.io/managed-by': {}
+            'f:app.kubernetes.io/name': {}
+            'f:environment': {}
+        'f:spec':
+          .: {}
+          'f:bootstrapServers': {}
+          'f:config':
+            'f:config.storage.topic': {}
+            'f:offset.flush.timeout.ms': {}
+            'f:offset.storage.replication.factor': {}
+            'f:status.storage.replication.factor': {}
+            .: {}
+            'f:status.storage.topic': {}
+            'f:offset.storage.topic': {}
+            'f:config.storage.replication.factor': {}
+            'f:offset.flush.interval.ms': {}
+            'f:group.id': {}
+          'f:replicas': {}
+          'f:resources':
+            .: {}
+            'f:limits':
+              .: {}
+              'f:cpu': {}
+              'f:memory': {}
+            'f:requests':
+              .: {}
+              'f:cpu': {}
+              'f:memory': {}
+          'f:template':
+            .: {}
+            'f:pod':
+              .: {}
+              'f:affinity':
+                .: {}
+                'f:nodeAffinity':
+                  .: {}
+                  'f:requiredDuringSchedulingIgnoredDuringExecution':
+                    .: {}
+                    'f:nodeSelectorTerms': {}
+              'f:imagePullSecrets': {}
+              'f:tolerations': {}
+          'f:tls':
+            .: {}
+            'f:trustedCertificates': {}
+          'f:version': {}
+      manager: helm
+      operation: Update
+      time: '2025-12-19T07:53:14Z'
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          .: {}
+          'f:conditions': {}
+          'f:labelSelector': {}
+          'f:observedGeneration': {}
+          'f:replicas': {}
+          'f:url': {}
+      manager: strimzi-cluster-operator
+      operation: Update
+      subresource: status
+      time: '2025-12-19T07:58:15Z'
+  namespace: dev-kafka
+  labels:
+    app.kubernetes.io/component: kafka-connect
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: dev-kafka-connect
+    environment: dev
+spec:
+  bootstrapServers: 'dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093'
+  config:
+    status.storage.topic: dev-connect-cluster-status
+    status.storage.replication.factor: -1
+    offset.storage.topic: dev-connect-cluster-offsets
+    offset.flush.interval.ms: 10000
+    group.id: dev-connect-cluster
+    config.storage.replication.factor: -1
+    config.storage.topic: dev-connect-cluster-configs
+    offset.flush.timeout.ms: 5000
+    offset.storage.replication.factor: -1
+  replicas: 3
+  resources:
+    limits:
+      cpu: 4
+      memory: 8Gi
+    requests:
+      cpu: 2
+      memory: 4Gi
+  template:
+    pod:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+                  - key: workload-type
+                    operator: In
+                    values:
+                      - kafka
+      imagePullSecrets:
+        - name: microservices-dev-pull-secret
+      tolerations:
+        - effect: NoSchedule
+          key: workload-type
+          operator: Equal
+          value: kafka
+  tls:
+    trustedCertificates:
+      - pattern: '*.crt'
+        secretName: dev-kafka-cluster-cluster-ca-cert
+  version: 3.9.0
+status:
+  conditions:
+    - lastTransitionTime: '2025-12-19T07:58:15.719347811Z'
+      message: Exceeded timeout of 300000ms while waiting for Pods resource dev-kafka-connect-connect-2 in namespace dev-kafka to be ready
+      reason: TimeoutException
+      status: 'True'
+      type: NotReady
+  labelSelector: 'strimzi.io/cluster=dev-kafka-connect,strimzi.io/name=dev-kafka-connect-connect,strimzi.io/kind=KafkaConnect'
+  observedGeneration: 1
+  replicas: 3
+  url: 'http://dev-kafka-connect-connect-api.dev-kafka.svc:8083'
