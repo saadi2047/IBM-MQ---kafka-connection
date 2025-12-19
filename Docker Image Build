@@ -1,0 +1,41 @@
+[osuser@registry MQ-Kafka-Connect]$ sudo podman build -t registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v1 -f Dockerfile .
+STEP 1/6: FROM registry.dev.sbiepay.sbi:8443/ubi9/openjdk-21-runtime:1.23-6.1758133907
+STEP 2/6: USER root
+--> Using cache fd44fd81e3320b16b9e8a7da8972ecd20549b069ecbd3a478ce58f505e340612
+--> fd44fd81e332
+STEP 3/6: RUN mkdir -p /opt/kafka/plugins/ibm-mq
+--> Using cache 5a5fece1affd06e9692708c2814b9ecbfe5d9db956dd5cc10a9dc359ddde198e
+--> 5a5fece1affd
+STEP 4/6: COPY jars/*.jar /opt/kafka/plugins/ibm-mq/
+--> Using cache 3de0d5ef67534e602c92768fa5a21d94bebacb9a5a0d4a6ca4277b45c2448e8b
+--> 3de0d5ef6753
+STEP 5/6: RUN chown -R 1001:0 /opt/kafka/plugins &&     chmod -R g+rwX /opt/kafka/plugins
+--> Using cache 69633d9d25e1d4ede66fd05569850099e1f35e74dad445d913b90e4f4f84beb2
+--> 69633d9d25e1
+STEP 6/6: USER 1001
+--> Using cache 63f55063717d7897302d2589be7d2d1a792853789f0f3ccb2cb0ebb84dd8e3e4
+COMMIT registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v1
+--> 63f55063717d
+Successfully tagged registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v1
+63f55063717d7897302d2589be7d2d1a792853789f0f3ccb2cb0ebb84dd8e3e4
+[osuser@registry MQ-Kafka-Connect]$
+[osuser@registry MQ-Kafka-Connect]$
+[osuser@registry MQ-Kafka-Connect]$
+[osuser@registry MQ-Kafka-Connect]$ podman push registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v1
+ERRO[0000] reading system config "/etc/containers/containers.conf": decode configuration /etc/containers/containers.conf: open /etc/containers/containers.conf: permission denied
+[osuser@registry MQ-Kafka-Connect]$
+[osuser@registry MQ-Kafka-Connect]$ sudo podman push registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v1
+Getting image source signatures
+Copying blob 83f35dcc0271 done   |
+Copying blob f203de9dbc12 done   |
+Copying blob 3326ebefbc66 done   |
+Copying blob b95d8360a055 skipped: already exists
+Copying blob 58f90a417084 skipped: already exists
+Copying config 63f5506371 done   |
+Writing manifest to image destination
+[osuser@registry MQ-Kafka-Connect]$ ll
+total 8
+-rw-r----- 1 osuser osuser  511 Dec 19 12:55 Dockerfile
+drwxr-x--- 2 osuser osuser 4096 Dec 19 13:03 jars
+[osuser@registry MQ-Kafka-Connect]$
+[osuser@registry MQ-Kafka-Connect]$
