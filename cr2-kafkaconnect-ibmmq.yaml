@@ -1,0 +1,85 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: dev-kafka-connect
+  namespace: dev-kafka
+  annotations:
+    argocd.argoproj.io/sync-wave: '9'
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+    strimzi.io/use-connector-resources: 'true'
+  labels:
+    app.kubernetes.io/component: kafka-connect
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: dev-kafka-connect
+    environment: dev
+spec:
+  # 🔴 Change ONLY the image to MQ-enabled image (JDK 21)
+  image: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v2
+
+  version: 3.9.0
+  replicas: 3
+
+  bootstrapServers: dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093
+
+  config:
+    group.id: dev-connect-cluster
+    offset.storage.topic: dev-connect-cluster-offsets
+    config.storage.topic: dev-connect-cluster-configs
+    status.storage.topic: dev-connect-cluster-status
+
+    offset.flush.interval.ms: 10000
+    offset.flush.timeout.ms: 5000
+
+    offset.storage.replication.factor: -1
+    config.storage.replication.factor: -1
+    status.storage.replication.factor: -1
+
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: "false"
+
+  resources:
+    requests:
+      cpu: 2
+      memory: 4Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
+
+  template:
+    pod:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+                  - key: workload-type
+                    operator: In
+                    values:
+                      - kafka
+      imagePullSecrets:
+        - name: microservices-dev-pull-secret
+      tolerations:
+        - key: workload-type
+          operator: Equal
+          value: kafka
+          effect: NoSchedule
+      volumeMounts:
+        - name: mq-credentials
+          mountPath: /opt/kafka/external-configuration/mq-credentials
+          readOnly: true
+
+  tls:
+    trustedCertificates:
+      - secretName: dev-kafka-cluster-cluster-ca-cert
+        pattern: "*.crt"
+
+  externalConfiguration:
+    volumes:
+      - name: mq-credentials
+        secret:
+          secretName: mq-credentials
