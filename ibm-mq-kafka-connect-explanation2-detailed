@@ -1,0 +1,296 @@
+# IBM MQ → Kafka Integration on OpenShift (Using Kafka Connect)
+
+## Overview
+
+This document explains how IBM MQ is integrated with Apache Kafka running on OpenShift using **Strimzi Kafka Connect**.
+The setup follows the **same pattern already validated for Oracle DB connectors**, with minimal changes required for IBM MQ.
+
+Two Custom Resources (CRs) are used:
+
+1. **KafkaConnect CR** – creates the Kafka Connect runtime
+2. **KafkaConnector CR** – runs the IBM MQ Source connector inside Kafka Connect
+
+---
+
+## Architecture
+
+```
+IBM MQ Queue
+   |
+   |  (IBM MQ Source Connector)
+   v
+Kafka Connect (Strimzi on OpenShift)
+   |
+   v
+Kafka Topic (DC Cluster)
+   |
+   v
+MirrorMaker2
+   |
+   v
+Kafka Topic (DR Cluster)
+```
+
+* Kafka runs on OpenShift in **KRaft mode**
+* Kafka Connect runs inside OpenShift
+* IBM MQ is external
+* Only DC runs the connector; DR receives data via MM2
+
+---
+
+## 1. KafkaConnect CR – Explanation
+
+### Purpose
+
+The **KafkaConnect CR** defines the Kafka Connect runtime:
+
+* Pods
+* Image
+* Authentication
+* TLS
+* Internal Kafka topics
+* Resource limits
+
+This CR is **reused from the Oracle DB setup** and only minimally modified for IBM MQ.
+
+---
+
+### Key Configuration and Why It Exists
+
+#### Custom Image
+
+```yaml
+image: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v2
+```
+
+* Contains:
+
+  * IBM MQ Source & Sink connector JARs
+  * IBM MQ client (`com.ibm.mq.allclient`)
+  * Java 21
+* Required so Kafka Connect can load MQ connectors
+
+---
+
+#### Kafka Bootstrap (TLS)
+
+```yaml
+bootstrapServers: dev-kafka-cluster-kafka-bootstrap:9093
+```
+
+* Uses internal TLS listener
+* Same as Oracle Kafka Connect setup
+
+---
+
+#### Internal Kafka Topics
+
+```yaml
+offset.storage.topic: dev-connect-cluster-offsets
+config.storage.topic: dev-connect-cluster-configs
+status.storage.topic: dev-connect-cluster-status
+```
+
+* Stores connector offsets and state
+* Ensures restart safety
+* Offsets replicated to DR by MM2
+
+---
+
+#### Authentication
+
+```yaml
+authentication:
+  type: scram-sha-512
+```
+
+* Uses Kafka SCRAM user
+* No plaintext passwords in CRs
+
+---
+
+#### TLS Trust
+
+```yaml
+tls:
+  trustedCertificates:
+    - secretName: dev-kafka-cluster-cluster-ca-cert
+```
+
+* Kafka broker CA trusted
+* Required for secure communication
+
+---
+
+#### MQ Credentials Mount
+
+```yaml
+externalConfiguration:
+  volumes:
+    - name: mq-credentials
+      secret:
+        secretName: mq-credentials
+```
+
+```yaml
+volumeMounts:
+  - name: mq-credentials
+    mountPath: /opt/kafka/external-configuration/mq-credentials
+```
+
+* Secure way to pass MQ username/password
+* Same pattern used for Oracle secrets
+* Avoids hardcoding credentials in YAML
+
+---
+
+### Result of KafkaConnect CR
+
+After applying:
+
+* Kafka Connect pods restart (rolling)
+* New image with MQ support is active
+* Java 21 is used
+* MQ connectors become visible in `/connector-plugins`
+
+---
+
+## 2. KafkaConnector CR – IBM MQ Source
+
+### Purpose
+
+The **KafkaConnector CR** defines **one IBM MQ Source connector** that:
+
+* Reads messages from IBM MQ
+* Publishes them to a Kafka topic
+
+This CR is equivalent to the Oracle source connector CR, but uses MQ-specific parameters.
+
+---
+
+### Key Configuration and Why It Exists
+
+#### Connector Binding
+
+```yaml
+labels:
+  strimzi.io/cluster: dev-kafka-connect
+```
+
+* Tells Strimzi which KafkaConnect instance to use
+* Mandatory for connector startup
+
+---
+
+#### Connector Class
+
+```yaml
+class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
+```
+
+* IBM MQ Source connector
+* Direction: **MQ → Kafka**
+
+---
+
+#### MQ Connection Details
+
+```yaml
+mq.queue.manager: QM1
+mq.connection.name.list: "<MQ_HOST>(1414)"
+mq.channel.name: DEV.APP.SVRCONN
+mq.queue: DEV.QUEUE.1
+```
+
+Maps directly to IBM MQ concepts:
+
+* Queue Manager
+* Listener address and port
+* Channel
+* Source queue
+
+---
+
+#### Secure Credential Usage
+
+```yaml
+mq.user.name: ${file:/opt/kafka/external-configuration/mq-credentials/mq.username}
+mq.password: ${file:/opt/kafka/external-configuration/mq-credentials/mq.password}
+```
+
+* Reads credentials from mounted secret
+* No passwords stored in CR
+* Enterprise-grade security
+
+---
+
+#### Kafka Topic Mapping
+
+```yaml
+topic: mq-epay-events
+```
+
+* Each MQ message becomes a Kafka message
+* Topic is automatically replicated to DR via MM2
+
+---
+
+#### Message Handling
+
+```yaml
+mq.message.body.format: string
+mq.record.builder: com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder
+```
+
+* Ensures readable message payload
+* Prevents Base64 encoding issues
+* Same fix validated in POC
+
+---
+
+#### Basic Performance Controls
+
+```yaml
+mq.poll.interval: "1000"
+mq.batch.size: "10"
+```
+
+* Controls MQ polling rate
+* Prevents MQ overload
+* Safe production defaults
+
+---
+
+### Result of KafkaConnector CR
+
+After applying:
+
+* Connector starts inside Kafka Connect
+* Connects to IBM MQ
+* Reads messages from MQ queue
+* Publishes to Kafka topic
+* Offsets stored in Kafka
+* DR replication happens automatically
+
+---
+
+## Key Design Decisions
+
+* One **KafkaConnect CR**
+* One **KafkaConnector CR per connector**
+* Source and Sink are **separate connectors**
+* Same Connect cluster can host Oracle + MQ connectors
+* DR handled only at Kafka layer (MM2)
+
+---
+
+## Summary
+
+* This design reuses a **proven Oracle Kafka Connect pattern**
+* Only minimal MQ-specific changes were introduced
+* Secure, scalable, and DR-friendly
+* Fully aligned with Strimzi best practices
+
+---
+
+**End of Document**
