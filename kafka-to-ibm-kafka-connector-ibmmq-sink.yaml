@@ -1,0 +1,32 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: ibm-mq-sink
+  namespace: <kafka-namespace>
+  labels:
+    strimzi.io/cluster: kafka-connect
+spec:
+  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
+  tasksMax: 1
+  config:
+    # 🔹 Kafka topic containing PROCESSED messages
+    topics: kafka.processed.topic
+
+    # 🔹 IBM MQ connection details
+    mq.queue.manager: QM1
+    mq.connection.name.list: "<MQ_HOST>(1414)"
+    mq.channel.name: DEV.APP.SVRCONN
+
+    # 🔹 Target MQ queue (output queue)
+    mq.queue: DEV.OUT.QUEUE
+
+    # 🔹 Secure MQ credentials (from mounted secret)
+    mq.user.name: ${file:/opt/kafka/external-configuration/mq-credentials/mq.username}
+    mq.password: ${file:/opt/kafka/external-configuration/mq-credentials/mq.password}
+
+    # 🔹 Message handling
+    mq.message.body.format: string
+
+    # 🔹 Kafka consumer settings
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: "false"
