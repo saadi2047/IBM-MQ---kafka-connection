@@ -1,0 +1,266 @@
+# IBM MQ → Kafka Integration on OpenShift (Kafka Connect)
+
+## Purpose
+
+This document explains how IBM MQ is integrated with Apache Kafka running on OpenShift using **Strimzi Kafka Connect**, and what configuration changes were made compared to our previously tested **Oracle Kafka Connect setup**.
+
+The goal is to:
+
+* Reuse the existing Kafka Connect runtime
+* Add IBM MQ Source (and Sink-ready) capability
+* Keep changes minimal and production-safe
+
+---
+
+## High-Level Architecture
+
+```
+IBM MQ Queue
+   |
+   |  (MQ Source Connector)
+   v
+Kafka Connect (on OpenShift)
+   |
+   |  (Kafka Producer)
+   v
+Apache Kafka (DC Cluster)
+   |
+   |  (MirrorMaker2)
+   v
+Apache Kafka (DR Cluster)
+```
+
+---
+
+## Components Used
+
+| Component     | Description                                             |
+| ------------- | ------------------------------------------------------- |
+| Kafka         | Apache Kafka running on OpenShift (Strimzi, KRaft mode) |
+| Kafka Connect | Existing Strimzi-managed Kafka Connect cluster          |
+| Connector     | IBM MQ Source Connector                                 |
+| Image         | Custom Kafka Connect image with IBM MQ JARs             |
+| JDK           | Java 21 (from Strimzi base image)                       |
+| Security      | SCRAM-SHA-512 + TLS                                     |
+| DR            | Handled by existing MirrorMaker2                        |
+
+---
+
+## 1. KafkaConnect CR – What It Does
+
+The **KafkaConnect CR** defines the **Kafka Connect runtime** on OpenShift.
+
+Think of it as the **engine** on which connectors run.
+
+### What Was Reused (From Oracle Setup)
+
+The following parts were kept unchanged from the Oracle-tested KafkaConnect configuration:
+
+* Kafka Connect name and namespace
+* Helm and ArgoCD annotations
+* Labels and environment tags
+* Number of replicas
+* Kafka bootstrap server (TLS)
+* Internal Kafka topics:
+
+  * offsets
+  * configs
+  * status
+* TLS trust configuration
+* Node affinity and tolerations
+* CPU and memory limits
+
+This ensures **no behavioral change** to existing connectors.
+
+---
+
+### What Was Changed for IBM MQ
+
+#### 1. Custom Image Binding
+
+The Kafka Connect image was updated to a custom image that includes:
+
+* IBM MQ Source connector JAR
+* IBM MQ Sink connector JAR (future use)
+* IBM MQ Java client (`com.ibm.mq.allclient`)
+* Java 21 (from Strimzi base image)
+
+This change is required so Kafka Connect can **discover MQ connectors**.
+
+---
+
+#### 2. Value Converter Adjustment
+
+The value converter is set to:
+
+* `ByteArrayConverter`
+
+This avoids Base64 encoding issues and supports:
+
+* Plain text
+* JSON
+* Binary MQ messages
+
+This is the same approach validated during the IBM MQ POC.
+
+---
+
+#### 3. MQ Credentials Mount
+
+An OpenShift Secret containing MQ credentials is mounted into the Kafka Connect pod.
+
+This allows:
+
+* No hardcoded passwords in YAML
+* Secure credential handling
+* Reuse across Source and Sink connectors
+
+---
+
+### Result of KafkaConnect CR
+
+After applying the updated KafkaConnect CR:
+
+* Pods perform a rolling restart
+* Java 21 runtime is active
+* IBM MQ connectors appear in `/connector-plugins`
+* Existing connectors resume automatically
+
+---
+
+## 2. KafkaConnector CR – IBM MQ Source
+
+The **KafkaConnector CR** defines **one connector instance**.
+
+This connector is responsible for:
+
+* Reading messages from IBM MQ
+* Writing them into a Kafka topic
+
+This follows the same pattern as the Oracle source connector.
+
+---
+
+### Key Configuration Sections Explained
+
+#### Connector Class
+
+* Uses `MQSourceConnector`
+* Direction: **IBM MQ → Kafka**
+
+---
+
+#### MQ Connection Details
+
+Defines how Kafka Connect connects to IBM MQ:
+
+* Queue Manager
+* Listener address and port
+* Channel name
+* Queue name
+
+These are standard IBM MQ parameters.
+
+---
+
+#### Credentials Handling
+
+MQ username and password are read from the mounted secret using file-based references.
+
+This keeps the configuration secure and enterprise-compliant.
+
+---
+
+#### Kafka Topic Mapping
+
+Each message read from the MQ queue is published to a specific Kafka topic.
+
+This topic is then:
+
+* Consumed by applications
+* Replicated to DR via MirrorMaker2
+
+---
+
+#### Message Format Handling
+
+The configuration ensures:
+
+* Messages are readable
+* No Base64 encoding
+* Same behavior as validated in the POC
+
+---
+
+#### Polling and Batch Controls
+
+Basic polling and batch size settings are applied to:
+
+* Avoid overloading MQ
+* Provide predictable throughput
+
+---
+
+### Result of KafkaConnector CR
+
+Once applied:
+
+* The connector starts automatically
+* Connects to IBM MQ
+* Streams messages into Kafka
+* Tracks offsets in Kafka
+* Recovers automatically on restarts
+
+---
+
+## Why Source and Sink Are Separate CRs
+
+Kafka Connect (and Strimzi) requires:
+
+* **One KafkaConnector CR per connector**
+* Source and Sink are different connector classes
+
+This design provides:
+
+* Independent control
+* Easier troubleshooting
+* Better failover handling
+* Cleaner support boundaries
+
+---
+
+## End-to-End Flow Summary
+
+```
+IBM MQ → MQ Source Connector → Kafka Connect → Kafka Topic (DC)
+                                           ↓
+                                     MirrorMaker2
+                                           ↓
+                                      Kafka Topic (DR)
+```
+
+---
+
+## Key Benefits of This Approach
+
+* Reuses a proven Kafka Connect setup
+* Minimal changes from Oracle testing
+* Fully Strimzi-compliant
+* Secure credential handling
+* Ready for DR and failover
+* Sink connector can be enabled later without rebuild
+
+---
+
+## Next Steps (Optional)
+
+* Enable Kafka → IBM MQ Sink connector
+* Tune performance for higher throughput
+* Define DR failover SOP for MQ connectors
+* Add monitoring and alerts
+
+---
+
+**Status:**
+✅ IBM MQ → Kafka integration design validated
+✅ Ready for deployment on OpenShift
