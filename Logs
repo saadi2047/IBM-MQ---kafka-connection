@@ -1,162 +1,563 @@
-[osuser@bastion ~]$ oc get po -n dev-kafka
-NAME                                                 READY   STATUS    RESTARTS      AGE
-dev-console-console-deployment-6bf885486b-lhh9s      2/2     Running   0             2d2h
-dev-kafka-cluster-broker-0                           1/1     Running   0             31d
-dev-kafka-cluster-broker-1                           1/1     Running   0             31d
-dev-kafka-cluster-broker-2                           1/1     Running   0             31d
-dev-kafka-cluster-controller-3                       1/1     Running   0             31d
-dev-kafka-cluster-controller-4                       1/1     Running   0             31d
-dev-kafka-cluster-controller-5                       1/1     Running   0             31d
-dev-kafka-cluster-cruise-control-65f9b96bd6-dp54g    1/1     Running   15 (8d ago)   31d
-dev-kafka-cluster-entity-operator-5987597fc7-j4xpc   2/2     Running   0             31d
-dev-kafka-mirror-maker-mirrormaker2-0                0/1     Pending   0             31d
-[osuser@bastion ~]$
-[osuser@bastion ~]$ oc get KafkaConnect -A -o yaml
-apiVersion: v1
-items:
-- apiVersion: kafka.strimzi.io/v1beta2
-  kind: KafkaConnect
-  metadata:
-    annotations:
-      argocd.argoproj.io/sync-wave: "9"
-      meta.helm.sh/release-name: epay-common
-      meta.helm.sh/release-namespace: dev-epay-common
-      strimzi.io/use-connector-resources: "true"
-    creationTimestamp: "2025-12-22T07:48:06Z"
-    generation: 1
-    labels:
-      app.kubernetes.io/component: kafka-connect
-      app.kubernetes.io/instance: epay-common
-      app.kubernetes.io/managed-by: Helm
-      app.kubernetes.io/name: dev-kafka-connect-mq-test
-      environment: dev
-    name: dev-kafka-connect-mq-test
-    namespace: dev-kafka
-    resourceVersion: "545361362"
-    uid: d94d0d20-89e3-4055-a2dd-65b4fa1b01e6
-  spec:
-    bootstrapServers: dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093
-    config:
-      config.storage.replication.factor: -1
-      config.storage.topic: dev-connect-cluster-configs
-      group.id: dev-connect-cluster
-      key.converter: org.apache.kafka.connect.storage.StringConverter
-      offset.flush.interval.ms: 10000
-      offset.flush.timeout.ms: 5000
-      offset.storage.replication.factor: -1
-      offset.storage.topic: dev-connect-cluster-offsets
-      status.storage.replication.factor: -1
-      status.storage.topic: dev-connect-cluster-status
-      value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
-      value.converter.schemas.enable: "false"
-    image: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v1
-    replicas: 3
-    resources:
-      limits:
-        cpu: 4
-        memory: 8Gi
-      requests:
-        cpu: 2
-        memory: 4Gi
-    template:
-      pod:
-        affinity:
-          nodeAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              nodeSelectorTerms:
-              - matchExpressions:
-                - key: node-role.kubernetes.io/worker
-                  operator: Exists
-                - key: workload-type
-                  operator: In
-                  values:
-                  - kafka
-        imagePullSecrets:
-        - name: microservices-dev-pull-secret
-        tolerations:
-        - effect: NoSchedule
-          key: workload-type
-          operator: Equal
-          value: kafka
-    tls:
-      trustedCertificates:
-      - pattern: '*.crt'
-        secretName: dev-kafka-cluster-cluster-ca-cert
-    version: 3.9.0
-kind: List
-metadata:
-  resourceVersion: ""
-[osuser@bastion ~]$
-[osuser@bastion ~]$
-[osuser@bastion ~]$ oc get KafkaConnect -A
-NAMESPACE   NAME                        DESIRED REPLICAS   READY
-dev-kafka   dev-kafka-connect-mq-test   3
-[osuser@bastion ~]$
-[osuser@bastion ~]$ oc describe KafkaConnect dev-kafka-connect-mq-test -n dev-kafka
-Name:         dev-kafka-connect-mq-test
-Namespace:    dev-kafka
-Labels:       app.kubernetes.io/component=kafka-connect
-              app.kubernetes.io/instance=epay-common
-              app.kubernetes.io/managed-by=Helm
-              app.kubernetes.io/name=dev-kafka-connect-mq-test
-              environment=dev
-Annotations:  argocd.argoproj.io/sync-wave: 9
-              meta.helm.sh/release-name: epay-common
-              meta.helm.sh/release-namespace: dev-epay-common
-              strimzi.io/use-connector-resources: true
-API Version:  kafka.strimzi.io/v1beta2
-Kind:         KafkaConnect
-Metadata:
-  Creation Timestamp:  2025-12-22T07:48:06Z
-  Generation:          1
-  Resource Version:    545361362
-  UID:                 d94d0d20-89e3-4055-a2dd-65b4fa1b01e6
-Spec:
-  Bootstrap Servers:  dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093
-  Config:
-    config.storage.replication.factor:  -1
-    config.storage.topic:               dev-connect-cluster-configs
-    group.id:                           dev-connect-cluster
-    key.converter:                      org.apache.kafka.connect.storage.StringConverter
-    offset.flush.interval.ms:           10000
-    offset.flush.timeout.ms:            5000
-    offset.storage.replication.factor:  -1
-    offset.storage.topic:               dev-connect-cluster-offsets
-    status.storage.replication.factor:  -1
-    status.storage.topic:               dev-connect-cluster-status
-    value.converter:                    org.apache.kafka.connect.converters.ByteArrayConverter
-    value.converter.schemas.enable:     false
-  Image:                                registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v1
-  Replicas:                             3
-  Resources:
+[osuser@bastion ~]$ oc get project | grep -i strimzi
+[osuser@bastion ~]$ oc get pods -n openshift-operators
+NAME                                                   READY   STATUS             RESTARTS   AGE
+amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6   0/1     ImagePullBackOff   0          62m
+kiali-operator-58cc4c5494-2gvbk                        1/1     Running            0          47h
+quay-operator.v3.15.2-795b66dc7f-8t7rk                 1/1     Running            0          14d
+servicemesh-operator3-888bb864c-tbxjs                  1/1     Running            0          47h
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq-test -o yaml | sed -n '/status:/,$p'
+Error from server (NotFound): kafkaconnects.kafka.strimzi.io "dev-kafka-connect-mq-test" not found
+[osuser@bastion ~]$ oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 -n openshift-operators
+Name:             amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6
+Namespace:        openshift-operators
+Priority:         0
+Service Account:  strimzi-cluster-operator
+Node:             worker2.uat.epay.sbi/10.177.143.111
+Start Time:       Mon, 22 Dec 2025 08:27:50 +0000
+Labels:           com.company=Red_Hat
+                  name=amq-streams-cluster-operator
+                  pod-template-hash=98c8d5f6
+                  rht.comp=AMQ_Streams
+                  rht.comp_ver=3.0.1
+                  rht.prod_name=Red_Hat_Application_Foundations
+                  rht.prod_ver=2025.Q3
+                  rht.subcomp=cluster-operator
+                  rht.subcomp_t=infrastructure
+                  strimzi.io/kind=cluster-operator
+Annotations:      alm-examples:
+                    [
+                      {
+                        "apiVersion": "kafka.strimzi.io/v1beta2",
+                        "kind": "Kafka",
+                        "metadata": {
+                          "name": "my-cluster",
+                          "annotations": {
+                            "strimzi.io/node-pools": "enabled",
+                            "strimzi.io/kraft": "enabled"
+                          }
+                        },
+                        "spec": {
+                          "kafka": {
+                            "version": "4.0.0",
+                            "metadataVersion": "4.0-IV3",
+                            "listeners": [
+                              {
+                                "name": "plain",
+                                "port": 9092,
+                                "type": "internal",
+                                "tls": false
+                              },
+                              {
+                                "name": "tls",
+                                "port": 9093,
+                                "type": "internal",
+                                "tls": true
+                              }
+                            ],
+                            "config": {
+                              "offsets.topic.replication.factor": 3,
+                              "transaction.state.log.replication.factor": 3,
+                              "transaction.state.log.min.isr": 2,
+                              "default.replication.factor": 3,
+                              "min.insync.replicas": 2
+                            }
+                          },
+                          "entityOperator": {
+                            "topicOperator": {},
+                            "userOperator": {}
+                          }
+                        }
+                      },
+                      {
+                        "apiVersion": "kafka.strimzi.io/v1beta2",
+                        "kind": "KafkaConnect",
+                        "metadata": {
+                          "name": "my-connect-cluster"
+                        },
+                        "spec": {
+                          "version": "4.0.0",
+                          "replicas": 1,
+                          "bootstrapServers": "my-cluster-kafka-bootstrap:9093",
+                          "tls": {
+                            "trustedCertificates": [
+                              {
+                                "secretName": "my-cluster-cluster-ca-cert",
+                                "pattern": "*.crt"
+                              }
+                            ]
+                          },
+                          "config": {
+                            "group.id": "connect-cluster",
+                            "offset.storage.topic": "connect-cluster-offsets",
+                            "config.storage.topic": "connect-cluster-configs",
+                            "status.storage.topic": "connect-cluster-status",
+                            "config.storage.replication.factor": -1,
+                            "offset.storage.replication.factor": -1,
+                            "status.storage.replication.factor": -1
+                          }
+                        }
+                      },
+                      {
+                        "apiVersion": "kafka.strimzi.io/v1beta2",
+                        "kind": "KafkaMirrorMaker2",
+                        "metadata": {
+                          "name": "my-mm2-cluster"
+                        },
+                        "spec": {
+                          "version": "4.0.0",
+                          "replicas": 1,
+                          "connectCluster": "cluster-b",
+                          "clusters": [
+                            {
+                              "alias": "cluster-a",
+                              "bootstrapServers": "cluster-a-kafka-bootstrap:9092"
+                            },
+                            {
+                              "alias": "cluster-b",
+                              "bootstrapServers": "cluster-b-kafka-bootstrap:9092",
+                              "config": {
+                                "config.storage.replication.factor": -1,
+                                "offset.storage.replication.factor": -1,
+                                "status.storage.replication.factor": -1
+                              }
+                            }
+                          ],
+                          "mirrors": [
+                            {
+                              "sourceCluster": "cluster-a",
+                              "targetCluster": "cluster-b",
+                              "sourceConnector": {
+                                "config": {
+                                  "replication.factor": -1,
+                                  "offset-syncs.topic.replication.factor": -1,
+                                  "sync.topic.acls.enabled": "false"
+                                }
+                              },
+                              "checkpointConnector": {
+                                "config": {
+                                  "checkpoints.topic.replication.factor": -1
+                                }
+                              },
+                              "topicsPattern": ".*",
+                              "groupsPattern": ".*"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "apiVersion": "kafka.strimzi.io/v1beta2",
+                        "kind": "KafkaBridge",
+                        "metadata": {
+                          "name": "my-bridge"
+                        },
+                        "spec": {
+                          "replicas": 1,
+                          "bootstrapServers": "my-cluster-kafka-bootstrap:9092",
+                          "http": {
+                            "port": 8080
+                          }
+                        }
+                      },
+                      {
+                        "apiVersion": "kafka.strimzi.io/v1beta2",
+                        "kind": "KafkaTopic",
+                        "metadata": {
+                          "name": "my-topic",
+                          "labels": {
+                            "strimzi.io/cluster": "my-cluster"
+                          }
+                        },
+                        "spec": {
+                          "partitions": 10,
+                          "replicas": 3,
+                          "config": {
+                            "retention.ms": 604800000,
+                            "segment.bytes": 1073741824
+                          }
+                        }
+                      },
+                      {
+                        "apiVersion": "kafka.strimzi.io/v1beta2",
+                        "kind": "KafkaUser",
+                        "metadata": {
+                          "name": "my-user",
+                          "labels": {
+                            "strimzi.io/cluster": "my-cluster"
+                          }
+                        },
+                        "spec": {
+                          "authentication": {
+                            "type": "tls"
+                          },
+                          "authorization": {
+                            "type": "simple",
+                            "acls": [
+                              {
+                                "resource": {
+                                  "type": "topic",
+                                  "name": "my-topic",
+                                  "patternType": "literal"
+                                },
+                                "operations": [
+                                  "Read",
+                                  "Describe",
+                                  "Write",
+                                  "Create"
+                                ],
+                                "host": "*"
+                              },
+                              {
+                                "resource": {
+                                  "type": "group",
+                                  "name": "my-group",
+                                  "patternType": "literal"
+                                },
+                                "operations": [
+                                  "Read"
+                                ],
+                                "host": "*"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "apiVersion": "kafka.strimzi.io/v1beta2",
+                        "kind": "KafkaConnector",
+                        "metadata": {
+                          "name": "my-source-connector",
+                          "labels": {
+                            "strimzi.io/cluster": "my-connect-cluster"
+                          }
+                        },
+                        "spec": {
+                          "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
+                          "tasksMax": 1,
+                          "config": {
+                            "file": "/opt/kafka/LICENSE",
+                            "topic": "my-topic"
+                          }
+                        }
+                      },
+                      {
+                        "apiVersion": "kafka.strimzi.io/v1beta2",
+                        "kind": "KafkaRebalance",
+                        "metadata": {
+                          "name": "my-rebalance",
+                          "labels": {
+                            "strimzi.io/cluster": "my-cluster"
+                          }
+                        },
+                        "spec": {
+                          "goals": [
+                            "CpuCapacityGoal",
+                            "NetworkInboundCapacityGoal",
+                            "DiskCapacityGoal",
+                            "RackAwareGoal",
+                            "MinTopicLeadersPerBrokerGoal",
+                            "NetworkOutboundCapacityGoal",
+                            "ReplicaCapacityGoal"
+                          ]
+                        }
+                      },
+                      {
+                        "apiVersion": "kafka.strimzi.io/v1beta2",
+                        "kind": "KafkaNodePool",
+                        "metadata": {
+                          "name": "my-pool",
+                          "labels": {
+                            "strimzi.io/cluster": "my-cluster"
+                          }
+                        },
+                        "spec": {
+                          "replicas": 3,
+                          "roles": [
+                            "broker"
+                          ],
+                          "storage": {
+                            "type": "jbod",
+                            "volumes": [
+                              {
+                                "id": 0,
+                                "type": "persistent-claim",
+                                "size": "100Gi",
+                                "deleteClaim": false
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "apiVersion": "core.strimzi.io/v1beta2",
+                        "kind": "StrimziPodSet",
+                        "metadata": {
+                          "name": "my-podset"
+                        },
+                        "spec": {
+                          "pods": [
+                            {
+                              "apiVersion": "v1",
+                              "kind": "Pod",
+                              "metadata": {
+                                "labels": {
+                                  "app": "my-podset"
+                                },
+                                "name": "example-pod"
+                              },
+                              "spec": {
+                                "containers": [
+                                  {
+                                    "command": [
+                                      "sleep",
+                                      3600
+                                    ],
+                                    "image": "busybox:latest",
+                                    "imagePullPolicy": "IfNotPresent",
+                                    "name": "busybox"
+                                  }
+                                ]
+                              }
+                            }
+                          ],
+                          "selector": {
+                            "matchLabels": {
+                              "app": "my-podset"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  alm-examples-metadata:
+                    {
+                      "my-cluster": {
+                        "description": "Example Kafka cluster (to be used together with KafkaNodePool)"
+                      },
+                      "my-connect-cluster": {
+                        "description": "Example Kafka Connect cluster"
+                      },
+                      "my-mm2-cluster": {
+                        "description": "Example Kafka Mirror Maker 2 deployment"
+                      },
+                      "my-bridge": {
+                        "description": "Example Streams Kafka HTTP Bridge deployment"
+                      },
+                      "my-topic": {
+                        "description": "Example KafkaTopic custom resource"
+                      },
+                      "my-user": {
+                        "description": "Example KafkaUser custom resource"
+                      },
+                      "my-source-connector": {
+                        "description": "Example Kafka Connect source connector"
+                      },
+                      "my-rebalance": {
+                        "description": "Example Cruise Control rebalance request"
+                      },
+                      "my-pool": {
+                        "description": "Example KafkaNodePool custom resource"
+                      },
+                      "my-podset": {
+                        "description": "Example StrimziPodSet custom resource"
+                      }
+                    }
+                  bridge-image: registry.redhat.io/amq-streams/bridge-rhel9@sha256:a42a58b07e6c0c6bfd3c908095232d5c82e789a365372a512e5c1cb5ebe23d09
+                  capabilities: Deep Insights
+                  categories: Streaming & Messaging
+                  certified: false
+                  containerImage:
+                    registry.dev.sbiepay.sbi:8443/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1
+                  createdAt: 2025-09-24T12:21:07Z
+                  description:
+                    Streams for Apache Kafka is a massively scalable, distributed, and high performance data streaming platform based on Apache Kafka®.
+                  features.operators.openshift.io/cnf: false
+                  features.operators.openshift.io/cni: false
+                  features.operators.openshift.io/csi: false
+                  features.operators.openshift.io/disconnected: true
+                  features.operators.openshift.io/fips-compliant: true
+                  features.operators.openshift.io/proxy-aware: true
+                  features.operators.openshift.io/tls-profiles: false
+                  features.operators.openshift.io/token-auth-aws: false
+                  features.operators.openshift.io/token-auth-azure: false
+                  features.operators.openshift.io/token-auth-gcp: false
+                  k8s.ovn.org/pod-networks:
+                    {"default":{"ip_addresses":["172.16.20.130/23"],"mac_address":"0a:58:ac:10:14:82","gateway_ips":["172.16.20.1"],"routes":[{"dest":"172.16....
+                  k8s.v1.cni.cncf.io/network-status:
+                    [{
+                        "name": "ovn-kubernetes",
+                        "interface": "eth0",
+                        "ips": [
+                            "172.16.20.130"
+                        ],
+                        "mac": "0a:58:ac:10:14:82",
+                        "default": true,
+                        "dns": {}
+                    }]
+                  kafka-current-image: registry.redhat.io/amq-streams/kafka-40-rhel9@sha256:38354c92b8883144a2c2cc37699046323338fd42c8d852eed0c4e711ed7e5cbe
+                  kafka-images:
+                    3.9.0=registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa
+                    4.0.0=registry.redhat.io/amq-streams/kafka-40-rhel9@sha256:38354c92b8883144a2c2cc37699046323338fd42c8d852eed0c4e711ed7e5cbe
+                  maven-image: registry.redhat.io/amq-streams/maven-builder-rhel9@sha256:efa03b0d29d2b5ac6cab8f5f7e455b7342e30401f83b45f2563e3a1b928d2d2a
+                  olm.operatorGroup: global-operators
+                  olm.operatorNamespace: openshift-operators
+                  olm.skipRange: >=2.9.0-0 <3.0.1-2
+                  olm.targetNamespaces:
+                  openshift.io/scc: restricted-v2
+                  operator-image:
+                    registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1
+                  operatorframework.io/properties:
+                    {"properties":[{"type":"olm.gvk","value":{"group":"core.strimzi.io","kind":"StrimziPodSet","version":"v1beta2"}},{"type":"olm.gvk","value"...
+                  operators.openshift.io/valid-subscription: ["Red Hat AMQ", "Red Hat Application Foundations"]
+                  operators.operatorframework.io/internal-objects: ["strimzipodsets.core.strimzi.io"]
+                  repository: https://github.com/strimzi/strimzi-kafka-operator
+                  seccomp.security.alpha.kubernetes.io/pod: runtime/default
+                  support: Red Hat
+Status:           Pending
+SeccompProfile:   RuntimeDefault
+IP:               172.16.20.130
+IPs:
+  IP:           172.16.20.130
+Controlled By:  ReplicaSet/amq-streams-cluster-operator-v3.0.1-2-98c8d5f6
+Containers:
+  strimzi-cluster-operator:
+    Container ID:
+    Image:           registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1
+    Image ID:
+    Port:            8080/TCP
+    Host Port:       0/TCP
+    SeccompProfile:  RuntimeDefault
+    Args:
+      /opt/strimzi/bin/cluster_operator_run.sh
+    State:          Waiting
+      Reason:       ImagePullBackOff
+    Ready:          False
+    Restart Count:  0
     Limits:
-      Cpu:     4
-      Memory:  8Gi
+      cpu:     1
+      memory:  384Mi
     Requests:
-      Cpu:     2
-      Memory:  4Gi
-  Template:
-    Pod:
-      Affinity:
-        Node Affinity:
-          Required During Scheduling Ignored During Execution:
-            Node Selector Terms:
-              Match Expressions:
-                Key:       node-role.kubernetes.io/worker
-                Operator:  Exists
-                Key:       workload-type
-                Operator:  In
-                Values:
-                  kafka
-      Image Pull Secrets:
-        Name:  microservices-dev-pull-secret
-      Tolerations:
-        Effect:    NoSchedule
-        Key:       workload-type
-        Operator:  Equal
-        Value:     kafka
-  Tls:
-    Trusted Certificates:
-      Pattern:      *.crt
-      Secret Name:  dev-kafka-cluster-cluster-ca-cert
-  Version:          3.9.0
+      cpu:      200m
+      memory:   384Mi
+    Liveness:   http-get http://:http/healthy delay=10s timeout=1s period=30s #success=1 #failure=3
+    Readiness:  http-get http://:http/ready delay=10s timeout=1s period=30s #success=1 #failure=3
+    Startup:    http-get http://:http/healthy delay=5s timeout=1s period=10s #success=1 #failure=30
+    Environment:
+      STRIMZI_NAMESPACE:                                 (v1:metadata.annotations['olm.targetNamespaces'])
+      STRIMZI_FULL_RECONCILIATION_INTERVAL_MS:          120000
+      STRIMZI_OPERATION_TIMEOUT_MS:                     300000
+      STRIMZI_DEFAULT_KAFKA_EXPORTER_IMAGE:              (v1:metadata.annotations['kafka-current-image'])
+      STRIMZI_DEFAULT_CRUISE_CONTROL_IMAGE:              (v1:metadata.annotations['kafka-current-image'])
+      STRIMZI_KAFKA_IMAGES:                              (v1:metadata.annotations['kafka-images'])
+      STRIMZI_KAFKA_CONNECT_IMAGES:                      (v1:metadata.annotations['kafka-images'])
+      STRIMZI_KAFKA_MIRROR_MAKER_2_IMAGES:               (v1:metadata.annotations['kafka-images'])
+      STRIMZI_DEFAULT_TOPIC_OPERATOR_IMAGE:              (v1:metadata.annotations['operator-image'])
+      STRIMZI_DEFAULT_USER_OPERATOR_IMAGE:               (v1:metadata.annotations['operator-image'])
+      STRIMZI_DEFAULT_KAFKA_INIT_IMAGE:                  (v1:metadata.annotations['operator-image'])
+      STRIMZI_DEFAULT_KAFKA_BRIDGE_IMAGE:                (v1:metadata.annotations['bridge-image'])
+      STRIMZI_CUSTOM_KAFKA_BRIDGE_SERVICE_LABELS:       discovery.3scale.net=true
+
+      STRIMZI_CUSTOM_KAFKA_BRIDGE_SERVICE_ANNOTATIONS:  discovery.3scale.net/scheme=http
+                                                        discovery.3scale.net/port=8080
+                                                        discovery.3scale.net/path=/
+                                                        discovery.3scale.net/description-path=/openapi
+
+      STRIMZI_DEFAULT_MAVEN_BUILDER:                     (v1:metadata.annotations['maven-image'])
+      STRIMZI_OPERATOR_NAMESPACE:                       openshift-operators (v1:metadata.namespace)
+      STRIMZI_FEATURE_GATES:
+      STRIMZI_LEADER_ELECTION_ENABLED:                  true
+      STRIMZI_LEADER_ELECTION_LEASE_NAME:               strimzi-cluster-operator
+      STRIMZI_LEADER_ELECTION_LEASE_NAMESPACE:          openshift-operators (v1:metadata.namespace)
+      STRIMZI_LEADER_ELECTION_IDENTITY:                 amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 (v1:metadata.name)
+      STRIMZI_COMMON_LABELS:                            com.company=Red_Hat
+                                                        rht.prod_name=Red_Hat_Application_Foundations
+                                                        rht.prod_ver=2025.Q3
+                                                        rht.comp=AMQ_Streams
+                                                        rht.comp_ver=3.0.1
+      STRIMZI_CUSTOM_KAFKA_LABELS:                      rht.subcomp=kafka-broker
+                                                        rht.subcomp_t=application
+                                                        $(STRIMZI_COMMON_LABELS)
+
+      STRIMZI_CUSTOM_KAFKA_CONNECT_LABELS:              rht.subcomp=kafka-connect
+                                                        rht.subcomp_t=application
+                                                        $(STRIMZI_COMMON_LABELS)
+
+      STRIMZI_CUSTOM_KAFKA_CONNECT_BUILD_LABELS:        rht.subcomp=kafka-connect-build
+                                                        rht.subcomp_t=application
+                                                        $(STRIMZI_COMMON_LABELS)
+
+      STRIMZI_CUSTOM_ENTITY_OPERATOR_LABELS:            rht.subcomp=entity-operator
+                                                        rht.subcomp_t=infrastructure
+                                                        $(STRIMZI_COMMON_LABELS)
+
+      STRIMZI_CUSTOM_KAFKA_MIRROR_MAKER2_LABELS:        rht.subcomp=kafka-mirror-maker2
+                                                        rht.subcomp_t=application
+                                                        $(STRIMZI_COMMON_LABELS)
+
+      STRIMZI_CUSTOM_CRUISE_CONTROL_LABELS:             rht.subcomp=cruise-control
+                                                        rht.subcomp_t=application
+                                                        $(STRIMZI_COMMON_LABELS)
+
+      STRIMZI_CUSTOM_KAFKA_BRIDGE_LABELS:               rht.subcomp=kafka-bridge
+                                                        rht.subcomp_t=application
+                                                        $(STRIMZI_COMMON_LABELS)
+
+      STRIMZI_CUSTOM_KAFKA_EXPORTER_LABELS:             rht.subcomp=kafka-exporter
+                                                        rht.subcomp_t=application
+                                                        $(STRIMZI_COMMON_LABELS)
+
+      OPERATOR_CONDITION_NAME:                          amqstreams.v3.0.1-2
+    Mounts:
+      /opt/strimzi/custom-config/ from co-config-volume (rw)
+      /tmp from strimzi-tmp (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-h2q9m (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       False
+  ContainersReady             False
+  PodScheduled                True
+Volumes:
+  strimzi-tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  1Mi
+  co-config-volume:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      strimzi-cluster-operator
+    Optional:  false
+  kube-api-access-h2q9m:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+    ConfigMapName:           openshift-service-ca.crt
+    ConfigMapOptional:       <nil>
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason          Age                    From               Message
+  ----     ------          ----                   ----               -------
+  Normal   Scheduled       68m                    default-scheduler  Successfully assigned openshift-operators/amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 to worker2.uat.epay.sbi
+  Normal   AddedInterface  68m                    multus             Add eth0 [172.16.20.130/23] from ovn-kubernetes
+  Warning  Failed          67m (x6 over 68m)      kubelet            Error: ImagePullBackOff
+  Normal   Pulling         67m (x4 over 68m)      kubelet            Pulling image "registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1"
+  Warning  Failed          67m (x4 over 68m)      kubelet            Failed to pull image "registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1": initializing source docker://registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: (Mirrors also failed: [registry.dev.sbiepay.sbi:8443/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: reading manifest sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1 in registry.dev.sbiepay.sbi:8443/amq-streams/strimzi-rhel9-operator: manifest unknown]): registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: pinging container registry registry.redhat.io: Get "https://registry.redhat.io/v2/": dial tcp: lookup registry.redhat.io on 10.176.126.200:53: server misbehaving
+  Warning  Failed          67m (x4 over 68m)      kubelet            Error: ErrImagePull
+  Normal   BackOff         3m28s (x290 over 68m)  kubelet            Back-off pulling image "registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1"
+[osuser@bastion ~]$ oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 -n openshift-operators | grep -i TLS
+                                "tls": false
+                                "name": "tls",
+                                "tls": true
+                          "tls": {
+                            "type": "tls"
+                  features.operators.openshift.io/tls-profiles: false
+[osuser@bastion ~]$ oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 -n openshift-operators | grep -i manifest
+  Warning  Failed          67m (x4 over 69m)     kubelet            Failed to pull image "registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1": initializing source docker://registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: (Mirrors also failed: [registry.dev.sbiepay.sbi:8443/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: reading manifest sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1 in registry.dev.sbiepay.sbi:8443/amq-streams/strimzi-rhel9-operator: manifest unknown]): registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: pinging container registry registry.redhat.io: Get "https://registry.redhat.io/v2/": dial tcp: lookup registry.redhat.io on 10.176.126.200:53: server misbehaving
+[osuser@bastion ~]$ oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 -n openshift-operators | grep -i refused
+[osuser@bastion ~]$ oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 -n openshift-operators | grep -i authentication
+                          "authentication": {
+[osuser@bastion ~]$
