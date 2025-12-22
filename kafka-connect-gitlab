@@ -1,0 +1,69 @@
+ kafkaConnect:
+    enabled: false
+    name: "dev-kafka-connect"
+    replicas: 3
+    bootstrapServers: "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093"
+    image: "epaynonprod-registry-quay-quay-enterprise.apps.dev.epay.sbi/redhatdefultimage/debeziumconnect:01"
+    imagePullSecrets: 
+       - microservices-dev-pull-secret
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "8Gi"
+        cpu: "4"
+    config:
+      group:
+        id: "dev-connect-cluster"
+      offset:
+        storage:
+          topic: "dev-connect-cluster-offsets"
+        flush:
+          interval:
+            ms: 10000
+          timeout:
+            ms: 5000
+      config:
+        storage:
+          topic: "dev-connect-cluster-configs"
+      status:
+        storage:
+          topic: "dev-connect-cluster-status"
+    # Connectors configuration
+
+    connectors:
+      - name: "epay-oracle-source"
+        config:
+          connector:
+            class: "io.debezium.connector.oracle.OracleConnector"
+          table:
+            include:
+              list: "PAYAGGADMIN.BANKBRANCHES,PAYAGGADMIN.AGGMERCHGTWFEESTRUCTURE,PAYAGGADMIN.SERVICETAXSTRUCTURE,PAYAGGADMIN.AGGMERCHANTSERVICETAXMAPPING,PAYAGGADMIN.AGGMERCHANTHYBRIDFEESTRUCTURE"
+          database:
+            hostname: "EPAYDNSDEVNEW.sbiepay.sbi"
+            port: "1524"
+            user: "PAYAGGADMIN"
+            password: "April_2025"
+            dbname: "epaydbpp"
+            server:
+              name: "epay-dev-db"
+          decimal.handling.mode: string
+          schema.history.internal.skip.unparseable.ddl: "false"
+          schema.history.internal.kafka.topic: schema-changes.inventory
+          topic:
+             prefix: cdc-oracle-gemfire     
+          datetime:
+            handling.mode: string      
+          schema:
+            include:
+              list: PAYAGGADMIN
+            history:
+              internal:
+                kafka:
+                  bootstrap:
+                    servers: "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093"  
+                topic: "epay-db-history"
+          include:
+            schema:
+              changes: true
