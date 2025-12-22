@@ -1,0 +1,17 @@
+Subject IBM MQ – Kafka Connect setup completed | Blocker: AMQ Streams operator down
+Hi <Manager Name>,
+
+I wanted to update you on the IBM MQ ↔ Kafka integration activity.
+
+I have completed the Kafka Connect and IBM MQ (NEFT) configuration on OpenShift and shared the related YAML files (KafkaConnect, MQ Source, MQ Sink) for review. The setup is aligned with our Kafka (Strimzi, KRaft) architecture and is ready for validation.
+
+Currently, we are blocked because the **AMQ Streams (Strimzi) operator is down** in the cluster. The operator pod is in `ImagePullBackOff` state due to a registry image pull issue. Until the operator is up and running, KafkaConnect pods cannot be created, and connector testing cannot proceed.
+
+The OpenShift admin team has been informed and is working on fixing the operator issue (image mirroring / registry access).
+
+Once the operator is restored, KafkaConnect pods should come up automatically and we can immediately proceed with MQ → Kafka → MQ end-to-end testing.
+
+Please let me know if you need any additional details.
+
+Thanks,
+Saadi
