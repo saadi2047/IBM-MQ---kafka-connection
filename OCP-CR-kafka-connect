@@ -1,0 +1,11 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: dev-kafka-connect-mq-test
+spec:
+  replicas: 2
+
+  # 🔴 IMAGE IS HERE
+  image: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v2
+
+  bootstrapServers: dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093
