@@ -1,0 +1,33 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: neft-mq-source
+  namespace: dev-kafka
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+  labels:
+    app.kubernetes.io/component: kafka-connector
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: neft-mq-source
+    environment: dev
+    strimzi.io/cluster: dev-kafka-connect-mq-test
+
+spec:
+  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
+  tasksMax: 1
+  config:
+    mq.queue.manager: SBI_NEFT
+    mq.connection.name.list: "10.176.10.213(2001)"
+    mq.channel.name: IPH.TO.SBIEPAY
+    mq.queue: SBI_NEFT_INWARD
+
+    topic: neft.raw.kafka.topic
+
+    mq.message.body.format: string
+    mq.record.builder: com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder
+
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: "false"
