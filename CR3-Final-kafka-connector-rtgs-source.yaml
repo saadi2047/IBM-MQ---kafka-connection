@@ -1,0 +1,19 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: rtgs-mq-source
+  namespace: <kafka-namespace>
+  labels:
+    strimzi.io/cluster: kafka-connect
+spec:
+  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
+  tasksMax: 1
+  config:
+    mq.queue.manager: SBI_RTGS
+    mq.connection.name.list: "10.176.10.213(2005)"
+    mq.queue: <RTGS_INPUT_QUEUE>
+
+    topic: rtgs.raw.kafka.topic
+
+    mq.message.body.format: string
+    mq.record.builder: com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder
