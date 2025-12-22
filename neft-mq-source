@@ -1,0 +1,69 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: '10'
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+  resourceVersion: '545355183'
+  name: neft-mq-source
+  uid: c7d9fe45-568a-42c9-8b2d-42836a4d4a56
+  creationTimestamp: '2025-12-22T07:39:55Z'
+  generation: 1
+  managedFields:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:argocd.argoproj.io/sync-wave': {}
+            'f:meta.helm.sh/release-name': {}
+            'f:meta.helm.sh/release-namespace': {}
+          'f:labels':
+            .: {}
+            'f:app.kubernetes.io/component': {}
+            'f:app.kubernetes.io/instance': {}
+            'f:app.kubernetes.io/managed-by': {}
+            'f:app.kubernetes.io/name': {}
+            'f:environment': {}
+            'f:strimzi.io/cluster': {}
+        'f:spec':
+          .: {}
+          'f:class': {}
+          'f:config':
+            'f:mq.message.body.format': {}
+            'f:mq.connection.name.list': {}
+            'f:mq.channel.name': {}
+            .: {}
+            'f:value.converter': {}
+            'f:mq.record.builder': {}
+            'f:mq.queue.manager': {}
+            'f:mq.queue': {}
+            'f:topic': {}
+            'f:value.converter.schemas.enable': {}
+          'f:tasksMax': {}
+      manager: Mozilla
+      operation: Update
+      time: '2025-12-22T07:39:55Z'
+  namespace: dev-kafka
+  labels:
+    app.kubernetes.io/component: kafka-connector
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: neft-mq-source
+    environment: dev
+    strimzi.io/cluster: dev-kafka-connect
+spec:
+  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
+  config:
+    mq.channel.name: IPH.TO.SBIEPAY
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    mq.queue.manager: SBI_NEFT
+    mq.queue: SBI_NEFT_INWARD
+    mq.record.builder: com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder
+    value.converter.schemas.enable: 'false'
+    topic: neft.raw.kafka.topic
+    mq.message.body.format: string
+    mq.connection.name.list: 10.176.10.213(2001)
+  tasksMax: 1
