@@ -35,3 +35,14 @@ Please let me know if you need any additional details.
 
 Thanks,
 Saadi
+-----------------
+
+Below are the items required to proceed with RTGS integration:
+
+RTGS Queue Manager confirmation
+
+RTGS SVRCONN channel details (for inbound/outbound)
+
+RTGS input and output queue names
+
+Confirmation on message flow direction (MQ → Kafka / Kafka → MQ or both)
