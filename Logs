@@ -1,0 +1,162 @@
+[osuser@bastion ~]$ oc get po -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS      AGE
+dev-console-console-deployment-6bf885486b-lhh9s      2/2     Running   0             2d2h
+dev-kafka-cluster-broker-0                           1/1     Running   0             31d
+dev-kafka-cluster-broker-1                           1/1     Running   0             31d
+dev-kafka-cluster-broker-2                           1/1     Running   0             31d
+dev-kafka-cluster-controller-3                       1/1     Running   0             31d
+dev-kafka-cluster-controller-4                       1/1     Running   0             31d
+dev-kafka-cluster-controller-5                       1/1     Running   0             31d
+dev-kafka-cluster-cruise-control-65f9b96bd6-dp54g    1/1     Running   15 (8d ago)   31d
+dev-kafka-cluster-entity-operator-5987597fc7-j4xpc   2/2     Running   0             31d
+dev-kafka-mirror-maker-mirrormaker2-0                0/1     Pending   0             31d
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get KafkaConnect -A -o yaml
+apiVersion: v1
+items:
+- apiVersion: kafka.strimzi.io/v1beta2
+  kind: KafkaConnect
+  metadata:
+    annotations:
+      argocd.argoproj.io/sync-wave: "9"
+      meta.helm.sh/release-name: epay-common
+      meta.helm.sh/release-namespace: dev-epay-common
+      strimzi.io/use-connector-resources: "true"
+    creationTimestamp: "2025-12-22T07:48:06Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: kafka-connect
+      app.kubernetes.io/instance: epay-common
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: dev-kafka-connect-mq-test
+      environment: dev
+    name: dev-kafka-connect-mq-test
+    namespace: dev-kafka
+    resourceVersion: "545361362"
+    uid: d94d0d20-89e3-4055-a2dd-65b4fa1b01e6
+  spec:
+    bootstrapServers: dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093
+    config:
+      config.storage.replication.factor: -1
+      config.storage.topic: dev-connect-cluster-configs
+      group.id: dev-connect-cluster
+      key.converter: org.apache.kafka.connect.storage.StringConverter
+      offset.flush.interval.ms: 10000
+      offset.flush.timeout.ms: 5000
+      offset.storage.replication.factor: -1
+      offset.storage.topic: dev-connect-cluster-offsets
+      status.storage.replication.factor: -1
+      status.storage.topic: dev-connect-cluster-status
+      value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+      value.converter.schemas.enable: "false"
+    image: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v1
+    replicas: 3
+    resources:
+      limits:
+        cpu: 4
+        memory: 8Gi
+      requests:
+        cpu: 2
+        memory: 4Gi
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/worker
+                  operator: Exists
+                - key: workload-type
+                  operator: In
+                  values:
+                  - kafka
+        imagePullSecrets:
+        - name: microservices-dev-pull-secret
+        tolerations:
+        - effect: NoSchedule
+          key: workload-type
+          operator: Equal
+          value: kafka
+    tls:
+      trustedCertificates:
+      - pattern: '*.crt'
+        secretName: dev-kafka-cluster-cluster-ca-cert
+    version: 3.9.0
+kind: List
+metadata:
+  resourceVersion: ""
+[osuser@bastion ~]$
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get KafkaConnect -A
+NAMESPACE   NAME                        DESIRED REPLICAS   READY
+dev-kafka   dev-kafka-connect-mq-test   3
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc describe KafkaConnect dev-kafka-connect-mq-test -n dev-kafka
+Name:         dev-kafka-connect-mq-test
+Namespace:    dev-kafka
+Labels:       app.kubernetes.io/component=kafka-connect
+              app.kubernetes.io/instance=epay-common
+              app.kubernetes.io/managed-by=Helm
+              app.kubernetes.io/name=dev-kafka-connect-mq-test
+              environment=dev
+Annotations:  argocd.argoproj.io/sync-wave: 9
+              meta.helm.sh/release-name: epay-common
+              meta.helm.sh/release-namespace: dev-epay-common
+              strimzi.io/use-connector-resources: true
+API Version:  kafka.strimzi.io/v1beta2
+Kind:         KafkaConnect
+Metadata:
+  Creation Timestamp:  2025-12-22T07:48:06Z
+  Generation:          1
+  Resource Version:    545361362
+  UID:                 d94d0d20-89e3-4055-a2dd-65b4fa1b01e6
+Spec:
+  Bootstrap Servers:  dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093
+  Config:
+    config.storage.replication.factor:  -1
+    config.storage.topic:               dev-connect-cluster-configs
+    group.id:                           dev-connect-cluster
+    key.converter:                      org.apache.kafka.connect.storage.StringConverter
+    offset.flush.interval.ms:           10000
+    offset.flush.timeout.ms:            5000
+    offset.storage.replication.factor:  -1
+    offset.storage.topic:               dev-connect-cluster-offsets
+    status.storage.replication.factor:  -1
+    status.storage.topic:               dev-connect-cluster-status
+    value.converter:                    org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable:     false
+  Image:                                registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v1
+  Replicas:                             3
+  Resources:
+    Limits:
+      Cpu:     4
+      Memory:  8Gi
+    Requests:
+      Cpu:     2
+      Memory:  4Gi
+  Template:
+    Pod:
+      Affinity:
+        Node Affinity:
+          Required During Scheduling Ignored During Execution:
+            Node Selector Terms:
+              Match Expressions:
+                Key:       node-role.kubernetes.io/worker
+                Operator:  Exists
+                Key:       workload-type
+                Operator:  In
+                Values:
+                  kafka
+      Image Pull Secrets:
+        Name:  microservices-dev-pull-secret
+      Tolerations:
+        Effect:    NoSchedule
+        Key:       workload-type
+        Operator:  Equal
+        Value:     kafka
+  Tls:
+    Trusted Certificates:
+      Pattern:      *.crt
+      Secret Name:  dev-kafka-cluster-cluster-ca-cert
+  Version:          3.9.0
