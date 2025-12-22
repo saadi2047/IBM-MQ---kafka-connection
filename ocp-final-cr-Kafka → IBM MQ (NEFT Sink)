@@ -1,0 +1,31 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: neft-mq-sink
+  namespace: dev-kafka
+  annotations:
+    argocd.argoproj.io/sync-wave: '11'
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+  labels:
+    app.kubernetes.io/component: kafka-connector
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: neft-mq-sink
+    environment: dev
+    strimzi.io/cluster: dev-kafka-connect
+spec:
+  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
+  tasksMax: 1
+  config:
+    topics: neft.processed.kafka.topic
+
+    mq.queue.manager: SBI_NEFT
+    mq.connection.name.list: "10.176.10.213(2001)"
+    mq.channel.name: EPAY.TO.IPH
+    mq.queue: SBI_NEFT_OUTWARD
+
+    mq.message.body.format: string
+
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: "false"
