@@ -1,0 +1,67 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: '11'
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+  resourceVersion: '545355403'
+  name: neft-mq-sink
+  uid: 5b0d97e7-4a7d-42ef-8b35-5239d3c40426
+  creationTimestamp: '2025-12-22T07:40:12Z'
+  generation: 1
+  managedFields:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:argocd.argoproj.io/sync-wave': {}
+            'f:meta.helm.sh/release-name': {}
+            'f:meta.helm.sh/release-namespace': {}
+          'f:labels':
+            .: {}
+            'f:app.kubernetes.io/component': {}
+            'f:app.kubernetes.io/instance': {}
+            'f:app.kubernetes.io/managed-by': {}
+            'f:app.kubernetes.io/name': {}
+            'f:environment': {}
+            'f:strimzi.io/cluster': {}
+        'f:spec':
+          .: {}
+          'f:class': {}
+          'f:config':
+            'f:mq.message.body.format': {}
+            'f:mq.connection.name.list': {}
+            'f:mq.channel.name': {}
+            .: {}
+            'f:value.converter': {}
+            'f:topics': {}
+            'f:mq.queue.manager': {}
+            'f:mq.queue': {}
+            'f:value.converter.schemas.enable': {}
+          'f:tasksMax': {}
+      manager: Mozilla
+      operation: Update
+      time: '2025-12-22T07:40:12Z'
+  namespace: dev-kafka
+  labels:
+    app.kubernetes.io/component: kafka-connector
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: neft-mq-sink
+    environment: dev
+    strimzi.io/cluster: dev-kafka-connect
+spec:
+  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
+  config:
+    mq.channel.name: EPAY.TO.IPH
+    mq.connection.name.list: 10.176.10.213(2001)
+    mq.message.body.format: string
+    mq.queue: SBI_NEFT_OUTWARD
+    mq.queue.manager: SBI_NEFT
+    topics: neft.processed.kafka.topic
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: 'false'
+  tasksMax: 1
