@@ -1,0 +1,26 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: neft-mq-source
+  namespace: <kafka-namespace>
+  labels:
+    strimzi.io/cluster: kafka-connect
+spec:
+  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
+  tasksMax: 1
+  config:
+    # MQ details
+    mq.queue.manager: SBI_NEFT
+    mq.connection.name.list: "10.176.10.213(2001)"
+    mq.channel.name: IPH.TO.SBIEPAY
+    mq.queue: SBI_NEFT_INWARD
+
+    # Kafka topic
+    topic: neft.raw.kafka.topic
+
+    # Message handling
+    mq.message.body.format: string
+    mq.record.builder: com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder
+
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: "false"
