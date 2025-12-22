@@ -67,3 +67,95 @@
           include:
             schema:
               changes: true
+
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+kafkaConnect:
+  enabled: true
+  name: "dev-kafka-connect"
+  replicas: 3
+
+  bootstrapServers: "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093"
+
+  # 🔴 Custom image with IBM MQ Source & Sink + JDK 21
+  image: "registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v2"
+
+  imagePullSecrets:
+    - microservices-dev-pull-secret
+
+  resources:
+    requests:
+      memory: "4Gi"
+      cpu: "2"
+    limits:
+      memory: "8Gi"
+      cpu: "4"
+
+  config:
+    group:
+      id: "dev-connect-cluster"
+
+    offset:
+      storage:
+        topic: "dev-connect-cluster-offsets"
+      flush:
+        interval:
+          ms: 10000
+        timeout:
+          ms: 5000
+
+    config:
+      storage:
+        topic: "dev-connect-cluster-configs"
+
+    status:
+      storage:
+        topic: "dev-connect-cluster-status"
+
+  # =========================================================
+  # CONNECTORS (IBM MQ ONLY)
+  # =========================================================
+  connectors:
+
+    # ---------------------------------------------------------
+    # NEFT : IBM MQ → Kafka (SOURCE)
+    # ---------------------------------------------------------
+    - name: "neft-mq-source"
+      config:
+        connector:
+          class: "com.ibm.eventstreams.connect.mqsource.MQSourceConnector"
+
+        mq.queue.manager: "SBI_NEFT"
+        mq.connection.name.list: "10.176.10.213(2001)"
+        mq.channel.name: "IPH.TO.SBIEPAY"
+        mq.queue: "SBI_NEFT_INWARD"
+
+        topic: "neft.raw.kafka.topic"
+
+        mq.message.body.format: "string"
+        mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
+
+        value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+        value.converter.schemas.enable: "false"
+
+    # ---------------------------------------------------------
+    # NEFT : Kafka → IBM MQ (SINK)
+    # ---------------------------------------------------------
+    - name: "neft-mq-sink"
+      config:
+        connector:
+          class: "com.ibm.eventstreams.connect.mqsink.MQSinkConnector"
+
+        topics: "neft.processed.kafka.topic"
+
+        mq.queue.manager: "SBI_NEFT"
+        mq.connection.name.list: "10.176.10.213(2001)"
+        mq.channel.name: "EPAY.TO.IPH"
+        mq.queue: "SBI_NEFT_OUTWARD"
+
+        mq.message.body.format: "string"
+
+        value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+        value.converter.schemas.enable: "false"
