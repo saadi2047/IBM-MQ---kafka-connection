@@ -1,0 +1,136 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: '9'
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+    strimzi.io/use-connector-resources: 'true'
+  resourceVersion: '545424884'
+  name: dev-kafka-connect-mq-test
+  uid: 8dc95590-e029-42a6-b3b0-6117bade642f
+  creationTimestamp: '2025-12-22T09:02:25Z'
+  generation: 1
+  managedFields:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:argocd.argoproj.io/sync-wave': {}
+            'f:meta.helm.sh/release-name': {}
+            'f:meta.helm.sh/release-namespace': {}
+            'f:strimzi.io/use-connector-resources': {}
+          'f:labels':
+            .: {}
+            'f:app.kubernetes.io/component': {}
+            'f:app.kubernetes.io/instance': {}
+            'f:app.kubernetes.io/managed-by': {}
+            'f:app.kubernetes.io/name': {}
+            'f:environment': {}
+        'f:spec':
+          'f:version': {}
+          'f:image': {}
+          'f:tls':
+            .: {}
+            'f:trustedCertificates': {}
+          .: {}
+          'f:template':
+            .: {}
+            'f:pod':
+              .: {}
+              'f:affinity':
+                .: {}
+                'f:nodeAffinity':
+                  .: {}
+                  'f:requiredDuringSchedulingIgnoredDuringExecution':
+                    .: {}
+                    'f:nodeSelectorTerms': {}
+              'f:imagePullSecrets': {}
+              'f:tolerations': {}
+          'f:replicas': {}
+          'f:resources':
+            .: {}
+            'f:limits':
+              .: {}
+              'f:cpu': {}
+              'f:memory': {}
+            'f:requests':
+              .: {}
+              'f:cpu': {}
+              'f:memory': {}
+          'f:config':
+            'f:config.storage.topic': {}
+            'f:offset.flush.timeout.ms': {}
+            'f:offset.storage.replication.factor': {}
+            'f:status.storage.replication.factor': {}
+            .: {}
+            'f:value.converter': {}
+            'f:status.storage.topic': {}
+            'f:offset.storage.topic': {}
+            'f:config.storage.replication.factor': {}
+            'f:key.converter': {}
+            'f:value.converter.schemas.enable': {}
+            'f:offset.flush.interval.ms': {}
+            'f:group.id': {}
+          'f:bootstrapServers': {}
+      manager: Mozilla
+      operation: Update
+      time: '2025-12-22T09:02:25Z'
+  namespace: dev-kafka
+  labels:
+    app.kubernetes.io/component: kafka-connect
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: dev-kafka-connect-mq-test
+    environment: dev
+spec:
+  bootstrapServers: 'dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093'
+  config:
+    status.storage.topic: dev-connect-cluster-status
+    status.storage.replication.factor: -1
+    offset.storage.topic: dev-connect-cluster-offsets
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    offset.flush.interval.ms: 10000
+    group.id: dev-connect-cluster
+    value.converter.schemas.enable: 'false'
+    config.storage.replication.factor: -1
+    config.storage.topic: dev-connect-cluster-configs
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    offset.flush.timeout.ms: 5000
+    offset.storage.replication.factor: -1
+  image: 'registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v1'
+  replicas: 3
+  resources:
+    limits:
+      cpu: 4
+      memory: 8Gi
+    requests:
+      cpu: 2
+      memory: 4Gi
+  template:
+    pod:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+                  - key: workload-type
+                    operator: In
+                    values:
+                      - kafka
+      imagePullSecrets:
+        - name: microservices-dev-pull-secret
+      tolerations:
+        - effect: NoSchedule
+          key: workload-type
+          operator: Equal
+          value: kafka
+  tls:
+    trustedCertificates:
+      - pattern: '*.crt'
+        secretName: dev-kafka-cluster-cluster-ca-cert
+  version: 3.7.0
