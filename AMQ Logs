@@ -1,187 +1,36 @@
-2025-12-24 05:25:43 INFO  StrimziPodSetController:385 - Reconciliation #7529(watch) StrimziPodSet(int-kafka/int-kafka-mirror-maker-mirrormaker2): reconciled
-2025-12-24 05:25:49 INFO  ClusterOperator:135 - Triggering periodic reconciliation for namespace *
-2025-12-24 05:25:49 INFO  AbstractOperator:401 - Reconciliation #7501(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:25:49 INFO  AbstractOperator:401 - Reconciliation #7502(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:25:49 INFO  AbstractOperator:401 - Reconciliation #7503(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:25:49 INFO  AbstractOperator:401 - Reconciliation #7504(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:25:49 INFO  AbstractOperator:266 - Reconciliation #7530(timer) Kafka(uat-kafka/uat-kafka-cluster): Kafka uat-kafka-cluster will be checked for creation or modification
-2025-12-24 05:25:49 INFO  AbstractOperator:266 - Reconciliation #7531(timer) Kafka(sit-kafka/sit-kafka-cluster): Kafka sit-kafka-cluster will be checked for creation or modification
-2025-12-24 05:25:50 INFO  AbstractOperator:266 - Reconciliation #7532(timer) Kafka(dev-kafka/dev-kafka-cluster): Kafka dev-kafka-cluster will be checked for creation or modification
-2025-12-24 05:25:50 INFO  AbstractOperator:266 - Reconciliation #7533(timer) Kafka(int-kafka/int-kafka-cluster): Kafka int-kafka-cluster will be checked for creation or modification
-2025-12-24 05:25:50 INFO  AbstractOperator:266 - Reconciliation #7534(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): KafkaConnect dev-kafka-connect-mq-test will be checked for creation or modification
-2025-12-24 05:25:50 WARN  KafkaConnectAssemblyOperator:144 - Reconciliation #7534(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-2025-12-24 05:25:50 ERROR AbstractOperator:285 - Reconciliation #7534(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): createOrUpdate failed
-io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-        at io.strimzi.operator.cluster.model.KafkaVersion$Lookup.supportedVersion(KafkaVersion.java:175) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromSpec(KafkaConnectCluster.java:252) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromCrd(KafkaConnectCluster.java:202) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:141) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:76) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.reconcileResource(AbstractOperator.java:268) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.lambda$reconcile$0(AbstractOperator.java:191) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.Composition.onSuccess(Composition.java:38) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitSuccess$0(FutureBase.java:60) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:25:50 WARN  AbstractOperator:566 - Reconciliation #7534(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): Failed to reconcile
-io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-        at io.strimzi.operator.cluster.model.KafkaVersion$Lookup.supportedVersion(KafkaVersion.java:175) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromSpec(KafkaConnectCluster.java:252) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromCrd(KafkaConnectCluster.java:202) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:141) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:76) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.reconcileResource(AbstractOperator.java:268) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.lambda$reconcile$0(AbstractOperator.java:191) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.Composition.onSuccess(Composition.java:38) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitSuccess$0(FutureBase.java:60) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:25:58 WARN  AbstractConfiguration:93 - Reconciliation #7530(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
-2025-12-24 05:25:58 WARN  AbstractConfiguration:93 - Reconciliation #7530(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
-2025-12-24 05:25:58 WARN  AbstractModel:279 - Reconciliation #7530(timer) Kafka(uat-kafka/uat-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
-2025-12-24 05:25:59 INFO  AbstractOperator:546 - Reconciliation #7530(timer) Kafka(uat-kafka/uat-kafka-cluster): reconciled
-2025-12-24 05:26:50 INFO  AbstractOperator:401 - Reconciliation #7531(timer) Kafka(sit-kafka/sit-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:26:50 INFO  AbstractOperator:401 - Reconciliation #7532(timer) Kafka(dev-kafka/dev-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:26:50 INFO  AbstractOperator:401 - Reconciliation #7533(timer) Kafka(int-kafka/int-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:26:50 INFO  AbstractOperator:401 - Reconciliation #7501(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:26:50 INFO  AbstractOperator:401 - Reconciliation #7502(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:26:50 INFO  AbstractOperator:401 - Reconciliation #7503(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:26:50 INFO  AbstractOperator:401 - Reconciliation #7504(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:27:49 INFO  ClusterOperator:135 - Triggering periodic reconciliation for namespace *
-2025-12-24 05:27:49 INFO  AbstractOperator:401 - Reconciliation #7531(timer) Kafka(sit-kafka/sit-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:27:49 INFO  AbstractOperator:401 - Reconciliation #7532(timer) Kafka(dev-kafka/dev-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:27:49 INFO  AbstractOperator:401 - Reconciliation #7533(timer) Kafka(int-kafka/int-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:27:49 INFO  AbstractOperator:401 - Reconciliation #7501(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:27:49 INFO  AbstractOperator:401 - Reconciliation #7502(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:27:49 INFO  AbstractOperator:401 - Reconciliation #7503(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:27:49 INFO  AbstractOperator:401 - Reconciliation #7504(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:27:49 INFO  AbstractOperator:266 - Reconciliation #7539(timer) Kafka(uat-kafka/uat-kafka-cluster): Kafka uat-kafka-cluster will be checked for creation or modification
-2025-12-24 05:27:49 INFO  AbstractOperator:266 - Reconciliation #7543(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): KafkaConnect dev-kafka-connect-mq-test will be checked for creation or modification
-2025-12-24 05:27:49 WARN  KafkaConnectAssemblyOperator:144 - Reconciliation #7543(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-2025-12-24 05:27:49 ERROR AbstractOperator:285 - Reconciliation #7543(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): createOrUpdate failed
-io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-        at io.strimzi.operator.cluster.model.KafkaVersion$Lookup.supportedVersion(KafkaVersion.java:175) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromSpec(KafkaConnectCluster.java:252) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromCrd(KafkaConnectCluster.java:202) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:141) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:76) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.reconcileResource(AbstractOperator.java:268) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.lambda$reconcile$0(AbstractOperator.java:191) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.Composition.onSuccess(Composition.java:38) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitSuccess$0(FutureBase.java:60) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:27:50 WARN  AbstractOperator:566 - Reconciliation #7543(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): Failed to reconcile
-io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-        at io.strimzi.operator.cluster.model.KafkaVersion$Lookup.supportedVersion(KafkaVersion.java:175) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromSpec(KafkaConnectCluster.java:252) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromCrd(KafkaConnectCluster.java:202) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:141) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:76) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.reconcileResource(AbstractOperator.java:268) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.lambda$reconcile$0(AbstractOperator.java:191) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.Composition.onSuccess(Composition.java:38) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitSuccess$0(FutureBase.java:60) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:27:52 WARN  AbstractConfiguration:93 - Reconciliation #7539(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
-2025-12-24 05:27:52 WARN  AbstractConfiguration:93 - Reconciliation #7539(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
-2025-12-24 05:27:52 WARN  AbstractModel:279 - Reconciliation #7539(timer) Kafka(uat-kafka/uat-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
-2025-12-24 05:27:53 INFO  AbstractOperator:546 - Reconciliation #7539(timer) Kafka(uat-kafka/uat-kafka-cluster): reconciled
-2025-12-24 05:28:16 WARN  VertxUtil:112 - Reconciliation #7532(timer) Kafka(dev-kafka/dev-kafka-cluster): Caught exception while waiting for Deployment resource dev-kafka-cluster-entity-operator in namespace dev-kafka to get ready
-io.fabric8.kubernetes.client.KubernetesClientException: Operation: [get]  for kind: [Deployment]  with name: [dev-kafka-cluster-entity-operator]  in namespace: [dev-kafka]  failed.
-        at io.fabric8.kubernetes.client.KubernetesClientException.launderThrowable(KubernetesClientException.java:139) ~[io.fabric8.kubernetes-client-api-7.2.0.redhat-00001.jar:?]
-        at io.fabric8.kubernetes.client.dsl.internal.BaseOperation.requireFromServer(BaseOperation.java:195) ~[io.fabric8.kubernetes-client-7.2.0.redhat-00001.jar:?]
-        at io.fabric8.kubernetes.client.dsl.internal.BaseOperation.get(BaseOperation.java:149) ~[io.fabric8.kubernetes-client-7.2.0.redhat-00001.jar:?]
-        at io.fabric8.kubernetes.client.dsl.internal.BaseOperation.isReady(BaseOperation.java:919) ~[io.fabric8.kubernetes-client-7.2.0.redhat-00001.jar:?]
-        at io.strimzi.operator.cluster.operator.resource.kubernetes.AbstractReadyNamespacedResourceOperator.isReady(AbstractReadyNamespacedResourceOperator.java:67) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.resource.kubernetes.AbstractNamespacedResourceOperator.lambda$waitFor$7(AbstractNamespacedResourceOperator.java:390) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$0(VertxUtil.java:110) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.ContextImpl.lambda$executeBlocking$4(ContextImpl.java:192) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.ContextInternal.dispatch(ContextInternal.java:270) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.ContextImpl$1.execute(ContextImpl.java:221) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.WorkerTask.run(WorkerTask.java:56) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.TaskQueue.run(TaskQueue.java:81) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136) ~[?:?]
-        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-Caused by: java.io.IOException: /172.16.20.158:59654: GOAWAY received
-        at io.fabric8.kubernetes.client.dsl.internal.OperationSupport.waitForResult(OperationSupport.java:504) ~[io.fabric8.kubernetes-client-7.2.0.redhat-00001.jar:?]
-        at io.fabric8.kubernetes.client.dsl.internal.OperationSupport.handleResponse(OperationSupport.java:524) ~[io.fabric8.kubernetes-client-7.2.0.redhat-00001.jar:?]
-        at io.fabric8.kubernetes.client.dsl.internal.OperationSupport.handleGet(OperationSupport.java:467) ~[io.fabric8.kubernetes-client-7.2.0.redhat-00001.jar:?]
-        at io.fabric8.kubernetes.client.dsl.internal.BaseOperation.handleGet(BaseOperation.java:792) ~[io.fabric8.kubernetes-client-7.2.0.redhat-00001.jar:?]
-        at io.fabric8.kubernetes.client.dsl.internal.BaseOperation.requireFromServer(BaseOperation.java:193) ~[io.fabric8.kubernetes-client-7.2.0.redhat-00001.jar:?]
-        ... 14 more
-Caused by: java.io.IOException: /172.16.20.158:59654: GOAWAY received
-        at jdk.internal.net.http.Http2Connection.handleGoAway(Http2Connection.java:1214) ~[java.net.http:?]
-        at jdk.internal.net.http.Http2Connection.handleConnectionFrame(Http2Connection.java:1069) ~[java.net.http:?]
-        at jdk.internal.net.http.Http2Connection.processFrame(Http2Connection.java:831) ~[java.net.http:?]
-        at jdk.internal.net.http.frame.FramesDecoder.decode(FramesDecoder.java:155) ~[java.net.http:?]
-        at jdk.internal.net.http.Http2Connection$FramesController.processReceivedData(Http2Connection.java:237) ~[java.net.http:?]
-        at jdk.internal.net.http.Http2Connection.asyncReceive(Http2Connection.java:757) ~[java.net.http:?]
-        at jdk.internal.net.http.Http2Connection$Http2TubeSubscriber.processQueue(Http2Connection.java:1535) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(SequentialScheduler.java:205) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:149) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:230) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:303) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:256) ~[java.net.http:?]
-        at jdk.internal.net.http.Http2Connection$Http2TubeSubscriber.runOrSchedule(Http2Connection.java:1552) ~[java.net.http:?]
-        at jdk.internal.net.http.Http2Connection$Http2TubeSubscriber.onNext(Http2Connection.java:1579) ~[java.net.http:?]
-        at jdk.internal.net.http.Http2Connection$Http2TubeSubscriber.onNext(Http2Connection.java:1513) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SSLTube$DelegateWrapper.onNext(SSLTube.java:210) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SSLTube$SSLSubscriberWrapper.onNext(SSLTube.java:492) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SSLTube$SSLSubscriberWrapper.onNext(SSLTube.java:295) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SubscriberWrapper$DownstreamPusher.run1(SubscriberWrapper.java:316) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SubscriberWrapper$DownstreamPusher.run(SubscriberWrapper.java:259) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(SequentialScheduler.java:205) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:149) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:230) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:303) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:256) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SubscriberWrapper.outgoing(SubscriberWrapper.java:232) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SubscriberWrapper.outgoing(SubscriberWrapper.java:198) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SSLFlowDelegate$Reader.processData(SSLFlowDelegate.java:458) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SSLFlowDelegate$Reader$ReaderDownstreamPusher.run(SSLFlowDelegate.java:282) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(SequentialScheduler.java:205) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:149) ~[java.net.http:?]
-        at jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:230) ~[java.net.http:?]
-        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136) ~[?:?]
-        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
-        ... 1 more
-2025-12-24 05:28:49 INFO  AbstractOperator:401 - Reconciliation #7531(timer) Kafka(sit-kafka/sit-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:28:49 INFO  AbstractOperator:401 - Reconciliation #7532(timer) Kafka(dev-kafka/dev-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:28:49 INFO  AbstractOperator:401 - Reconciliation #7533(timer) Kafka(int-kafka/int-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:28:49 INFO  AbstractOperator:401 - Reconciliation #7501(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:28:49 INFO  AbstractOperator:401 - Reconciliation #7502(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:28:49 INFO  AbstractOperator:401 - Reconciliation #7503(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:28:49 INFO  AbstractOperator:401 - Reconciliation #7504(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:28:51 ERROR VertxUtil:134 - Reconciliation #7501(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource uat-kafka-mirror-maker-mirrormaker2-0 in namespace uat-kafka to be ready
-2025-12-24 05:28:51 ERROR AbstractOperator:285 - Reconciliation #7501(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): createOrUpdate failed
+2025-12-24 05:45:43 INFO  StrimziPodSetController:349 - Reconciliation #7670(watch) StrimziPodSet(sit-kafka/sit-kafka-cluster-broker): StrimziPodSet will be reconciled
+2025-12-24 05:45:43 INFO  StrimziPodSetController:385 - Reconciliation #7670(watch) StrimziPodSet(sit-kafka/sit-kafka-cluster-broker): reconciled
+2025-12-24 05:45:43 INFO  StrimziPodSetController:349 - Reconciliation #7671(watch) StrimziPodSet(sit-kafka/sit-kafka-mirror-maker-mirrormaker2): StrimziPodSet will be reconciled
+2025-12-24 05:45:43 INFO  StrimziPodSetController:385 - Reconciliation #7671(watch) StrimziPodSet(sit-kafka/sit-kafka-mirror-maker-mirrormaker2): reconciled
+2025-12-24 05:45:43 INFO  StrimziPodSetController:349 - Reconciliation #7672(watch) StrimziPodSet(uat-kafka/uat-kafka-cluster-broker): StrimziPodSet will be reconciled
+2025-12-24 05:45:43 INFO  StrimziPodSetController:385 - Reconciliation #7672(watch) StrimziPodSet(uat-kafka/uat-kafka-cluster-broker): reconciled
+2025-12-24 05:45:43 INFO  StrimziPodSetController:349 - Reconciliation #7673(watch) StrimziPodSet(dev-kafka/dev-kafka-cluster-broker): StrimziPodSet will be reconciled
+2025-12-24 05:45:43 INFO  StrimziPodSetController:385 - Reconciliation #7673(watch) StrimziPodSet(dev-kafka/dev-kafka-cluster-broker): reconciled
+2025-12-24 05:45:43 INFO  StrimziPodSetController:349 - Reconciliation #7674(watch) StrimziPodSet(int-kafka/int-kafka-cluster-controller): StrimziPodSet will be reconciled
+2025-12-24 05:45:43 INFO  StrimziPodSetController:385 - Reconciliation #7674(watch) StrimziPodSet(int-kafka/int-kafka-cluster-controller): reconciled
+2025-12-24 05:45:49 INFO  ClusterOperator:135 - Triggering periodic reconciliation for namespace *
+2025-12-24 05:45:49 INFO  AbstractOperator:401 - Reconciliation #7650(timer) Kafka(sit-kafka/sit-kafka-cluster): Reconciliation is in progress
+2025-12-24 05:45:49 INFO  AbstractOperator:401 - Reconciliation #7651(timer) Kafka(dev-kafka/dev-kafka-cluster): Reconciliation is in progress
+2025-12-24 05:45:49 INFO  AbstractOperator:401 - Reconciliation #7652(timer) Kafka(int-kafka/int-kafka-cluster): Reconciliation is in progress
+2025-12-24 05:45:49 INFO  AbstractOperator:266 - Reconciliation #7675(timer) Kafka(uat-kafka/uat-kafka-cluster): Kafka uat-kafka-cluster will be checked for creation or modification
+2025-12-24 05:45:49 INFO  AbstractOperator:401 - Reconciliation #7645(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
+2025-12-24 05:45:49 INFO  AbstractOperator:401 - Reconciliation #7646(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
+2025-12-24 05:45:49 INFO  AbstractOperator:401 - Reconciliation #7647(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
+2025-12-24 05:45:49 INFO  AbstractOperator:401 - Reconciliation #7648(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Reconciliation is in progress
+2025-12-24 05:45:52 WARN  AbstractConfiguration:93 - Reconciliation #7675(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
+2025-12-24 05:45:52 WARN  AbstractConfiguration:93 - Reconciliation #7675(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
+2025-12-24 05:45:52 WARN  AbstractModel:279 - Reconciliation #7675(timer) Kafka(uat-kafka/uat-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
+2025-12-24 05:45:53 INFO  AbstractOperator:546 - Reconciliation #7675(timer) Kafka(uat-kafka/uat-kafka-cluster): reconciled
+2025-12-24 05:46:11 INFO  AbstractOperator:401 - Reconciliation #7658(watch) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): Reconciliation is in progress
+2025-12-24 05:46:49 INFO  AbstractOperator:401 - Reconciliation #7650(timer) Kafka(sit-kafka/sit-kafka-cluster): Reconciliation is in progress
+2025-12-24 05:46:49 INFO  AbstractOperator:401 - Reconciliation #7651(timer) Kafka(dev-kafka/dev-kafka-cluster): Reconciliation is in progress
+2025-12-24 05:46:49 INFO  AbstractOperator:401 - Reconciliation #7652(timer) Kafka(int-kafka/int-kafka-cluster): Reconciliation is in progress
+2025-12-24 05:46:49 INFO  AbstractOperator:401 - Reconciliation #7645(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
+2025-12-24 05:46:49 INFO  AbstractOperator:401 - Reconciliation #7646(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
+2025-12-24 05:46:49 INFO  AbstractOperator:401 - Reconciliation #7647(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
+2025-12-24 05:46:49 INFO  AbstractOperator:401 - Reconciliation #7648(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Reconciliation is in progress
+2025-12-24 05:46:51 ERROR VertxUtil:134 - Reconciliation #7645(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource uat-kafka-mirror-maker-mirrormaker2-0 in namespace uat-kafka to be ready
+2025-12-24 05:46:51 ERROR AbstractOperator:285 - Reconciliation #7645(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): createOrUpdate failed
 io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource uat-kafka-mirror-maker-mirrormaker2-0 in namespace uat-kafka to be ready
         at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
         at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
@@ -194,8 +43,8 @@ io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while 
         at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:28:51 ERROR VertxUtil:134 - Reconciliation #7502(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource sit-kafka-mirror-maker-mirrormaker2-0 in namespace sit-kafka to be ready
-2025-12-24 05:28:51 ERROR AbstractOperator:285 - Reconciliation #7502(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): createOrUpdate failed
+2025-12-24 05:46:51 ERROR VertxUtil:134 - Reconciliation #7646(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource sit-kafka-mirror-maker-mirrormaker2-0 in namespace sit-kafka to be ready
+2025-12-24 05:46:51 ERROR AbstractOperator:285 - Reconciliation #7646(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): createOrUpdate failed
 io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource sit-kafka-mirror-maker-mirrormaker2-0 in namespace sit-kafka to be ready
         at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
         at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
@@ -208,8 +57,8 @@ io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while 
         at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:28:51 ERROR VertxUtil:134 - Reconciliation #7503(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource int-kafka-mirror-maker-mirrormaker2-0 in namespace int-kafka to be ready
-2025-12-24 05:28:51 ERROR AbstractOperator:285 - Reconciliation #7503(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): createOrUpdate failed
+2025-12-24 05:46:51 ERROR VertxUtil:134 - Reconciliation #7647(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource int-kafka-mirror-maker-mirrormaker2-0 in namespace int-kafka to be ready
+2025-12-24 05:46:51 ERROR AbstractOperator:285 - Reconciliation #7647(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): createOrUpdate failed
 io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource int-kafka-mirror-maker-mirrormaker2-0 in namespace int-kafka to be ready
         at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
         at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
@@ -222,8 +71,8 @@ io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while 
         at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:28:51 ERROR VertxUtil:134 - Reconciliation #7504(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource dev-kafka-mirror-maker-mirrormaker2-0 in namespace dev-kafka to be ready
-2025-12-24 05:28:51 ERROR AbstractOperator:285 - Reconciliation #7504(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): createOrUpdate failed
+2025-12-24 05:46:51 ERROR VertxUtil:134 - Reconciliation #7648(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource dev-kafka-mirror-maker-mirrormaker2-0 in namespace dev-kafka to be ready
+2025-12-24 05:46:51 ERROR AbstractOperator:285 - Reconciliation #7648(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): createOrUpdate failed
 io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource dev-kafka-mirror-maker-mirrormaker2-0 in namespace dev-kafka to be ready
         at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
         at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
@@ -236,7 +85,7 @@ io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while 
         at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:28:51 WARN  AbstractOperator:566 - Reconciliation #7501(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Failed to reconcile
+2025-12-24 05:46:51 WARN  AbstractOperator:566 - Reconciliation #7645(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Failed to reconcile
 io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource uat-kafka-mirror-maker-mirrormaker2-0 in namespace uat-kafka to be ready
         at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
         at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
@@ -249,7 +98,7 @@ io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while 
         at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:28:51 WARN  AbstractOperator:566 - Reconciliation #7502(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Failed to reconcile
+2025-12-24 05:46:51 WARN  AbstractOperator:566 - Reconciliation #7646(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Failed to reconcile
 io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource sit-kafka-mirror-maker-mirrormaker2-0 in namespace sit-kafka to be ready
         at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
         at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
@@ -262,7 +111,7 @@ io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while 
         at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:28:51 WARN  AbstractOperator:566 - Reconciliation #7503(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Failed to reconcile
+2025-12-24 05:46:51 WARN  AbstractOperator:566 - Reconciliation #7647(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Failed to reconcile
 io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource int-kafka-mirror-maker-mirrormaker2-0 in namespace int-kafka to be ready
         at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
         at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
@@ -275,7 +124,7 @@ io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while 
         at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:28:51 WARN  AbstractOperator:566 - Reconciliation #7504(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Failed to reconcile
+2025-12-24 05:46:51 WARN  AbstractOperator:566 - Reconciliation #7648(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Failed to reconcile
 io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource dev-kafka-mirror-maker-mirrormaker2-0 in namespace dev-kafka to be ready
         at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
         at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
@@ -288,284 +137,33 @@ io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while 
         at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
         at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:29:49 INFO  ClusterOperator:135 - Triggering periodic reconciliation for namespace *
-2025-12-24 05:29:49 INFO  AbstractOperator:401 - Reconciliation #7531(timer) Kafka(sit-kafka/sit-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:29:49 INFO  AbstractOperator:401 - Reconciliation #7532(timer) Kafka(dev-kafka/dev-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:29:49 INFO  AbstractOperator:401 - Reconciliation #7533(timer) Kafka(int-kafka/int-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:29:50 INFO  AbstractOperator:266 - Reconciliation #7548(timer) Kafka(uat-kafka/uat-kafka-cluster): Kafka uat-kafka-cluster will be checked for creation or modification
-2025-12-24 05:29:50 INFO  AbstractOperator:266 - Reconciliation #7552(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): KafkaConnect dev-kafka-connect-mq-test will be checked for creation or modification
-2025-12-24 05:29:50 WARN  KafkaConnectAssemblyOperator:144 - Reconciliation #7552(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-2025-12-24 05:29:50 ERROR AbstractOperator:285 - Reconciliation #7552(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): createOrUpdate failed
-io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-        at io.strimzi.operator.cluster.model.KafkaVersion$Lookup.supportedVersion(KafkaVersion.java:175) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromSpec(KafkaConnectCluster.java:252) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromCrd(KafkaConnectCluster.java:202) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:141) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:76) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.reconcileResource(AbstractOperator.java:268) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.lambda$reconcile$0(AbstractOperator.java:191) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.Composition.onSuccess(Composition.java:38) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitSuccess$0(FutureBase.java:60) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:29:50 INFO  AbstractOperator:266 - Reconciliation #7553(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): KafkaMirrorMaker2 uat-kafka-mirror-maker will be checked for creation or modification
-2025-12-24 05:29:50 INFO  AbstractOperator:266 - Reconciliation #7554(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): KafkaMirrorMaker2 sit-kafka-mirror-maker will be checked for creation or modification
-2025-12-24 05:29:50 INFO  AbstractOperator:266 - Reconciliation #7555(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): KafkaMirrorMaker2 int-kafka-mirror-maker will be checked for creation or modification
-2025-12-24 05:29:50 INFO  AbstractOperator:266 - Reconciliation #7556(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): KafkaMirrorMaker2 dev-kafka-mirror-maker will be checked for creation or modification
-2025-12-24 05:29:50 WARN  AbstractOperator:566 - Reconciliation #7552(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): Failed to reconcile
-io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-        at io.strimzi.operator.cluster.model.KafkaVersion$Lookup.supportedVersion(KafkaVersion.java:175) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromSpec(KafkaConnectCluster.java:252) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromCrd(KafkaConnectCluster.java:202) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:141) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:76) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.reconcileResource(AbstractOperator.java:268) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.lambda$reconcile$0(AbstractOperator.java:191) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.Composition.onSuccess(Composition.java:38) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitSuccess$0(FutureBase.java:60) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:29:53 WARN  AbstractConfiguration:93 - Reconciliation #7548(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
-2025-12-24 05:29:53 WARN  AbstractConfiguration:93 - Reconciliation #7548(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
-2025-12-24 05:29:53 WARN  AbstractModel:279 - Reconciliation #7548(timer) Kafka(uat-kafka/uat-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
-2025-12-24 05:29:54 INFO  AbstractOperator:546 - Reconciliation #7548(timer) Kafka(uat-kafka/uat-kafka-cluster): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7557(watch) StrimziPodSet(sit-kafka/sit-kafka-cluster-controller): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7557(watch) StrimziPodSet(sit-kafka/sit-kafka-cluster-controller): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7558(watch) StrimziPodSet(sit-kafka/sit-kafka-cluster-controller): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7558(watch) StrimziPodSet(sit-kafka/sit-kafka-cluster-controller): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7559(watch) StrimziPodSet(sit-kafka/sit-kafka-mirror-maker-mirrormaker2): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7559(watch) StrimziPodSet(sit-kafka/sit-kafka-mirror-maker-mirrormaker2): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7560(watch) StrimziPodSet(int-kafka/int-kafka-cluster-controller): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7560(watch) StrimziPodSet(int-kafka/int-kafka-cluster-controller): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7561(watch) StrimziPodSet(int-kafka/int-kafka-cluster-broker): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7561(watch) StrimziPodSet(int-kafka/int-kafka-cluster-broker): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7562(watch) StrimziPodSet(uat-kafka/uat-kafka-cluster-broker): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7562(watch) StrimziPodSet(uat-kafka/uat-kafka-cluster-broker): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7563(watch) StrimziPodSet(uat-kafka/uat-kafka-cluster-controller): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7563(watch) StrimziPodSet(uat-kafka/uat-kafka-cluster-controller): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7564(watch) StrimziPodSet(dev-kafka/dev-kafka-mirror-maker-mirrormaker2): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7564(watch) StrimziPodSet(dev-kafka/dev-kafka-mirror-maker-mirrormaker2): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7565(watch) StrimziPodSet(dev-kafka/dev-kafka-cluster-broker): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7565(watch) StrimziPodSet(dev-kafka/dev-kafka-cluster-broker): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7566(watch) StrimziPodSet(dev-kafka/dev-kafka-cluster-controller): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7566(watch) StrimziPodSet(dev-kafka/dev-kafka-cluster-controller): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7567(watch) StrimziPodSet(sit-kafka/sit-kafka-cluster-broker): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7567(watch) StrimziPodSet(sit-kafka/sit-kafka-cluster-broker): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7568(watch) StrimziPodSet(uat-kafka/uat-kafka-mirror-maker-mirrormaker2): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7568(watch) StrimziPodSet(uat-kafka/uat-kafka-mirror-maker-mirrormaker2): reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:349 - Reconciliation #7569(watch) StrimziPodSet(int-kafka/int-kafka-mirror-maker-mirrormaker2): StrimziPodSet will be reconciled
-2025-12-24 05:30:43 INFO  StrimziPodSetController:385 - Reconciliation #7569(watch) StrimziPodSet(int-kafka/int-kafka-mirror-maker-mirrormaker2): reconciled
-2025-12-24 05:30:49 INFO  AbstractOperator:401 - Reconciliation #7531(timer) Kafka(sit-kafka/sit-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:30:49 INFO  AbstractOperator:401 - Reconciliation #7532(timer) Kafka(dev-kafka/dev-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:30:49 INFO  AbstractOperator:401 - Reconciliation #7533(timer) Kafka(int-kafka/int-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:30:49 INFO  AbstractOperator:401 - Reconciliation #7553(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:30:49 INFO  AbstractOperator:401 - Reconciliation #7554(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:30:49 INFO  AbstractOperator:401 - Reconciliation #7555(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:30:49 INFO  AbstractOperator:401 - Reconciliation #7556(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:30:58 ERROR VertxUtil:134 - Reconciliation #7531(timer) Kafka(sit-kafka/sit-kafka-cluster): Exceeded timeout of 300000ms while waiting for Deployment resource sit-kafka-cluster-entity-operator in namespace sit-kafka to be ready
-2025-12-24 05:30:58 ERROR AbstractOperator:285 - Reconciliation #7531(timer) Kafka(sit-kafka/sit-kafka-cluster): createOrUpdate failed
-io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Deployment resource sit-kafka-cluster-entity-operator in namespace sit-kafka to be ready
-        at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitFailure$1(FutureBase.java:75) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:30:58 WARN  AbstractOperator:566 - Reconciliation #7531(timer) Kafka(sit-kafka/sit-kafka-cluster): Failed to reconcile
-io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Deployment resource sit-kafka-cluster-entity-operator in namespace sit-kafka to be ready
-        at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitFailure$1(FutureBase.java:75) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:30:58 ERROR VertxUtil:134 - Reconciliation #7533(timer) Kafka(int-kafka/int-kafka-cluster): Exceeded timeout of 300000ms while waiting for Deployment resource int-kafka-cluster-entity-operator in namespace int-kafka to be ready
-2025-12-24 05:30:58 ERROR AbstractOperator:285 - Reconciliation #7533(timer) Kafka(int-kafka/int-kafka-cluster): createOrUpdate failed
-io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Deployment resource int-kafka-cluster-entity-operator in namespace int-kafka to be ready
-        at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitFailure$1(FutureBase.java:75) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:30:58 WARN  AbstractOperator:566 - Reconciliation #7533(timer) Kafka(int-kafka/int-kafka-cluster): Failed to reconcile
-io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Deployment resource int-kafka-cluster-entity-operator in namespace int-kafka to be ready
-        at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitFailure$1(FutureBase.java:75) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:30:59 ERROR VertxUtil:134 - Reconciliation #7532(timer) Kafka(dev-kafka/dev-kafka-cluster): Exceeded timeout of 300000ms while waiting for Deployment resource dev-kafka-cluster-entity-operator in namespace dev-kafka to be ready
-2025-12-24 05:30:59 ERROR AbstractOperator:285 - Reconciliation #7532(timer) Kafka(dev-kafka/dev-kafka-cluster): createOrUpdate failed
-io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Deployment resource dev-kafka-cluster-entity-operator in namespace dev-kafka to be ready
-        at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitFailure$1(FutureBase.java:75) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:30:59 WARN  AbstractOperator:566 - Reconciliation #7532(timer) Kafka(dev-kafka/dev-kafka-cluster): Failed to reconcile
-io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Deployment resource dev-kafka-cluster-entity-operator in namespace dev-kafka to be ready
-        at io.strimzi.operator.cluster.operator.VertxUtil$1.lambda$handle$1(VertxUtil.java:135) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.FutureImpl$4.onFailure(FutureImpl.java:188) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitFailure$1(FutureBase.java:75) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:31:49 INFO  ClusterOperator:135 - Triggering periodic reconciliation for namespace *
-2025-12-24 05:31:49 INFO  AbstractOperator:401 - Reconciliation #7553(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:31:49 INFO  AbstractOperator:401 - Reconciliation #7554(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:31:49 INFO  AbstractOperator:401 - Reconciliation #7555(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:31:49 INFO  AbstractOperator:401 - Reconciliation #7556(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:31:50 INFO  AbstractOperator:266 - Reconciliation #7570(timer) Kafka(uat-kafka/uat-kafka-cluster): Kafka uat-kafka-cluster will be checked for creation or modification
-2025-12-24 05:31:50 INFO  AbstractOperator:266 - Reconciliation #7571(timer) Kafka(sit-kafka/sit-kafka-cluster): Kafka sit-kafka-cluster will be checked for creation or modification
-2025-12-24 05:31:50 INFO  AbstractOperator:266 - Reconciliation #7572(timer) Kafka(dev-kafka/dev-kafka-cluster): Kafka dev-kafka-cluster will be checked for creation or modification
-2025-12-24 05:31:50 INFO  AbstractOperator:266 - Reconciliation #7573(timer) Kafka(int-kafka/int-kafka-cluster): Kafka int-kafka-cluster will be checked for creation or modification
-2025-12-24 05:31:50 INFO  AbstractOperator:266 - Reconciliation #7574(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): KafkaConnect dev-kafka-connect-mq-test will be checked for creation or modification
-2025-12-24 05:31:50 WARN  KafkaConnectAssemblyOperator:144 - Reconciliation #7574(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-2025-12-24 05:31:50 ERROR AbstractOperator:285 - Reconciliation #7574(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): createOrUpdate failed
-io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-        at io.strimzi.operator.cluster.model.KafkaVersion$Lookup.supportedVersion(KafkaVersion.java:175) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromSpec(KafkaConnectCluster.java:252) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromCrd(KafkaConnectCluster.java:202) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:141) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:76) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.reconcileResource(AbstractOperator.java:268) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.lambda$reconcile$0(AbstractOperator.java:191) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.Composition.onSuccess(Composition.java:38) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitSuccess$0(FutureBase.java:60) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:31:50 WARN  AbstractOperator:566 - Reconciliation #7574(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): Failed to reconcile
-io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-        at io.strimzi.operator.cluster.model.KafkaVersion$Lookup.supportedVersion(KafkaVersion.java:175) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromSpec(KafkaConnectCluster.java:252) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromCrd(KafkaConnectCluster.java:202) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:141) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:76) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.reconcileResource(AbstractOperator.java:268) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.lambda$reconcile$0(AbstractOperator.java:191) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.Composition.onSuccess(Composition.java:38) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitSuccess$0(FutureBase.java:60) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:31:58 WARN  AbstractConfiguration:93 - Reconciliation #7570(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
-2025-12-24 05:31:58 WARN  AbstractConfiguration:93 - Reconciliation #7570(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
-2025-12-24 05:31:58 WARN  AbstractModel:279 - Reconciliation #7570(timer) Kafka(uat-kafka/uat-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
-2025-12-24 05:31:59 INFO  AbstractOperator:546 - Reconciliation #7570(timer) Kafka(uat-kafka/uat-kafka-cluster): reconciled
-2025-12-24 05:32:49 INFO  AbstractOperator:401 - Reconciliation #7571(timer) Kafka(sit-kafka/sit-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:32:49 INFO  AbstractOperator:401 - Reconciliation #7572(timer) Kafka(dev-kafka/dev-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:32:49 INFO  AbstractOperator:401 - Reconciliation #7573(timer) Kafka(int-kafka/int-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:32:49 INFO  AbstractOperator:401 - Reconciliation #7553(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:32:49 INFO  AbstractOperator:401 - Reconciliation #7554(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:32:49 INFO  AbstractOperator:401 - Reconciliation #7555(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:32:49 INFO  AbstractOperator:401 - Reconciliation #7556(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:33:49 INFO  ClusterOperator:135 - Triggering periodic reconciliation for namespace *
-2025-12-24 05:33:49 INFO  AbstractOperator:401 - Reconciliation #7571(timer) Kafka(sit-kafka/sit-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:33:49 INFO  AbstractOperator:401 - Reconciliation #7572(timer) Kafka(dev-kafka/dev-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:33:49 INFO  AbstractOperator:401 - Reconciliation #7573(timer) Kafka(int-kafka/int-kafka-cluster): Reconciliation is in progress
-2025-12-24 05:33:49 INFO  AbstractOperator:401 - Reconciliation #7553(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:33:49 INFO  AbstractOperator:401 - Reconciliation #7554(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:33:49 INFO  AbstractOperator:401 - Reconciliation #7555(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:33:49 INFO  AbstractOperator:401 - Reconciliation #7556(timer) KafkaMirrorMaker2(dev-kafka/dev-kafka-mirror-maker): Reconciliation is in progress
-2025-12-24 05:33:50 INFO  AbstractOperator:266 - Reconciliation #7579(timer) Kafka(uat-kafka/uat-kafka-cluster): Kafka uat-kafka-cluster will be checked for creation or modification
-2025-12-24 05:33:50 INFO  AbstractOperator:266 - Reconciliation #7583(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): KafkaConnect dev-kafka-connect-mq-test will be checked for creation or modification
-2025-12-24 05:33:50 WARN  KafkaConnectAssemblyOperator:144 - Reconciliation #7583(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-2025-12-24 05:33:50 ERROR AbstractOperator:285 - Reconciliation #7583(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): createOrUpdate failed
-io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-        at io.strimzi.operator.cluster.model.KafkaVersion$Lookup.supportedVersion(KafkaVersion.java:175) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromSpec(KafkaConnectCluster.java:252) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromCrd(KafkaConnectCluster.java:202) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:141) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:76) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.reconcileResource(AbstractOperator.java:268) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.lambda$reconcile$0(AbstractOperator.java:191) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.Composition.onSuccess(Composition.java:38) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitSuccess$0(FutureBase.java:60) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:33:50 WARN  AbstractOperator:566 - Reconciliation #7583(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): Failed to reconcile
-io.strimzi.operator.cluster.model.KafkaVersion$UnsupportedKafkaVersionException: Unsupported Kafka.spec.kafka.version: 3.7.0. Supported versions are: [3.9.0, 4.0.0]
-        at io.strimzi.operator.cluster.model.KafkaVersion$Lookup.supportedVersion(KafkaVersion.java:175) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromSpec(KafkaConnectCluster.java:252) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.model.KafkaConnectCluster.fromCrd(KafkaConnectCluster.java:202) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:141) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.KafkaConnectAssemblyOperator.createOrUpdate(KafkaConnectAssemblyOperator.java:76) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.reconcileResource(AbstractOperator.java:268) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.strimzi.operator.cluster.operator.assembly.AbstractOperator.lambda$reconcile$0(AbstractOperator.java:191) ~[io.strimzi.cluster-operator-0.46.1.redhat-00007.jar:0.46.1.redhat-00007]
-        at io.vertx.core.impl.future.Composition.onSuccess(Composition.java:38) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.vertx.core.impl.future.FutureBase.lambda$emitSuccess$0(FutureBase.java:60) ~[io.vertx.vertx-core-4.5.18.redhat-00001.jar:4.5.18.redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[io.netty.netty-transport-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[io.netty.netty-common-4.1.124.Final-redhat-00001.jar:4.1.124.Final-redhat-00001]
-        at java.lang.Thread.run(Thread.java:840) ~[?:?]
-2025-12-24 05:33:53 WARN  AbstractConfiguration:93 - Reconciliation #7579(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
-2025-12-24 05:33:53 WARN  AbstractConfiguration:93 - Reconciliation #7579(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
-2025-12-24 05:33:53 WARN  AbstractModel:279 - Reconciliation #7579(timer) Kafka(uat-kafka/uat-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
-2025-12-24 05:33:53 INFO  AbstractOperator:546 - Reconciliation #7579(timer) Kafka(uat-kafka/uat-kafka-cluster): reconciled
+2025-12-24 05:47:11 INFO  AbstractOperator:401 - Reconciliation #7658(watch) KafkaConnect(dev-kafka/dev-kafka-connect-mq-test): Reconciliation is in progress
 
+^[[A^[[A^C
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get po
+NAME                                                   READY   STATUS    RESTARTS   AGE
+amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-hnlf7   1/1     Running   0          16h
+kiali-operator-58cc4c5494-2gvbk                        1/1     Running   0          3d19h
+quay-operator.v3.15.2-795b66dc7f-8t7rk                 1/1     Running   0          15d
+servicemesh-operator3-888bb864c-tbxjs                  1/1     Running   0          3d19h
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get po -dev-kafka
+error: unknown shorthand flag: 'd' in -dev-kafka
+See 'oc get --help' for usage.
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get po -n dev-kafka
+NAME                                                 READY   STATUS             RESTARTS       AGE
+dev-console-console-deployment-6bf885486b-lhh9s      2/2     Running            0              3d23h
+dev-kafka-cluster-broker-0                           1/1     Running            0              16h
+dev-kafka-cluster-broker-1                           1/1     Running            0              16h
+dev-kafka-cluster-broker-2                           1/1     Running            0              16h
+dev-kafka-cluster-controller-3                       1/1     Running            0              16h
+dev-kafka-cluster-controller-4                       1/1     Running            0              16h
+dev-kafka-cluster-controller-5                       1/1     Running            0              16h
+dev-kafka-cluster-cruise-control-65f9b96bd6-dp54g    1/1     Running            17 (43h ago)   32d
+dev-kafka-cluster-entity-operator-656dcf5cdd-q9hbr   0/2     ImagePullBackOff   0              20m
+dev-kafka-connect-mq-test-connect-0                  0/1     Pending            0              3m33s
+dev-kafka-connect-mq-test-connect-1                  0/1     Pending            0              3m33s
+dev-kafka-connect-mq-test-connect-2                  0/1     Pending            0              3m33s
+dev-kafka-mirror-maker-mirrormaker2-0                0/1     Pending            0              16h
