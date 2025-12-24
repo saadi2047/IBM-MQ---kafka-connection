@@ -46,3 +46,36 @@ RTGS SVRCONN channel details (for inbound/outbound)
 RTGS input and output queue names
 
 Confirmation on message flow direction (MQ → Kafka / Kafka → MQ or both)
+
+
+-----------------------------------------------------------------------------------------------------
+
+Subject : NEFT MQ Connectivity Issue – Channel Configuration Required
+
+Hi Team,
+
+We have completed Kafka Connect setup and both NEFT MQ Source and Sink connectors are running, but they are failing to connect to IBM MQ.
+
+Observed Error (common for Source & Sink):
+MQRC_UNKNOWN_CHANNEL_NAME (2540)
+This indicates that the SVRCONN channels configured in Kafka Connect are not defined or not accessible on the MQ Queue Manager.
+
+Details currently configured by us:
+Queue Manager: SBI_NEFT
+MQ Host: 10.176.10.213
+Port: 2001
+Source Channel: IPH.TO.SBIEPAY
+Sink Channel: EPAY.TO.IPH
+Connection mode: Client
+TLS / User Auth: Not used
+
+Request from MQ Team:
+Please confirm:
+Whether IPH.TO.SBIEPAY and EPAY.TO.IPH SVRCONN channels are created on SBI_NEFT
+Channels are RUNNING and enabled for client connections
+Channels are accessible from OpenShift network
+Port 2001 listener is active for these channels
+Once confirmed/fixed, we can immediately re-test end-to-end NEFT MQ ↔ Kafka flow.
+
+Thanks,
+Saadi
