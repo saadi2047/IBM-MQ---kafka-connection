@@ -86,3 +86,49 @@ Dear Team,
 We have create Server-connection at our end.
 
 Server-connection : - SBIEPAY2.SVRCONN
+
+
+--------------------------------------------------------------------------
+
+NEFT MQ–Kafka Integration | Connectivity Established & Testing Successful
+
+Hi Team,
+
+This is to inform you that NEFT IBM MQ ↔ Kafka integration has been successfully completed and verified.
+
+Closure Summary:
+
+Kafka Connect setup on OpenShift is stable and healthy
+
+IBM MQ Source and Sink connectors are running successfully
+
+Connectivity established using MQ test SVRCONN channel (SBIEPAY2.SVRCONN)
+
+End-to-end message flow verified:
+
+MQ → Kafka (neft.raw.kafka.topic) ✔
+
+Kafka topics created and accessible ✔
+
+Kafka side validation completed via console consumer
+
+Current Status:
+
+NEFT integration: SUCCESSFUL (Tested & Verified)
+
+Using MQ test queue (TEST) for validation
+
+No infrastructure or Kafka-side blockers pending
+
+Next Steps:
+
+Await final production channel/queue details from MQ team
+
+Proceed with production configuration once shared
+
+RTGS integration to be taken up separately as discussed
+
+Thanks to all teams for the coordination and support.
+
+Regards,
+Saadi/Omkar
