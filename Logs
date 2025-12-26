@@ -1,563 +1,829 @@
-[osuser@bastion ~]$ oc get project | grep -i strimzi
-[osuser@bastion ~]$ oc get pods -n openshift-operators
-NAME                                                   READY   STATUS             RESTARTS   AGE
-amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6   0/1     ImagePullBackOff   0          62m
-kiali-operator-58cc4c5494-2gvbk                        1/1     Running            0          47h
-quay-operator.v3.15.2-795b66dc7f-8t7rk                 1/1     Running            0          14d
-servicemesh-operator3-888bb864c-tbxjs                  1/1     Running            0          47h
-[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq-test -o yaml | sed -n '/status:/,$p'
-Error from server (NotFound): kafkaconnects.kafka.strimzi.io "dev-kafka-connect-mq-test" not found
-[osuser@bastion ~]$ oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 -n openshift-operators
-Name:             amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6
-Namespace:        openshift-operators
-Priority:         0
-Service Account:  strimzi-cluster-operator
-Node:             worker2.uat.epay.sbi/10.177.143.111
-Start Time:       Mon, 22 Dec 2025 08:27:50 +0000
-Labels:           com.company=Red_Hat
-                  name=amq-streams-cluster-operator
-                  pod-template-hash=98c8d5f6
-                  rht.comp=AMQ_Streams
-                  rht.comp_ver=3.0.1
-                  rht.prod_name=Red_Hat_Application_Foundations
-                  rht.prod_ver=2025.Q3
-                  rht.subcomp=cluster-operator
-                  rht.subcomp_t=infrastructure
-                  strimzi.io/kind=cluster-operator
-Annotations:      alm-examples:
-                    [
-                      {
-                        "apiVersion": "kafka.strimzi.io/v1beta2",
-                        "kind": "Kafka",
-                        "metadata": {
-                          "name": "my-cluster",
-                          "annotations": {
-                            "strimzi.io/node-pools": "enabled",
-                            "strimzi.io/kraft": "enabled"
-                          }
-                        },
-                        "spec": {
-                          "kafka": {
-                            "version": "4.0.0",
-                            "metadataVersion": "4.0-IV3",
-                            "listeners": [
-                              {
-                                "name": "plain",
-                                "port": 9092,
-                                "type": "internal",
-                                "tls": false
-                              },
-                              {
-                                "name": "tls",
-                                "port": 9093,
-                                "type": "internal",
-                                "tls": true
-                              }
-                            ],
-                            "config": {
-                              "offsets.topic.replication.factor": 3,
-                              "transaction.state.log.replication.factor": 3,
-                              "transaction.state.log.min.isr": 2,
-                              "default.replication.factor": 3,
-                              "min.insync.replicas": 2
-                            }
-                          },
-                          "entityOperator": {
-                            "topicOperator": {},
-                            "userOperator": {}
-                          }
-                        }
-                      },
-                      {
-                        "apiVersion": "kafka.strimzi.io/v1beta2",
-                        "kind": "KafkaConnect",
-                        "metadata": {
-                          "name": "my-connect-cluster"
-                        },
-                        "spec": {
-                          "version": "4.0.0",
-                          "replicas": 1,
-                          "bootstrapServers": "my-cluster-kafka-bootstrap:9093",
-                          "tls": {
-                            "trustedCertificates": [
-                              {
-                                "secretName": "my-cluster-cluster-ca-cert",
-                                "pattern": "*.crt"
-                              }
-                            ]
-                          },
-                          "config": {
-                            "group.id": "connect-cluster",
-                            "offset.storage.topic": "connect-cluster-offsets",
-                            "config.storage.topic": "connect-cluster-configs",
-                            "status.storage.topic": "connect-cluster-status",
-                            "config.storage.replication.factor": -1,
-                            "offset.storage.replication.factor": -1,
-                            "status.storage.replication.factor": -1
-                          }
-                        }
-                      },
-                      {
-                        "apiVersion": "kafka.strimzi.io/v1beta2",
-                        "kind": "KafkaMirrorMaker2",
-                        "metadata": {
-                          "name": "my-mm2-cluster"
-                        },
-                        "spec": {
-                          "version": "4.0.0",
-                          "replicas": 1,
-                          "connectCluster": "cluster-b",
-                          "clusters": [
-                            {
-                              "alias": "cluster-a",
-                              "bootstrapServers": "cluster-a-kafka-bootstrap:9092"
-                            },
-                            {
-                              "alias": "cluster-b",
-                              "bootstrapServers": "cluster-b-kafka-bootstrap:9092",
-                              "config": {
-                                "config.storage.replication.factor": -1,
-                                "offset.storage.replication.factor": -1,
-                                "status.storage.replication.factor": -1
-                              }
-                            }
-                          ],
-                          "mirrors": [
-                            {
-                              "sourceCluster": "cluster-a",
-                              "targetCluster": "cluster-b",
-                              "sourceConnector": {
-                                "config": {
-                                  "replication.factor": -1,
-                                  "offset-syncs.topic.replication.factor": -1,
-                                  "sync.topic.acls.enabled": "false"
-                                }
-                              },
-                              "checkpointConnector": {
-                                "config": {
-                                  "checkpoints.topic.replication.factor": -1
-                                }
-                              },
-                              "topicsPattern": ".*",
-                              "groupsPattern": ".*"
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "apiVersion": "kafka.strimzi.io/v1beta2",
-                        "kind": "KafkaBridge",
-                        "metadata": {
-                          "name": "my-bridge"
-                        },
-                        "spec": {
-                          "replicas": 1,
-                          "bootstrapServers": "my-cluster-kafka-bootstrap:9092",
-                          "http": {
-                            "port": 8080
-                          }
-                        }
-                      },
-                      {
-                        "apiVersion": "kafka.strimzi.io/v1beta2",
-                        "kind": "KafkaTopic",
-                        "metadata": {
-                          "name": "my-topic",
-                          "labels": {
-                            "strimzi.io/cluster": "my-cluster"
-                          }
-                        },
-                        "spec": {
-                          "partitions": 10,
-                          "replicas": 3,
-                          "config": {
-                            "retention.ms": 604800000,
-                            "segment.bytes": 1073741824
-                          }
-                        }
-                      },
-                      {
-                        "apiVersion": "kafka.strimzi.io/v1beta2",
-                        "kind": "KafkaUser",
-                        "metadata": {
-                          "name": "my-user",
-                          "labels": {
-                            "strimzi.io/cluster": "my-cluster"
-                          }
-                        },
-                        "spec": {
-                          "authentication": {
-                            "type": "tls"
-                          },
-                          "authorization": {
-                            "type": "simple",
-                            "acls": [
-                              {
-                                "resource": {
-                                  "type": "topic",
-                                  "name": "my-topic",
-                                  "patternType": "literal"
-                                },
-                                "operations": [
-                                  "Read",
-                                  "Describe",
-                                  "Write",
-                                  "Create"
-                                ],
-                                "host": "*"
-                              },
-                              {
-                                "resource": {
-                                  "type": "group",
-                                  "name": "my-group",
-                                  "patternType": "literal"
-                                },
-                                "operations": [
-                                  "Read"
-                                ],
-                                "host": "*"
-                              }
-                            ]
-                          }
-                        }
-                      },
-                      {
-                        "apiVersion": "kafka.strimzi.io/v1beta2",
-                        "kind": "KafkaConnector",
-                        "metadata": {
-                          "name": "my-source-connector",
-                          "labels": {
-                            "strimzi.io/cluster": "my-connect-cluster"
-                          }
-                        },
-                        "spec": {
-                          "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
-                          "tasksMax": 1,
-                          "config": {
-                            "file": "/opt/kafka/LICENSE",
-                            "topic": "my-topic"
-                          }
-                        }
-                      },
-                      {
-                        "apiVersion": "kafka.strimzi.io/v1beta2",
-                        "kind": "KafkaRebalance",
-                        "metadata": {
-                          "name": "my-rebalance",
-                          "labels": {
-                            "strimzi.io/cluster": "my-cluster"
-                          }
-                        },
-                        "spec": {
-                          "goals": [
-                            "CpuCapacityGoal",
-                            "NetworkInboundCapacityGoal",
-                            "DiskCapacityGoal",
-                            "RackAwareGoal",
-                            "MinTopicLeadersPerBrokerGoal",
-                            "NetworkOutboundCapacityGoal",
-                            "ReplicaCapacityGoal"
-                          ]
-                        }
-                      },
-                      {
-                        "apiVersion": "kafka.strimzi.io/v1beta2",
-                        "kind": "KafkaNodePool",
-                        "metadata": {
-                          "name": "my-pool",
-                          "labels": {
-                            "strimzi.io/cluster": "my-cluster"
-                          }
-                        },
-                        "spec": {
-                          "replicas": 3,
-                          "roles": [
-                            "broker"
-                          ],
-                          "storage": {
-                            "type": "jbod",
-                            "volumes": [
-                              {
-                                "id": 0,
-                                "type": "persistent-claim",
-                                "size": "100Gi",
-                                "deleteClaim": false
-                              }
-                            ]
-                          }
-                        }
-                      },
-                      {
-                        "apiVersion": "core.strimzi.io/v1beta2",
-                        "kind": "StrimziPodSet",
-                        "metadata": {
-                          "name": "my-podset"
-                        },
-                        "spec": {
-                          "pods": [
-                            {
-                              "apiVersion": "v1",
-                              "kind": "Pod",
-                              "metadata": {
-                                "labels": {
-                                  "app": "my-podset"
-                                },
-                                "name": "example-pod"
-                              },
-                              "spec": {
-                                "containers": [
-                                  {
-                                    "command": [
-                                      "sleep",
-                                      3600
-                                    ],
-                                    "image": "busybox:latest",
-                                    "imagePullPolicy": "IfNotPresent",
-                                    "name": "busybox"
-                                  }
-                                ]
-                              }
-                            }
-                          ],
-                          "selector": {
-                            "matchLabels": {
-                              "app": "my-podset"
-                            }
-                          }
-                        }
-                      }
-                    ]
-                  alm-examples-metadata:
-                    {
-                      "my-cluster": {
-                        "description": "Example Kafka cluster (to be used together with KafkaNodePool)"
-                      },
-                      "my-connect-cluster": {
-                        "description": "Example Kafka Connect cluster"
-                      },
-                      "my-mm2-cluster": {
-                        "description": "Example Kafka Mirror Maker 2 deployment"
-                      },
-                      "my-bridge": {
-                        "description": "Example Streams Kafka HTTP Bridge deployment"
-                      },
-                      "my-topic": {
-                        "description": "Example KafkaTopic custom resource"
-                      },
-                      "my-user": {
-                        "description": "Example KafkaUser custom resource"
-                      },
-                      "my-source-connector": {
-                        "description": "Example Kafka Connect source connector"
-                      },
-                      "my-rebalance": {
-                        "description": "Example Cruise Control rebalance request"
-                      },
-                      "my-pool": {
-                        "description": "Example KafkaNodePool custom resource"
-                      },
-                      "my-podset": {
-                        "description": "Example StrimziPodSet custom resource"
-                      }
-                    }
-                  bridge-image: registry.redhat.io/amq-streams/bridge-rhel9@sha256:a42a58b07e6c0c6bfd3c908095232d5c82e789a365372a512e5c1cb5ebe23d09
-                  capabilities: Deep Insights
-                  categories: Streaming & Messaging
-                  certified: false
-                  containerImage:
-                    registry.dev.sbiepay.sbi:8443/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1
-                  createdAt: 2025-09-24T12:21:07Z
-                  description:
-                    Streams for Apache Kafka is a massively scalable, distributed, and high performance data streaming platform based on Apache Kafka®.
-                  features.operators.openshift.io/cnf: false
-                  features.operators.openshift.io/cni: false
-                  features.operators.openshift.io/csi: false
-                  features.operators.openshift.io/disconnected: true
-                  features.operators.openshift.io/fips-compliant: true
-                  features.operators.openshift.io/proxy-aware: true
-                  features.operators.openshift.io/tls-profiles: false
-                  features.operators.openshift.io/token-auth-aws: false
-                  features.operators.openshift.io/token-auth-azure: false
-                  features.operators.openshift.io/token-auth-gcp: false
-                  k8s.ovn.org/pod-networks:
-                    {"default":{"ip_addresses":["172.16.20.130/23"],"mac_address":"0a:58:ac:10:14:82","gateway_ips":["172.16.20.1"],"routes":[{"dest":"172.16....
-                  k8s.v1.cni.cncf.io/network-status:
-                    [{
-                        "name": "ovn-kubernetes",
-                        "interface": "eth0",
-                        "ips": [
-                            "172.16.20.130"
-                        ],
-                        "mac": "0a:58:ac:10:14:82",
-                        "default": true,
-                        "dns": {}
-                    }]
-                  kafka-current-image: registry.redhat.io/amq-streams/kafka-40-rhel9@sha256:38354c92b8883144a2c2cc37699046323338fd42c8d852eed0c4e711ed7e5cbe
-                  kafka-images:
-                    3.9.0=registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa
-                    4.0.0=registry.redhat.io/amq-streams/kafka-40-rhel9@sha256:38354c92b8883144a2c2cc37699046323338fd42c8d852eed0c4e711ed7e5cbe
-                  maven-image: registry.redhat.io/amq-streams/maven-builder-rhel9@sha256:efa03b0d29d2b5ac6cab8f5f7e455b7342e30401f83b45f2563e3a1b928d2d2a
-                  olm.operatorGroup: global-operators
-                  olm.operatorNamespace: openshift-operators
-                  olm.skipRange: >=2.9.0-0 <3.0.1-2
-                  olm.targetNamespaces:
-                  openshift.io/scc: restricted-v2
-                  operator-image:
-                    registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1
-                  operatorframework.io/properties:
-                    {"properties":[{"type":"olm.gvk","value":{"group":"core.strimzi.io","kind":"StrimziPodSet","version":"v1beta2"}},{"type":"olm.gvk","value"...
-                  operators.openshift.io/valid-subscription: ["Red Hat AMQ", "Red Hat Application Foundations"]
-                  operators.operatorframework.io/internal-objects: ["strimzipodsets.core.strimzi.io"]
-                  repository: https://github.com/strimzi/strimzi-kafka-operator
-                  seccomp.security.alpha.kubernetes.io/pod: runtime/default
-                  support: Red Hat
-Status:           Pending
-SeccompProfile:   RuntimeDefault
-IP:               172.16.20.130
-IPs:
-  IP:           172.16.20.130
-Controlled By:  ReplicaSet/amq-streams-cluster-operator-v3.0.1-2-98c8d5f6
-Containers:
-  strimzi-cluster-operator:
-    Container ID:
-    Image:           registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1
-    Image ID:
-    Port:            8080/TCP
-    Host Port:       0/TCP
-    SeccompProfile:  RuntimeDefault
-    Args:
-      /opt/strimzi/bin/cluster_operator_run.sh
-    State:          Waiting
-      Reason:       ImagePullBackOff
-    Ready:          False
-    Restart Count:  0
-    Limits:
-      cpu:     1
-      memory:  384Mi
-    Requests:
-      cpu:      200m
-      memory:   384Mi
-    Liveness:   http-get http://:http/healthy delay=10s timeout=1s period=30s #success=1 #failure=3
-    Readiness:  http-get http://:http/ready delay=10s timeout=1s period=30s #success=1 #failure=3
-    Startup:    http-get http://:http/healthy delay=5s timeout=1s period=10s #success=1 #failure=30
-    Environment:
-      STRIMZI_NAMESPACE:                                 (v1:metadata.annotations['olm.targetNamespaces'])
-      STRIMZI_FULL_RECONCILIATION_INTERVAL_MS:          120000
-      STRIMZI_OPERATION_TIMEOUT_MS:                     300000
-      STRIMZI_DEFAULT_KAFKA_EXPORTER_IMAGE:              (v1:metadata.annotations['kafka-current-image'])
-      STRIMZI_DEFAULT_CRUISE_CONTROL_IMAGE:              (v1:metadata.annotations['kafka-current-image'])
-      STRIMZI_KAFKA_IMAGES:                              (v1:metadata.annotations['kafka-images'])
-      STRIMZI_KAFKA_CONNECT_IMAGES:                      (v1:metadata.annotations['kafka-images'])
-      STRIMZI_KAFKA_MIRROR_MAKER_2_IMAGES:               (v1:metadata.annotations['kafka-images'])
-      STRIMZI_DEFAULT_TOPIC_OPERATOR_IMAGE:              (v1:metadata.annotations['operator-image'])
-      STRIMZI_DEFAULT_USER_OPERATOR_IMAGE:               (v1:metadata.annotations['operator-image'])
-      STRIMZI_DEFAULT_KAFKA_INIT_IMAGE:                  (v1:metadata.annotations['operator-image'])
-      STRIMZI_DEFAULT_KAFKA_BRIDGE_IMAGE:                (v1:metadata.annotations['bridge-image'])
-      STRIMZI_CUSTOM_KAFKA_BRIDGE_SERVICE_LABELS:       discovery.3scale.net=true
+Preparing Connect truststore
+Adding /opt/kafka/connect-certs/dev-kafka-cluster-cluster-ca-cert/ca.crt to truststore /tmp/kafka/cluster.truststore.p12 with alias /opt/kafka/connect-certs/dev-kafka-cluster-cluster-ca-cert/ca.crt
+Certificate was added to keystore
+Starting Kafka Connect with configuration:
+##############################
+##############################
+# This file is automatically generated by the Strimzi Cluster Operator
+# Any changes to this file will be ignored and overwritten!
+##############################
+##############################
 
-      STRIMZI_CUSTOM_KAFKA_BRIDGE_SERVICE_ANNOTATIONS:  discovery.3scale.net/scheme=http
-                                                        discovery.3scale.net/port=8080
-                                                        discovery.3scale.net/path=/
-                                                        discovery.3scale.net/description-path=/openapi
+##########
+# Bootstrap servers
+##########
+bootstrap.servers=dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093
 
-      STRIMZI_DEFAULT_MAVEN_BUILDER:                     (v1:metadata.annotations['maven-image'])
-      STRIMZI_OPERATOR_NAMESPACE:                       openshift-operators (v1:metadata.namespace)
-      STRIMZI_FEATURE_GATES:
-      STRIMZI_LEADER_ELECTION_ENABLED:                  true
-      STRIMZI_LEADER_ELECTION_LEASE_NAME:               strimzi-cluster-operator
-      STRIMZI_LEADER_ELECTION_LEASE_NAMESPACE:          openshift-operators (v1:metadata.namespace)
-      STRIMZI_LEADER_ELECTION_IDENTITY:                 amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 (v1:metadata.name)
-      STRIMZI_COMMON_LABELS:                            com.company=Red_Hat
-                                                        rht.prod_name=Red_Hat_Application_Foundations
-                                                        rht.prod_ver=2025.Q3
-                                                        rht.comp=AMQ_Streams
-                                                        rht.comp_ver=3.0.1
-      STRIMZI_CUSTOM_KAFKA_LABELS:                      rht.subcomp=kafka-broker
-                                                        rht.subcomp_t=application
-                                                        $(STRIMZI_COMMON_LABELS)
+##########
+# Config providers
+##########
+# Configuration providers configured by Strimzi
+config.providers=strimzienv,strimzifile,strimzidir
+config.providers.strimzienv.class=org.apache.kafka.common.config.provider.EnvVarConfigProvider
+config.providers.strimzienv.param.allowlist.pattern=.*
+config.providers.strimzifile.class=org.apache.kafka.common.config.provider.FileConfigProvider
+config.providers.strimzidir.class=org.apache.kafka.common.config.provider.DirectoryConfigProvider
+config.providers.strimzidir.param.allowed.paths=/opt/kafka
 
-      STRIMZI_CUSTOM_KAFKA_CONNECT_LABELS:              rht.subcomp=kafka-connect
-                                                        rht.subcomp_t=application
-                                                        $(STRIMZI_COMMON_LABELS)
+##########
+# Provided configurations
+##########
+offset.storage.topic=dev-connect-cluster-offsets
+value.converter=org.apache.kafka.connect.converters.ByteArrayConverter
+config.storage.topic=dev-connect-cluster-configs
+key.converter=org.apache.kafka.connect.storage.StringConverter
+group.id=dev-connect-cluster
+status.storage.topic=dev-connect-cluster-status
+config.storage.replication.factor=-1
+offset.flush.interval.ms=10000
+offset.flush.timeout.ms=5000
+offset.storage.replication.factor=-1
+status.storage.replication.factor=-1
+value.converter.schemas.enable=false
 
-      STRIMZI_CUSTOM_KAFKA_CONNECT_BUILD_LABELS:        rht.subcomp=kafka-connect-build
-                                                        rht.subcomp_t=application
-                                                        $(STRIMZI_COMMON_LABELS)
 
-      STRIMZI_CUSTOM_ENTITY_OPERATOR_LABELS:            rht.subcomp=entity-operator
-                                                        rht.subcomp_t=infrastructure
-                                                        $(STRIMZI_COMMON_LABELS)
+##########
+# REST Listeners
+##########
+rest.advertised.host.name=${strimzienv:ADVERTISED_HOSTNAME}
+rest.advertised.port=8083
 
-      STRIMZI_CUSTOM_KAFKA_MIRROR_MAKER2_LABELS:        rht.subcomp=kafka-mirror-maker2
-                                                        rht.subcomp_t=application
-                                                        $(STRIMZI_COMMON_LABELS)
+##########
+# Plugins
+##########
+plugin.path=/opt/kafka/plugins
 
-      STRIMZI_CUSTOM_CRUISE_CONTROL_LABELS:             rht.subcomp=cruise-control
-                                                        rht.subcomp_t=application
-                                                        $(STRIMZI_COMMON_LABELS)
+##########
+# TLS / SSL
+##########
+ssl.truststore.location=/tmp/kafka/cluster.truststore.p12
+ssl.truststore.password=[hidden]
+ssl.truststore.type=PKCS12
+producer.ssl.truststore.location=/tmp/kafka/cluster.truststore.p12
+producer.ssl.truststore.password=[hidden]
+consumer.ssl.truststore.location=/tmp/kafka/cluster.truststore.p12
+consumer.ssl.truststore.password=[hidden]
+admin.ssl.truststore.location=/tmp/kafka/cluster.truststore.p12
+admin.ssl.truststore.password=[hidden]
 
-      STRIMZI_CUSTOM_KAFKA_BRIDGE_LABELS:               rht.subcomp=kafka-bridge
-                                                        rht.subcomp_t=application
-                                                        $(STRIMZI_COMMON_LABELS)
+##########
+# Additional information
+##########
+consumer.client.rack=${strimzidir:/opt/kafka/init:rack.id}
 
-      STRIMZI_CUSTOM_KAFKA_EXPORTER_LABELS:             rht.subcomp=kafka-exporter
-                                                        rht.subcomp_t=application
-                                                        $(STRIMZI_COMMON_LABELS)
+##########
+# Kafka Security protocol
+##########
+security.protocol=SSL
+producer.security.protocol=SSL
+consumer.security.protocol=SSL
+admin.security.protocol=SSL
 
-      OPERATOR_CONDITION_NAME:                          amqstreams.v3.0.1-2
-    Mounts:
-      /opt/strimzi/custom-config/ from co-config-volume (rw)
-      /tmp from strimzi-tmp (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-h2q9m (ro)
-Conditions:
-  Type                        Status
-  PodReadyToStartContainers   True
-  Initialized                 True
-  Ready                       False
-  ContainersReady             False
-  PodScheduled                True
-Volumes:
-  strimzi-tmp:
-    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
-    Medium:     Memory
-    SizeLimit:  1Mi
-  co-config-volume:
-    Type:      ConfigMap (a volume populated by a ConfigMap)
-    Name:      strimzi-cluster-operator
-    Optional:  false
-  kube-api-access-h2q9m:
-    Type:                    Projected (a volume that contains injected data from multiple sources)
-    TokenExpirationSeconds:  3607
-    ConfigMapName:           kube-root-ca.crt
-    ConfigMapOptional:       <nil>
-    DownwardAPI:             true
-    ConfigMapName:           openshift-service-ca.crt
-    ConfigMapOptional:       <nil>
-QoS Class:                   Burstable
-Node-Selectors:              <none>
-Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
-                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-Events:
-  Type     Reason          Age                    From               Message
-  ----     ------          ----                   ----               -------
-  Normal   Scheduled       68m                    default-scheduler  Successfully assigned openshift-operators/amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 to worker2.uat.epay.sbi
-  Normal   AddedInterface  68m                    multus             Add eth0 [172.16.20.130/23] from ovn-kubernetes
-  Warning  Failed          67m (x6 over 68m)      kubelet            Error: ImagePullBackOff
-  Normal   Pulling         67m (x4 over 68m)      kubelet            Pulling image "registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1"
-  Warning  Failed          67m (x4 over 68m)      kubelet            Failed to pull image "registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1": initializing source docker://registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: (Mirrors also failed: [registry.dev.sbiepay.sbi:8443/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: reading manifest sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1 in registry.dev.sbiepay.sbi:8443/amq-streams/strimzi-rhel9-operator: manifest unknown]): registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: pinging container registry registry.redhat.io: Get "https://registry.redhat.io/v2/": dial tcp: lookup registry.redhat.io on 10.176.126.200:53: server misbehaving
-  Warning  Failed          67m (x4 over 68m)      kubelet            Error: ErrImagePull
-  Normal   BackOff         3m28s (x290 over 68m)  kubelet            Back-off pulling image "registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1"
-[osuser@bastion ~]$ oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 -n openshift-operators | grep -i TLS
-                                "tls": false
-                                "name": "tls",
-                                "tls": true
-                          "tls": {
-                            "type": "tls"
-                  features.operators.openshift.io/tls-profiles: false
-[osuser@bastion ~]$ oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 -n openshift-operators | grep -i manifest
-  Warning  Failed          67m (x4 over 69m)     kubelet            Failed to pull image "registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1": initializing source docker://registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: (Mirrors also failed: [registry.dev.sbiepay.sbi:8443/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: reading manifest sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1 in registry.dev.sbiepay.sbi:8443/amq-streams/strimzi-rhel9-operator: manifest unknown]): registry.redhat.io/amq-streams/strimzi-rhel9-operator@sha256:42733933be49e2f08ffd06c4c8f31dbfc6eac0327779a54da79ec78f487d19b1: pinging container registry registry.redhat.io: Get "https://registry.redhat.io/v2/": dial tcp: lookup registry.redhat.io on 10.176.126.200:53: server misbehaving
-[osuser@bastion ~]$ oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 -n openshift-operators | grep -i refused
-[osuser@bastion ~]$ oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-6cnj6 -n openshift-operators | grep -i authentication
-                          "authentication": {
-[osuser@bastion ~]$
+
+Configuring Java heap: -Xms6442450944 -Xmx6442450944
++ exec /usr/bin/tini -w -e 143 -- /opt/kafka/bin/connect-distributed.sh /tmp/strimzi-connect.properties
+2025-12-24 09:03:59,598 INFO Kafka Connect worker initializing ... (org.apache.kafka.connect.cli.AbstractConnectCli) [main]
+2025-12-24 09:03:59,607 INFO WorkerInfo values: 
+	jvm.args = -Xms6442450944, -Xmx6442450944, -XX:+UseG1GC, -XX:MaxGCPauseMillis=20, -XX:InitiatingHeapOccupancyPercent=35, -XX:+ExplicitGCInvokesConcurrent, -XX:MaxInlineLevel=15, -Djava.awt.headless=true, -Dcom.sun.management.jmxremote=true, -Dcom.sun.management.jmxremote.authenticate=false, -Dcom.sun.management.jmxremote.ssl=false, -Dkafka.logs.dir=/opt/kafka, -Dlog4j.configuration=file:/opt/kafka/custom-config/log4j.properties
+	jvm.spec = Red Hat, Inc., OpenJDK 64-Bit Server VM, 17.0.15, 17.0.15+6-LTS
+	jvm.classpath = /opt/kafka/bin/../libs/accessors-smart-2.5.2.jar:/opt/kafka/bin/../libs/activation-1.1.1.jar:/opt/kafka/bin/../libs/animal-sniffer-annotations-1.23.jar:/opt/kafka/bin/../libs/annotations-4.1.1.4.jar:/opt/kafka/bin/../libs/aopalliance-repackaged-2.6.1.jar:/opt/kafka/bin/../libs/argparse4j-0.7.0.jar:/opt/kafka/bin/../libs/audience-annotations-0.12.0.jar:/opt/kafka/bin/../libs/caffeine-2.9.3.jar:/opt/kafka/bin/../libs/commons-beanutils-1.9.4.jar:/opt/kafka/bin/../libs/commons-cli-1.4.jar:/opt/kafka/bin/../libs/commons-collections-3.2.2.jar:/opt/kafka/bin/../libs/commons-digester-2.1.jar:/opt/kafka/bin/../libs/commons-io-2.14.0.jar:/opt/kafka/bin/../libs/commons-lang-2.6.jar:/opt/kafka/bin/../libs/commons-lang3-3.12.0.jar:/opt/kafka/bin/../libs/commons-logging-1.2.jar:/opt/kafka/bin/../libs/commons-validator-1.7.jar:/opt/kafka/bin/../libs/connect-api-3.9.0.jar:/opt/kafka/bin/../libs/connect-basic-auth-extension-3.9.0.jar:/opt/kafka/bin/../libs/connect-json-3.9.0.jar:/opt/kafka/bin/../libs/connect-mirror-3.9.0.jar:/opt/kafka/bin/../libs/connect-mirror-client-3.9.0.jar:/opt/kafka/bin/../libs/connect-runtime-3.9.0.jar:/opt/kafka/bin/../libs/connect-transforms-3.9.0.jar:/opt/kafka/bin/../libs/cruise-control-metrics-reporter-2.5.142.jar:/opt/kafka/bin/../libs/error_prone_annotations-2.10.0.jar:/opt/kafka/bin/../libs/failureaccess-1.0.1.jar:/opt/kafka/bin/../libs/grpc-api-1.61.0.jar:/opt/kafka/bin/../libs/grpc-context-1.61.0.jar:/opt/kafka/bin/../libs/grpc-core-1.61.0.jar:/opt/kafka/bin/../libs/grpc-netty-shaded-1.61.0.jar:/opt/kafka/bin/../libs/grpc-stub-1.60.1.jar:/opt/kafka/bin/../libs/grpc-util-1.61.0.jar:/opt/kafka/bin/../libs/gson-2.10.1.jar:/opt/kafka/bin/../libs/guava-32.1.3-jre.jar:/opt/kafka/bin/../libs/hk2-api-2.6.1.jar:/opt/kafka/bin/../libs/hk2-locator-2.6.1.jar:/opt/kafka/bin/../libs/hk2-utils-2.6.1.jar:/opt/kafka/bin/../libs/j2objc-annotations-2.8.jar:/opt/kafka/bin/../libs/jackson-annotations-2.16.2.jar:/opt/kafka/bin/../libs/jackson-core-2.16.2.jar:/opt/kafka/bin/../libs/jackson-databind-2.16.2.jar:/opt/kafka/bin/../libs/jackson-dataformat-csv-2.16.2.jar:/opt/kafka/bin/../libs/jackson-dataformat-yaml-2.16.2.jar:/opt/kafka/bin/../libs/jackson-datatype-jdk8-2.16.2.jar:/opt/kafka/bin/../libs/jackson-datatype-jsr310-2.16.2.jar:/opt/kafka/bin/../libs/jackson-jaxrs-base-2.16.2.jar:/opt/kafka/bin/../libs/jackson-jaxrs-json-provider-2.16.2.jar:/opt/kafka/bin/../libs/jackson-module-afterburner-2.16.2.jar:/opt/kafka/bin/../libs/jackson-module-jaxb-annotations-2.16.2.jar:/opt/kafka/bin/../libs/jackson-module-scala_2.13-2.16.2.jar:/opt/kafka/bin/../libs/jakarta.activation-api-1.2.2.jar:/opt/kafka/bin/../libs/jakarta.annotation-api-1.3.5.jar:/opt/kafka/bin/../libs/jakarta.inject-2.6.1.jar:/opt/kafka/bin/../libs/jakarta.validation-api-2.0.2.jar:/opt/kafka/bin/../libs/jakarta.ws.rs-api-2.1.6.jar:/opt/kafka/bin/../libs/jakarta.xml.bind-api-2.3.3.jar:/opt/kafka/bin/../libs/javassist-3.29.2-GA.jar:/opt/kafka/bin/../libs/javax.activation-api-1.2.0.jar:/opt/kafka/bin/../libs/javax.annotation-api-1.3.2.jar:/opt/kafka/bin/../libs/javax.servlet-api-3.1.0.jar:/opt/kafka/bin/../libs/javax.ws.rs-api-2.1.1.jar:/opt/kafka/bin/../libs/jaxb-api-2.3.1.jar:/opt/kafka/bin/../libs/jersey-client-2.39.1.jar:/opt/kafka/bin/../libs/jersey-common-2.39.1.jar:/opt/kafka/bin/../libs/jersey-container-servlet-2.39.1.jar:/opt/kafka/bin/../libs/jersey-container-servlet-core-2.39.1.jar:/opt/kafka/bin/../libs/jersey-hk2-2.39.1.jar:/opt/kafka/bin/../libs/jersey-server-2.39.1.jar:/opt/kafka/bin/../libs/jetty-client-9.4.56.v20240826.jar:/opt/kafka/bin/../libs/jetty-continuation-9.4.56.v20240826.jar:/opt/kafka/bin/../libs/jetty-http-9.4.56.v20240826.jar:/opt/kafka/bin/../libs/jetty-io-9.4.56.v20240826.jar:/opt/kafka/bin/../libs/jetty-security-9.4.56.v20240826.jar:/opt/kafka/bin/../libs/jetty-server-9.4.56.v20240826.jar:/opt/kafka/bin/../libs/jetty-servlet-9.4.56.v20240826.jar:/opt/kafka/bin/../libs/jetty-servlets-9.4.56.v20240826.jar:/opt/kafka/bin/../libs/jetty-util-9.4.56.v20240826.jar:/opt/kafka/bin/../libs/jetty-util-ajax-9.4.56.v20240826.jar:/opt/kafka/bin/../libs/jline-3.25.1.jar:/opt/kafka/bin/../libs/jopt-simple-5.0.4.jar:/opt/kafka/bin/../libs/jose4j-0.9.4.jar:/opt/kafka/bin/../libs/json-path-2.9.0.jar:/opt/kafka/bin/../libs/json-smart-2.5.2.jar:/opt/kafka/bin/../libs/jsonevent-layout-1.7.jar:/opt/kafka/bin/../libs/jsr305-3.0.2.jar:/opt/kafka/bin/../libs/kafka-agent-3-0.46.1.jar:/opt/kafka/bin/../libs/kafka-clients-3.9.0.jar:/opt/kafka/bin/../libs/kafka-group-coordinator-3.9.0.jar:/opt/kafka/bin/../libs/kafka-group-coordinator-api-3.9.0.jar:/opt/kafka/bin/../libs/kafka-kubernetes-config-provider-1.2.0.jar:/opt/kafka/bin/../libs/kafka-metadata-3.9.0.jar:/opt/kafka/bin/../libs/kafka-oauth-client-0.16.2.jar:/opt/kafka/bin/../libs/kafka-oauth-common-0.16.2.jar:/opt/kafka/bin/../libs/kafka-oauth-keycloak-authorizer-0.16.2.jar:/opt/kafka/bin/../libs/kafka-oauth-server-0.16.2.jar:/opt/kafka/bin/../libs/kafka-oauth-server-plain-0.16.2.jar:/opt/kafka/bin/../libs/kafka-quotas-plugin-0.3.1.jar:/opt/kafka/bin/../libs/kafka-raft-3.9.0.jar:/opt/kafka/bin/../libs/kafka-server-3.9.0.jar:/opt/kafka/bin/../libs/kafka-server-common-3.9.0.jar:/opt/kafka/bin/../libs/kafka-shell-3.9.0.jar:/opt/kafka/bin/../libs/kafka-storage-3.9.0.jar:/opt/kafka/bin/../libs/kafka-storage-api-3.9.0.jar:/opt/kafka/bin/../libs/kafka-streams-3.9.0.jar:/opt/kafka/bin/../libs/kafka-streams-examples-3.9.0.jar:/opt/kafka/bin/../libs/kafka-streams-scala_2.13-3.9.0.jar:/opt/kafka/bin/../libs/kafka-streams-test-utils-3.9.0.jar:/opt/kafka/bin/../libs/kafka-tools-3.9.0.jar:/opt/kafka/bin/../libs/kafka-tools-api-3.9.0.jar:/opt/kafka/bin/../libs/kafka-transaction-coordinator-3.9.0.jar:/opt/kafka/bin/../libs/kafka_2.13-3.9.0.jar:/opt/kafka/bin/../libs/kubernetes-client-6.13.4.jar:/opt/kafka/bin/../libs/kubernetes-client-api-6.13.4.jar:/opt/kafka/bin/../libs/kubernetes-httpclient-jdk-6.13.4.jar:/opt/kafka/bin/../libs/kubernetes-model-apps-6.13.4.jar:/opt/kafka/bin/../libs/kubernetes-model-batch-6.13.4.jar:/opt/kafka/bin/../libs/kubernetes-model-certificates-6.13.4.jar:/opt/kafka/bin/../libs/kubernetes-model-common-6.13.4.jar:/opt/kafka/bin/../libs/kubernetes-model-core-6.13.4.jar:/opt/kafka/bin/../libs/kubernetes-model-extensions-6.13.4.jar:/opt/kafka/bin/../libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:/opt/kafka/bin/../libs/lz4-java-1.8.0.jar:/opt/kafka/bin/../libs/maven-artifact-3.9.6.jar:/opt/kafka/bin/../libs/metrics-core-2.2.0.jar:/opt/kafka/bin/../libs/metrics-core-4.1.12.1.jar:/opt/kafka/bin/../libs/netty-buffer-4.1.111.Final.jar:/opt/kafka/bin/../libs/netty-codec-4.1.111.Final.jar:/opt/kafka/bin/../libs/netty-common-4.1.111.Final.jar:/opt/kafka/bin/../libs/netty-handler-4.1.111.Final.jar:/opt/kafka/bin/../libs/netty-resolver-4.1.111.Final.jar:/opt/kafka/bin/../libs/netty-transport-4.1.111.Final.jar:/opt/kafka/bin/../libs/netty-transport-classes-epoll-4.1.111.Final.jar:/opt/kafka/bin/../libs/netty-transport-native-epoll-4.1.111.Final.jar:/opt/kafka/bin/../libs/netty-transport-native-unix-common-4.1.111.Final.jar:/opt/kafka/bin/../libs/nimbus-jose-jwt-9.37.2.jar:/opt/kafka/bin/../libs/opa-authorizer-1.5.1.jar:/opt/kafka/bin/../libs/opentelemetry-api-1.32.0.jar:/opt/kafka/bin/../libs/opentelemetry-api-events-1.34.1-alpha.jar:/opt/kafka/bin/../libs/opentelemetry-context-1.32.0.jar:/opt/kafka/bin/../libs/opentelemetry-exporter-common-1.34.1.jar:/opt/kafka/bin/../libs/opentelemetry-exporter-otlp-1.34.1.jar:/opt/kafka/bin/../libs/opentelemetry-exporter-otlp-common-1.34.1.jar:/opt/kafka/bin/../libs/opentelemetry-exporter-sender-grpc-managed-channel-1.34.1.jar:/opt/kafka/bin/../libs/opentelemetry-exporter-sender-jdk-1.34.1-alpha.jar:/opt/kafka/bin/../libs/opentelemetry-extension-incubator-1.32.0-alpha.jar:/opt/kafka/bin/../libs/opentelemetry-instrumentation-api-1.32.0.jar:/opt/kafka/bin/../libs/opentelemetry-instrumentation-api-semconv-1.32.0-alpha.jar:/opt/kafka/bin/../libs/opentelemetry-kafka-clients-2.6-1.32.0-alpha.jar:/opt/kafka/bin/../libs/opentelemetry-kafka-clients-common-1.32.0-alpha.jar:/opt/kafka/bin/../libs/opentelemetry-proto-1.0.0-alpha.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-1.34.1.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-common-1.34.1.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-extension-autoconfigure-1.34.1.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-extension-autoconfigure-spi-1.34.1.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-logs-1.34.1.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-metrics-1.34.1.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-trace-1.34.1.jar:/opt/kafka/bin/../libs/opentelemetry-semconv-1.21.0-alpha.jar:/opt/kafka/bin/../libs/osgi-resource-locator-1.0.3.jar:/opt/kafka/bin/../libs/paranamer-2.8.jar:/opt/kafka/bin/../libs/pcollections-4.0.1.jar:/opt/kafka/bin/../libs/perfmark-api-0.26.0.jar:/opt/kafka/bin/../libs/plexus-utils-3.5.1.jar:/opt/kafka/bin/../libs/protobuf-java-3.25.5.jar:/opt/kafka/bin/../libs/reflections-0.10.2.jar:/opt/kafka/bin/../libs/reload4j-1.2.25.jar:/opt/kafka/bin/../libs/rocksdbjni-7.9.2.jar:/opt/kafka/bin/../libs/scala-collection-compat_2.13-2.10.0.jar:/opt/kafka/bin/../libs/scala-java8-compat_2.13-1.0.2.jar:/opt/kafka/bin/../libs/scala-library-2.13.14.jar:/opt/kafka/bin/../libs/scala-logging_2.13-3.9.5.jar:/opt/kafka/bin/../libs/scala-reflect-2.13.14.jar:/opt/kafka/bin/../libs/slf4j-api-1.7.36.jar:/opt/kafka/bin/../libs/slf4j-reload4j-1.7.36.jar:/opt/kafka/bin/../libs/snakeyaml-2.2.jar:/opt/kafka/bin/../libs/snakeyaml-engine-2.7.jar:/opt/kafka/bin/../libs/snappy-java-1.1.10.5.jar:/opt/kafka/bin/../libs/spotbugs-annotations-4.7.2.jar:/opt/kafka/bin/../libs/swagger-annotations-2.2.8.jar:/opt/kafka/bin/../libs/tracing-agent-0.46.1.jar:/opt/kafka/bin/../libs/trogdor-3.9.0.jar:/opt/kafka/bin/../libs/zjsonpatch-0.3.0.jar:/opt/kafka/bin/../libs/zookeeper-3.8.4.jar:/opt/kafka/bin/../libs/zookeeper-jute-3.8.4.jar:/opt/kafka/bin/../libs/zstd-jni-1.5.6-4.jar
+	os.spec = Linux, amd64, 5.14.0-427.87.1.el9_4.x86_64
+	os.vcpus = 4
+ (org.apache.kafka.connect.runtime.WorkerInfo) [main]
+2025-12-24 09:03:59,608 INFO Scanning for plugin classes. This might take a moment ... (org.apache.kafka.connect.cli.AbstractConnectCli) [main]
+2025-12-24 09:03:59,649 INFO Loading plugin from: /opt/kafka/plugins/ibm-mq (org.apache.kafka.connect.runtime.isolation.PluginScanner) [main]
+2025-12-24 09:04:00,107 INFO Registered loader: PluginClassLoader{pluginLocation=file:/opt/kafka/plugins/ibm-mq/} (org.apache.kafka.connect.runtime.isolation.PluginScanner) [main]
+2025-12-24 09:04:00,110 INFO Loading plugin from: classpath (org.apache.kafka.connect.runtime.isolation.PluginScanner) [main]
+2025-12-24 09:04:00,161 INFO Registered loader: jdk.internal.loader.ClassLoaders$AppClassLoader@2b2fa4f7 (org.apache.kafka.connect.runtime.isolation.PluginScanner) [main]
+2025-12-24 09:04:00,162 INFO Scanning plugins with ServiceLoaderScanner took 515 ms (org.apache.kafka.connect.runtime.isolation.PluginScanner) [main]
+2025-12-24 09:04:00,166 INFO Loading plugin from: /opt/kafka/plugins/ibm-mq (org.apache.kafka.connect.runtime.isolation.PluginScanner) [main]
+2025-12-24 09:04:02,371 INFO Registered loader: PluginClassLoader{pluginLocation=file:/opt/kafka/plugins/ibm-mq/} (org.apache.kafka.connect.runtime.isolation.PluginScanner) [main]
+2025-12-24 09:04:02,372 INFO Loading plugin from: classpath (org.apache.kafka.connect.runtime.isolation.PluginScanner) [main]
+2025-12-24 09:04:04,717 INFO Registered loader: jdk.internal.loader.ClassLoaders$AppClassLoader@2b2fa4f7 (org.apache.kafka.connect.runtime.isolation.PluginScanner) [main]
+2025-12-24 09:04:04,717 INFO Scanning plugins with ReflectionScanner took 4551 ms (org.apache.kafka.connect.runtime.isolation.PluginScanner) [main]
+2025-12-24 09:04:04,724 WARN One or more plugins are missing ServiceLoader manifests may not be usable with plugin.discovery=service_load: [
+file:/opt/kafka/plugins/ibm-mq/	com.ibm.eventstreams.connect.mqsink.MQSinkConnector	sink	2.2.1
+file:/opt/kafka/plugins/ibm-mq/	com.ibm.eventstreams.connect.mqsource.MQSourceConnector	source	2.6.0
+]
+Read the documentation at https://kafka.apache.org/documentation.html#connect_plugindiscovery for instructions on migrating your plugins to take advantage of the performance improvements of service_load mode. To silence this warning, set plugin.discovery=only_scan in the worker config. (org.apache.kafka.connect.runtime.isolation.Plugins) [main]
+2025-12-24 09:04:04,726 INFO Added plugin 'org.apache.kafka.connect.transforms.ReplaceField$Key' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,726 INFO Added plugin 'org.apache.kafka.connect.transforms.Filter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,726 INFO Added plugin 'org.apache.kafka.connect.mirror.MirrorSourceConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,726 INFO Added plugin 'org.apache.kafka.connect.transforms.InsertField$Value' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,726 INFO Added plugin 'org.apache.kafka.connect.converters.DoubleConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,726 INFO Added plugin 'org.apache.kafka.connect.connector.policy.AllConnectorClientConfigOverridePolicy' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,726 INFO Added plugin 'org.apache.kafka.connect.connector.policy.PrincipalConnectorClientConfigOverridePolicy' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,726 INFO Added plugin 'org.apache.kafka.connect.transforms.DropHeaders' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,726 INFO Added plugin 'org.apache.kafka.connect.transforms.Cast$Key' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.storage.SimpleHeaderConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.transforms.InsertHeader' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.common.config.provider.DirectoryConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.transforms.Flatten$Key' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.mirror.MirrorCheckpointConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.transforms.HeaderFrom$Value' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.transforms.SetSchemaMetadata$Key' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.transforms.predicates.TopicNameMatches' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.transforms.ReplaceField$Value' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.transforms.SetSchemaMetadata$Value' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.converters.IntegerConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.transforms.predicates.RecordIsTombstone' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.connector.policy.NoneConnectorClientConfigOverridePolicy' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.converters.ByteArrayConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.transforms.Cast$Value' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.transforms.Flatten$Value' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.rest.basic.auth.extension.BasicAuthSecurityRestExtension' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,727 INFO Added plugin 'org.apache.kafka.connect.transforms.ExtractField$Value' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.TimestampConverter$Value' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'io.strimzi.kafka.KubernetesConfigMapConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.converters.FloatConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.TimestampConverter$Key' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'com.ibm.eventstreams.connect.mqsource.MQSourceConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.TimestampRouter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.RegexRouter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.HoistField$Value' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.ValueToKey' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.converters.LongConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.common.config.provider.FileConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.json.JsonConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.HeaderFrom$Key' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.predicates.HasHeaderKey' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.MaskField$Value' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.common.config.provider.EnvVarConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'com.ibm.eventstreams.connect.mqsink.MQSinkConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.storage.StringConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.MaskField$Key' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.ExtractField$Key' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,728 INFO Added plugin 'org.apache.kafka.connect.transforms.InsertField$Key' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,729 INFO Added plugin 'org.apache.kafka.connect.converters.BooleanConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,729 INFO Added plugin 'io.strimzi.kafka.KubernetesSecretConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,729 INFO Added plugin 'org.apache.kafka.connect.mirror.MirrorHeartbeatConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,729 INFO Added plugin 'org.apache.kafka.connect.transforms.HoistField$Key' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,729 INFO Added plugin 'org.apache.kafka.connect.converters.ShortConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,733 INFO Added alias 'RecordIsTombstone' to plugin 'org.apache.kafka.connect.transforms.predicates.RecordIsTombstone' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,733 INFO Added alias 'String' to plugin 'org.apache.kafka.connect.storage.StringConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,733 INFO Added alias 'EnvVar' to plugin 'org.apache.kafka.common.config.provider.EnvVarConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,733 INFO Added alias 'EnvVarConfigProvider' to plugin 'org.apache.kafka.common.config.provider.EnvVarConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,733 INFO Added alias 'MirrorCheckpointConnector' to plugin 'org.apache.kafka.connect.mirror.MirrorCheckpointConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,733 INFO Added alias 'Boolean' to plugin 'org.apache.kafka.connect.converters.BooleanConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,733 INFO Added alias 'KubernetesSecret' to plugin 'io.strimzi.kafka.KubernetesSecretConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,733 INFO Added alias 'Json' to plugin 'org.apache.kafka.connect.json.JsonConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'StringConverter' to plugin 'org.apache.kafka.connect.storage.StringConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'IntegerConverter' to plugin 'org.apache.kafka.connect.converters.IntegerConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'Float' to plugin 'org.apache.kafka.connect.converters.FloatConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'LongConverter' to plugin 'org.apache.kafka.connect.converters.LongConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'DropHeaders' to plugin 'org.apache.kafka.connect.transforms.DropHeaders' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'SimpleHeaderConverter' to plugin 'org.apache.kafka.connect.storage.SimpleHeaderConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'DirectoryConfigProvider' to plugin 'org.apache.kafka.common.config.provider.DirectoryConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'ShortConverter' to plugin 'org.apache.kafka.connect.converters.ShortConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'KubernetesSecretConfigProvider' to plugin 'io.strimzi.kafka.KubernetesSecretConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'BasicAuthSecurityRestExtension' to plugin 'org.apache.kafka.connect.rest.basic.auth.extension.BasicAuthSecurityRestExtension' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'KubernetesConfigMapConfigProvider' to plugin 'io.strimzi.kafka.KubernetesConfigMapConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'Simple' to plugin 'org.apache.kafka.connect.storage.SimpleHeaderConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,734 INFO Added alias 'AllConnectorClientConfigOverridePolicy' to plugin 'org.apache.kafka.connect.connector.policy.AllConnectorClientConfigOverridePolicy' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'MirrorSource' to plugin 'org.apache.kafka.connect.mirror.MirrorSourceConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'MQSink' to plugin 'com.ibm.eventstreams.connect.mqsink.MQSinkConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'MQSource' to plugin 'com.ibm.eventstreams.connect.mqsource.MQSourceConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'Directory' to plugin 'org.apache.kafka.common.config.provider.DirectoryConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'MirrorHeartbeat' to plugin 'org.apache.kafka.connect.mirror.MirrorHeartbeatConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'BooleanConverter' to plugin 'org.apache.kafka.connect.converters.BooleanConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'HasHeaderKey' to plugin 'org.apache.kafka.connect.transforms.predicates.HasHeaderKey' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'MirrorCheckpoint' to plugin 'org.apache.kafka.connect.mirror.MirrorCheckpointConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'None' to plugin 'org.apache.kafka.connect.connector.policy.NoneConnectorClientConfigOverridePolicy' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'TimestampRouter' to plugin 'org.apache.kafka.connect.transforms.TimestampRouter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'Principal' to plugin 'org.apache.kafka.connect.connector.policy.PrincipalConnectorClientConfigOverridePolicy' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'All' to plugin 'org.apache.kafka.connect.connector.policy.AllConnectorClientConfigOverridePolicy' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'JsonConverter' to plugin 'org.apache.kafka.connect.json.JsonConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'RegexRouter' to plugin 'org.apache.kafka.connect.transforms.RegexRouter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'ByteArray' to plugin 'org.apache.kafka.connect.converters.ByteArrayConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'NoneConnectorClientConfigOverridePolicy' to plugin 'org.apache.kafka.connect.connector.policy.NoneConnectorClientConfigOverridePolicy' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'Short' to plugin 'org.apache.kafka.connect.converters.ShortConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'Double' to plugin 'org.apache.kafka.connect.converters.DoubleConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'FileConfigProvider' to plugin 'org.apache.kafka.common.config.provider.FileConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,735 INFO Added alias 'Long' to plugin 'org.apache.kafka.connect.converters.LongConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'File' to plugin 'org.apache.kafka.common.config.provider.FileConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'FloatConverter' to plugin 'org.apache.kafka.connect.converters.FloatConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'ByteArrayConverter' to plugin 'org.apache.kafka.connect.converters.ByteArrayConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'DoubleConverter' to plugin 'org.apache.kafka.connect.converters.DoubleConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'MQSourceConnector' to plugin 'com.ibm.eventstreams.connect.mqsource.MQSourceConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'MQSinkConnector' to plugin 'com.ibm.eventstreams.connect.mqsink.MQSinkConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'TopicNameMatches' to plugin 'org.apache.kafka.connect.transforms.predicates.TopicNameMatches' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'MirrorHeartbeatConnector' to plugin 'org.apache.kafka.connect.mirror.MirrorHeartbeatConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'InsertHeader' to plugin 'org.apache.kafka.connect.transforms.InsertHeader' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'KubernetesConfigMap' to plugin 'io.strimzi.kafka.KubernetesConfigMapConfigProvider' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'MirrorSourceConnector' to plugin 'org.apache.kafka.connect.mirror.MirrorSourceConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'PrincipalConnectorClientConfigOverridePolicy' to plugin 'org.apache.kafka.connect.connector.policy.PrincipalConnectorClientConfigOverridePolicy' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'ValueToKey' to plugin 'org.apache.kafka.connect.transforms.ValueToKey' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'Integer' to plugin 'org.apache.kafka.connect.converters.IntegerConverter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,736 INFO Added alias 'Filter' to plugin 'org.apache.kafka.connect.transforms.Filter' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader) [main]
+2025-12-24 09:04:04,812 WARN The path /opt/kafka/init is not a directory (org.apache.kafka.common.config.provider.DirectoryConfigProvider) [main]
+2025-12-24 09:04:04,819 INFO DistributedConfig values: 
+	access.control.allow.methods = 
+	access.control.allow.origin = 
+	admin.listeners = null
+	auto.include.jmx.reporter = true
+	bootstrap.servers = [dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093]
+	client.dns.lookup = use_all_dns_ips
+	client.id = 
+	config.providers = [strimzienv, strimzifile, strimzidir]
+	config.storage.replication.factor = -1
+	config.storage.topic = dev-connect-cluster-configs
+	connect.protocol = sessioned
+	connections.max.idle.ms = 540000
+	connector.client.config.override.policy = All
+	exactly.once.source.support = disabled
+	group.id = dev-connect-cluster
+	header.converter = class org.apache.kafka.connect.storage.SimpleHeaderConverter
+	heartbeat.interval.ms = 3000
+	inter.worker.key.generation.algorithm = HmacSHA256
+	inter.worker.key.size = null
+	inter.worker.key.ttl.ms = 3600000
+	inter.worker.signature.algorithm = HmacSHA256
+	inter.worker.verification.algorithms = [HmacSHA256]
+	key.converter = class org.apache.kafka.connect.storage.StringConverter
+	listeners = [http://:8083]
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	offset.flush.interval.ms = 10000
+	offset.flush.timeout.ms = 5000
+	offset.storage.partitions = 25
+	offset.storage.replication.factor = -1
+	offset.storage.topic = dev-connect-cluster-offsets
+	plugin.discovery = hybrid_warn
+	plugin.path = [/opt/kafka/plugins]
+	rebalance.timeout.ms = 60000
+	receive.buffer.bytes = 32768
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 40000
+	response.http.headers.config = 
+	rest.advertised.host.name = dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc
+	rest.advertised.listener = null
+	rest.advertised.port = 8083
+	rest.extension.classes = []
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	scheduled.rebalance.max.delay.ms = 300000
+	security.protocol = SSL
+	send.buffer.bytes = 131072
+	session.timeout.ms = 10000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.client.auth = none
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = /tmp/kafka/cluster.truststore.p12
+	ssl.truststore.password = [hidden]
+	ssl.truststore.type = PKCS12
+	status.storage.partitions = 5
+	status.storage.replication.factor = -1
+	status.storage.topic = dev-connect-cluster-status
+	task.shutdown.graceful.timeout.ms = 5000
+	topic.creation.enable = true
+	topic.tracking.allow.reset = true
+	topic.tracking.enable = true
+	value.converter = class org.apache.kafka.connect.converters.ByteArrayConverter
+	worker.sync.timeout.ms = 3000
+	worker.unsync.backoff.ms = 300000
+ (org.apache.kafka.connect.runtime.distributed.DistributedConfig) [main]
+2025-12-24 09:04:04,821 INFO Creating Kafka admin client (org.apache.kafka.connect.runtime.WorkerConfig) [main]
+2025-12-24 09:04:04,825 INFO AdminClientConfig values: 
+	auto.include.jmx.reporter = true
+	bootstrap.controllers = []
+	bootstrap.servers = [dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093]
+	client.dns.lookup = use_all_dns_ips
+	client.id = 
+	connections.max.idle.ms = 300000
+	default.api.timeout.ms = 60000
+	enable.metrics.push = true
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 2147483647
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = SSL
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = /tmp/kafka/cluster.truststore.p12
+	ssl.truststore.password = [hidden]
+	ssl.truststore.type = PKCS12
+ (org.apache.kafka.clients.admin.AdminClientConfig) [main]
+2025-12-24 09:04:05,134 INFO These configurations '[producer.ssl.truststore.password, group.id, rest.advertised.port, plugin.path, admin.security.protocol, config.providers.strimzifile.class, consumer.ssl.truststore.location, producer.ssl.truststore.location, config.providers.strimzienv.param.allowlist.pattern, status.storage.replication.factor, config.providers.strimzidir.class, offset.storage.topic, consumer.security.protocol, value.converter, key.converter, admin.ssl.truststore.password, consumer.ssl.truststore.password, consumer.client.rack, config.storage.topic, producer.security.protocol, rest.advertised.host.name, status.storage.topic, offset.flush.timeout.ms, config.storage.replication.factor, offset.flush.interval.ms, value.converter.schemas.enable, offset.storage.replication.factor, config.providers.strimzidir.param.allowed.paths, config.providers.strimzienv.class, admin.ssl.truststore.location]' were supplied but are not used yet. (org.apache.kafka.clients.admin.AdminClientConfig) [main]
+2025-12-24 09:04:05,135 INFO Kafka version: 3.9.0 (org.apache.kafka.common.utils.AppInfoParser) [main]
+2025-12-24 09:04:05,136 INFO Kafka commitId: a60e31147e6b01ee (org.apache.kafka.common.utils.AppInfoParser) [main]
+2025-12-24 09:04:05,136 INFO Kafka startTimeMs: 1766567045135 (org.apache.kafka.common.utils.AppInfoParser) [main]
+2025-12-24 09:04:06,019 INFO Kafka cluster ID: 3aEx1xmUSTWs8xSplBnYtA (org.apache.kafka.connect.runtime.WorkerConfig) [main]
+2025-12-24 09:04:06,021 INFO App info kafka.admin.client for adminclient-1 unregistered (org.apache.kafka.common.utils.AppInfoParser) [kafka-admin-client-thread | adminclient-1]
+2025-12-24 09:04:06,036 INFO Metrics scheduler closed (org.apache.kafka.common.metrics.Metrics) [kafka-admin-client-thread | adminclient-1]
+2025-12-24 09:04:06,036 INFO Closing reporter org.apache.kafka.common.metrics.JmxReporter (org.apache.kafka.common.metrics.Metrics) [kafka-admin-client-thread | adminclient-1]
+2025-12-24 09:04:06,036 INFO Metrics reporters closed (org.apache.kafka.common.metrics.Metrics) [kafka-admin-client-thread | adminclient-1]
+2025-12-24 09:04:06,047 INFO PublicConfig values: 
+	access.control.allow.methods = 
+	access.control.allow.origin = 
+	admin.listeners = null
+	listeners = [http://:8083]
+	response.http.headers.config = 
+	rest.advertised.host.name = dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc
+	rest.advertised.listener = null
+	rest.advertised.port = 8083
+	rest.extension.classes = []
+	ssl.cipher.suites = null
+	ssl.client.auth = none
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = /tmp/kafka/cluster.truststore.p12
+	ssl.truststore.password = [hidden]
+	ssl.truststore.type = PKCS12
+	topic.tracking.allow.reset = true
+	topic.tracking.enable = true
+ (org.apache.kafka.connect.runtime.rest.RestServerConfig$PublicConfig) [main]
+2025-12-24 09:04:06,059 INFO Logging initialized @7194ms to org.eclipse.jetty.util.log.Slf4jLog (org.eclipse.jetty.util.log) [main]
+2025-12-24 09:04:06,116 INFO Added connector for http://:8083 (org.apache.kafka.connect.runtime.rest.RestServer) [main]
+2025-12-24 09:04:06,117 INFO Initializing REST server (org.apache.kafka.connect.runtime.rest.RestServer) [main]
+2025-12-24 09:04:06,153 INFO jetty-9.4.56.v20240826; built: 2024-08-26T17:15:05.868Z; git: ec6782ff5ead824dabdcf47fa98f90a4aedff401; jvm 17.0.15+6-LTS (org.eclipse.jetty.server.Server) [main]
+2025-12-24 09:04:06,190 INFO Started http_8083@aac61f0{HTTP/1.1, (http/1.1)}{0.0.0.0:8083} (org.eclipse.jetty.server.AbstractConnector) [main]
+2025-12-24 09:04:06,191 INFO Started @7326ms (org.eclipse.jetty.server.Server) [main]
+2025-12-24 09:04:06,224 INFO Advertised URI: http://dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083/ (org.apache.kafka.connect.runtime.rest.RestServer) [main]
+2025-12-24 09:04:06,225 INFO REST server listening at http://172.16.17.126:8083/, advertising URL http://dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083/ (org.apache.kafka.connect.runtime.rest.RestServer) [main]
+2025-12-24 09:04:06,225 INFO Advertised URI: http://dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083/ (org.apache.kafka.connect.runtime.rest.RestServer) [main]
+2025-12-24 09:04:06,225 INFO REST admin endpoints at http://dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083/ (org.apache.kafka.connect.runtime.rest.RestServer) [main]
+2025-12-24 09:04:06,225 INFO Advertised URI: http://dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083/ (org.apache.kafka.connect.runtime.rest.RestServer) [main]
+2025-12-24 09:04:06,226 INFO Setting up All Policy for ConnectorClientConfigOverride. This will allow all client configurations to be overridden (org.apache.kafka.connect.connector.policy.AllConnectorClientConfigOverridePolicy) [main]
+2025-12-24 09:04:06,234 INFO JsonConverterConfig values: 
+	converter.type = key
+	decimal.format = BASE64
+	replace.null.with.default = true
+	schemas.cache.size = 1000
+	schemas.enable = false
+ (org.apache.kafka.connect.json.JsonConverterConfig) [main]
+2025-12-24 09:04:06,258 INFO Kafka version: 3.9.0 (org.apache.kafka.common.utils.AppInfoParser) [main]
+2025-12-24 09:04:06,258 INFO Kafka commitId: a60e31147e6b01ee (org.apache.kafka.common.utils.AppInfoParser) [main]
+2025-12-24 09:04:06,258 INFO Kafka startTimeMs: 1766567046258 (org.apache.kafka.common.utils.AppInfoParser) [main]
+2025-12-24 09:04:06,268 INFO JsonConverterConfig values: 
+	converter.type = key
+	decimal.format = BASE64
+	replace.null.with.default = true
+	schemas.cache.size = 1000
+	schemas.enable = false
+ (org.apache.kafka.connect.json.JsonConverterConfig) [main]
+2025-12-24 09:04:06,269 INFO JsonConverterConfig values: 
+	converter.type = value
+	decimal.format = BASE64
+	replace.null.with.default = true
+	schemas.cache.size = 1000
+	schemas.enable = false
+ (org.apache.kafka.connect.json.JsonConverterConfig) [main]
+2025-12-24 09:04:06,295 INFO Advertised URI: http://dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083/ (org.apache.kafka.connect.runtime.rest.RestServer) [main]
+2025-12-24 09:04:06,380 INFO Kafka version: 3.9.0 (org.apache.kafka.common.utils.AppInfoParser) [main]
+2025-12-24 09:04:06,380 INFO Kafka commitId: a60e31147e6b01ee (org.apache.kafka.common.utils.AppInfoParser) [main]
+2025-12-24 09:04:06,380 INFO Kafka startTimeMs: 1766567046380 (org.apache.kafka.common.utils.AppInfoParser) [main]
+2025-12-24 09:04:06,384 INFO Kafka Connect worker initialization took 6782ms (org.apache.kafka.connect.cli.AbstractConnectCli) [main]
+2025-12-24 09:04:06,384 INFO Kafka Connect starting (org.apache.kafka.connect.runtime.Connect) [main]
+2025-12-24 09:04:06,388 INFO Initializing REST resources (org.apache.kafka.connect.runtime.rest.RestServer) [main]
+2025-12-24 09:04:06,389 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Herder starting (org.apache.kafka.connect.runtime.distributed.DistributedHerder) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-24 09:04:06,392 INFO Worker starting (org.apache.kafka.connect.runtime.Worker) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-24 09:04:06,392 INFO Starting KafkaOffsetBackingStore (org.apache.kafka.connect.storage.KafkaOffsetBackingStore) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-24 09:04:06,392 INFO Starting KafkaBasedLog with topic dev-connect-cluster-offsets reportErrorsToCallback=false (org.apache.kafka.connect.util.KafkaBasedLog) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-24 09:04:06,393 INFO AdminClientConfig values: 
+	auto.include.jmx.reporter = true
+	bootstrap.controllers = []
+	bootstrap.servers = [dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093]
+	client.dns.lookup = use_all_dns_ips
+	client.id = dev-connect-cluster-shared-admin
+	connections.max.idle.ms = 300000
+	default.api.timeout.ms = 60000
+	enable.metrics.push = true
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 2147483647
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = SSL
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = /tmp/kafka/cluster.truststore.p12
+	ssl.truststore.password = [hidden]
+	ssl.truststore.type = PKCS12
+ (org.apache.kafka.clients.admin.AdminClientConfig) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-24 09:04:06,414 INFO These configurations '[producer.ssl.truststore.password, group.id, rest.advertised.port, plugin.path, admin.security.protocol, config.providers.strimzifile.class, consumer.ssl.truststore.location, producer.ssl.truststore.location, metrics.context.connect.kafka.cluster.id, config.providers.strimzienv.param.allowlist.pattern, status.storage.replication.factor, config.providers.strimzidir.class, offset.storage.topic, consumer.security.protocol, value.converter, key.converter, admin.ssl.truststore.password, consumer.ssl.truststore.password, consumer.client.rack, config.storage.topic, producer.security.protocol, metrics.context.connect.group.id, rest.advertised.host.name, status.storage.topic, offset.flush.timeout.ms, config.storage.replication.factor, offset.flush.interval.ms, value.converter.schemas.enable, offset.storage.replication.factor, config.providers.strimzidir.param.allowed.paths, config.providers.strimzienv.class, admin.ssl.truststore.location]' were supplied but are not used yet. (org.apache.kafka.clients.admin.AdminClientConfig) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-24 09:04:06,414 INFO Kafka version: 3.9.0 (org.apache.kafka.common.utils.AppInfoParser) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-24 09:04:06,414 INFO Kafka commitId: a60e31147e6b01ee (org.apache.kafka.common.utils.AppInfoParser) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-24 09:04:06,414 INFO Kafka startTimeMs: 1766567046414 (org.apache.kafka.common.utils.AppInfoParser) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-24 09:04:06,435 INFO Adding admin resources to main listener (org.apache.kafka.connect.runtime.rest.RestServer) [main]
+2025-12-24 09:04:06,489 INFO DefaultSessionIdManager workerName=node0 (org.eclipse.jetty.server.session) [main]
+2025-12-24 09:04:06,489 INFO No SessionScavenger set, using defaults (org.eclipse.jetty.server.session) [main]
+2025-12-24 09:04:06,490 INFO node0 Scavenging every 660000ms (org.eclipse.jetty.server.session) [main]
+2025-12-24 09:04:06,519 INFO ProducerConfig values: 
+	acks = -1
+	auto.include.jmx.reporter = true
+	batch.size = 16384
+	bootstrap.servers = [dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093]
+	buffer.memory = 33554432
+	client.dns.lookup = use_all_dns_ips
+	client.id = dev-connect-cluster-offsets
+	compression.gzip.level = -1
+	compression.lz4.level = 9
+	compression.type = none
+	compression.zstd.level = 3
+	connections.max.idle.ms = 540000
+	delivery.timeout.ms = 2147483647
+	enable.idempotence = false
+	enable.metrics.push = true
+	interceptor.classes = []
+	key.serializer = class org.apache.kafka.common.serialization.ByteArraySerializer
+	linger.ms = 0
+
+
+
+
+
+
+
+2025-12-26 09:36:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:36:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-269]
+2025-12-26 09:36:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:36:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:36:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:36:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:36:51,157 INFO 172.16.16.2 - - [26/Dec/2025:09:36:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:37:01,157 INFO 172.16.16.2 - - [26/Dec/2025:09:37:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-269]
+2025-12-26 09:37:01,157 INFO 172.16.16.2 - - [26/Dec/2025:09:37:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:37:11,156 INFO 172.16.16.2 - - [26/Dec/2025:09:37:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:37:11,156 INFO 172.16.16.2 - - [26/Dec/2025:09:37:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:37:21,156 INFO 172.16.16.2 - - [26/Dec/2025:09:37:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:37:21,157 INFO 172.16.16.2 - - [26/Dec/2025:09:37:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:37:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:37:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:37:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:37:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-269]
+2025-12-26 09:37:41,158 INFO 172.16.16.2 - - [26/Dec/2025:09:37:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:37:41,158 INFO 172.16.16.2 - - [26/Dec/2025:09:37:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:37:51,157 INFO 172.16.16.2 - - [26/Dec/2025:09:37:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-269]
+2025-12-26 09:37:51,157 INFO 172.16.16.2 - - [26/Dec/2025:09:37:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:37:54,244 INFO 172.16.20.158 - - [26/Dec/2025:09:37:54 +0000] "GET /admin/loggers/ HTTP/1.1" 200 103 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:38:01,156 INFO 172.16.16.2 - - [26/Dec/2025:09:38:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:38:01,156 INFO 172.16.16.2 - - [26/Dec/2025:09:38:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:38:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:38:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-269]
+2025-12-26 09:38:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:38:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:38:21,158 INFO 172.16.16.2 - - [26/Dec/2025:09:38:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:38:21,159 INFO 172.16.16.2 - - [26/Dec/2025:09:38:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:38:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:38:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:38:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:38:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:38:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:38:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:38:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:38:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-269]
+2025-12-26 09:38:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:38:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:38:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:38:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-269]
+2025-12-26 09:39:01,156 INFO 172.16.16.2 - - [26/Dec/2025:09:39:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:39:01,156 INFO 172.16.16.2 - - [26/Dec/2025:09:39:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:39:11,156 INFO 172.16.16.2 - - [26/Dec/2025:09:39:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:39:11,156 INFO 172.16.16.2 - - [26/Dec/2025:09:39:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-269]
+2025-12-26 09:39:21,157 INFO 172.16.16.2 - - [26/Dec/2025:09:39:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:39:21,157 INFO 172.16.16.2 - - [26/Dec/2025:09:39:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:39:31,158 INFO 172.16.16.2 - - [26/Dec/2025:09:39:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:39:31,158 INFO 172.16.16.2 - - [26/Dec/2025:09:39:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:39:41,158 INFO 172.16.16.2 - - [26/Dec/2025:09:39:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:39:41,158 INFO 172.16.16.2 - - [26/Dec/2025:09:39:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:39:51,157 INFO 172.16.16.2 - - [26/Dec/2025:09:39:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:39:51,157 INFO 172.16.16.2 - - [26/Dec/2025:09:39:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:39:54,231 INFO 172.16.20.158 - - [26/Dec/2025:09:39:54 +0000] "GET /connector-plugins HTTP/1.1" 200 506 "-" "Java-http-client/17.0.16" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:39:54,256 INFO 172.16.20.158 - - [26/Dec/2025:09:39:54 +0000] "GET /connectors HTTP/1.1" 200 33 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:39:54,451 INFO 172.16.20.158 - - [26/Dec/2025:09:39:54 +0000] "GET /connectors/neft-mq-sink/config HTTP/1.1" 200 522 "-" "Java-http-client/17.0.16" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:39:54,454 INFO 172.16.20.158 - - [26/Dec/2025:09:39:54 +0000] "GET /connectors/neft-mq-source/config HTTP/1.1" 200 521 "-" "Java-http-client/17.0.16" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:39:54,454 INFO 172.16.20.158 - - [26/Dec/2025:09:39:54 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 312 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:39:54,456 INFO 172.16.20.158 - - [26/Dec/2025:09:39:54 +0000] "GET /connectors/neft-mq-source/status HTTP/1.1" 200 316 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:39:54,456 INFO 172.16.20.158 - - [26/Dec/2025:09:39:54 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 312 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:39:54,458 INFO 172.16.20.158 - - [26/Dec/2025:09:39:54 +0000] "GET /connectors/neft-mq-source/status HTTP/1.1" 200 316 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:39:54,458 INFO 172.16.20.158 - - [26/Dec/2025:09:39:54 +0000] "GET /connectors/neft-mq-sink/topics HTTP/1.1" 200 30 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:39:54,461 INFO 172.16.20.158 - - [26/Dec/2025:09:39:54 +0000] "GET /connectors/neft-mq-source/topics HTTP/1.1" 200 54 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:40:01,157 INFO 172.16.16.2 - - [26/Dec/2025:09:40:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:40:01,157 INFO 172.16.16.2 - - [26/Dec/2025:09:40:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:40:08,948 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) is unavailable or invalid due to cause: session timed out without receiving a heartbeat response. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [kafka-coordinator-heartbeat-thread | dev-connect-cluster]
+2025-12-26 09:40:08,949 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Requesting disconnect from last known coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [kafka-coordinator-heartbeat-thread | dev-connect-cluster]
+2025-12-26 09:40:08,949 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Client requested disconnect from node 2147483645 (org.apache.kafka.clients.NetworkClient) [kafka-coordinator-heartbeat-thread | dev-connect-cluster]
+2025-12-26 09:40:08,949 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Cancelled in-flight HEARTBEAT request with correlation id 61072 due to node 2147483645 being disconnected (elapsed time since creation: 9007ms, elapsed time since send: 9007ms, throttle time: 0ms, request timeout: 40000ms) (org.apache.kafka.clients.NetworkClient) [kafka-coordinator-heartbeat-thread | dev-connect-cluster]
+2025-12-26 09:40:08,950 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Cancelled in-flight HEARTBEAT request with correlation id 61073 due to node 2147483645 being disconnected (elapsed time since creation: 6005ms, elapsed time since send: 6005ms, throttle time: 0ms, request timeout: 40000ms) (org.apache.kafka.clients.NetworkClient) [kafka-coordinator-heartbeat-thread | dev-connect-cluster]
+2025-12-26 09:40:08,950 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Cancelled in-flight HEARTBEAT request with correlation id 61074 due to node 2147483645 being disconnected (elapsed time since creation: 3004ms, elapsed time since send: 3004ms, throttle time: 0ms, request timeout: 40000ms) (org.apache.kafka.clients.NetworkClient) [kafka-coordinator-heartbeat-thread | dev-connect-cluster]
+2025-12-26 09:40:08,951 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Discovered group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:08,951 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) is unavailable or invalid due to cause: coordinator unavailable. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:08,951 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Requesting disconnect from last known coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:09,034 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Discovered group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:40:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:40:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:40:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:40:12,041 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Session key updated (org.apache.kafka.connect.runtime.distributed.DistributedHerder) [KafkaBasedLog Work Thread - dev-connect-cluster-configs]
+2025-12-26 09:40:19,055 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) is unavailable or invalid due to cause: session timed out without receiving a heartbeat response. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [kafka-coordinator-heartbeat-thread | dev-connect-cluster]
+2025-12-26 09:40:19,055 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Requesting disconnect from last known coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [kafka-coordinator-heartbeat-thread | dev-connect-cluster]
+2025-12-26 09:40:19,055 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Client requested disconnect from node 2147483645 (org.apache.kafka.clients.NetworkClient) [kafka-coordinator-heartbeat-thread | dev-connect-cluster]
+2025-12-26 09:40:19,056 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Cancelled in-flight HEARTBEAT request with correlation id 61078 due to node 2147483645 being disconnected (elapsed time since creation: 9744ms, elapsed time since send: 2ms, throttle time: 0ms, request timeout: 40000ms) (org.apache.kafka.clients.NetworkClient) [kafka-coordinator-heartbeat-thread | dev-connect-cluster]
+2025-12-26 09:40:19,056 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Cancelled in-flight HEARTBEAT request with correlation id 61079 due to node 2147483645 being disconnected (elapsed time since creation: 6743ms, elapsed time since send: 1ms, throttle time: 0ms, request timeout: 40000ms) (org.apache.kafka.clients.NetworkClient) [kafka-coordinator-heartbeat-thread | dev-connect-cluster]
+2025-12-26 09:40:19,057 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Discovered group coordinator dev-kafka-cluster-broker-0.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483647 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:20,052 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Rebalance started (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:20,052 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] (Re-)joining group (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:23,354 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Successfully joined group with generation Generation{generationId=176, memberId='connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-3a21a646-935b-4a8b-9c1e-36e26bea4b4d', protocol='sessioned'} (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:23,375 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Successfully synced group in generation Generation{generationId=176, memberId='connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-3a21a646-935b-4a8b-9c1e-36e26bea4b4d', protocol='sessioned'} (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:23,375 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Joined group at generation 176 with protocol version 2 and got assignment: Assignment{error=0, leader='connect-dev-kafka-connect-mq-test-connect-2.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-608852ee-91e5-4254-8a43-1b8299298797', leaderUrl='http://dev-kafka-connect-mq-test-connect-2.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083/', offset=74, connectorIds=[neft-mq-source], taskIds=[neft-mq-source-0], revokedConnectorIds=[], revokedTaskIds=[], delay=0} with rebalance delay: 0 (org.apache.kafka.connect.runtime.distributed.DistributedHerder) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:23,375 WARN [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Catching up to assignment's config offset. (org.apache.kafka.connect.runtime.distributed.DistributedHerder) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:23,375 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Current config state offset 73 is behind group assignment 74, reading to end of config log (org.apache.kafka.connect.runtime.distributed.DistributedHerder) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:23,380 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Finished reading to end of log and updated config snapshot, new config log offset: 74 (org.apache.kafka.connect.runtime.distributed.DistributedHerder) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:23,380 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Starting connectors and tasks using config offset 74 (org.apache.kafka.connect.runtime.distributed.DistributedHerder) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:23,380 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Finished starting connectors and tasks (org.apache.kafka.connect.runtime.distributed.DistributedHerder) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:40:23,380 INFO 172.16.16.2 - - [26/Dec/2025:09:40:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2223 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:40:23,380 INFO 172.16.16.2 - - [26/Dec/2025:09:40:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2223 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:40:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:40:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:40:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:40:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:40:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:40:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:40:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:40:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:40:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:40:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:40:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:40:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:41:01,156 INFO 172.16.16.2 - - [26/Dec/2025:09:41:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:41:01,157 INFO 172.16.16.2 - - [26/Dec/2025:09:41:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:41:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:41:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:41:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:41:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:41:21,156 INFO 172.16.16.2 - - [26/Dec/2025:09:41:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:41:21,156 INFO 172.16.16.2 - - [26/Dec/2025:09:41:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:41:31,157 INFO 172.16.16.2 - - [26/Dec/2025:09:41:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:41:31,157 INFO 172.16.16.2 - - [26/Dec/2025:09:41:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:41:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:41:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:41:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:41:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:41:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:41:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:41:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:41:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:41:54,911 INFO 172.16.20.158 - - [26/Dec/2025:09:41:54 +0000] "GET /admin/loggers/ HTTP/1.1" 200 103 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:41:54,934 INFO 172.16.20.158 - - [26/Dec/2025:09:41:54 +0000] "GET /connector-plugins HTTP/1.1" 200 506 "-" "Java-http-client/17.0.16" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:41:54,970 INFO 172.16.20.158 - - [26/Dec/2025:09:41:54 +0000] "GET /connectors HTTP/1.1" 200 33 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:41:55,119 INFO 172.16.20.158 - - [26/Dec/2025:09:41:55 +0000] "GET /connectors/neft-mq-sink/config HTTP/1.1" 200 522 "-" "Java-http-client/17.0.16" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:41:55,121 INFO 172.16.20.158 - - [26/Dec/2025:09:41:55 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 312 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:41:55,124 INFO 172.16.20.158 - - [26/Dec/2025:09:41:55 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 312 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:41:55,126 INFO 172.16.20.158 - - [26/Dec/2025:09:41:55 +0000] "GET /connectors/neft-mq-sink/topics HTTP/1.1" 200 30 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:41:55,132 INFO 172.16.20.158 - - [26/Dec/2025:09:41:55 +0000] "GET /connectors/neft-mq-source/status HTTP/1.1" 200 316 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:41:55,140 INFO 172.16.20.158 - - [26/Dec/2025:09:41:55 +0000] "GET /connectors/neft-mq-source/topics HTTP/1.1" 200 54 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:42:01,157 INFO 172.16.16.2 - - [26/Dec/2025:09:42:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:42:01,157 INFO 172.16.16.2 - - [26/Dec/2025:09:42:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:42:11,156 INFO 172.16.16.2 - - [26/Dec/2025:09:42:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:42:11,156 INFO 172.16.16.2 - - [26/Dec/2025:09:42:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:42:21,157 INFO 172.16.16.2 - - [26/Dec/2025:09:42:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:42:21,157 INFO 172.16.16.2 - - [26/Dec/2025:09:42:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:42:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:42:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:42:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:42:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:42:41,157 INFO 172.16.16.2 - - [26/Dec/2025:09:42:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:42:41,157 INFO 172.16.16.2 - - [26/Dec/2025:09:42:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:42:51,157 INFO 172.16.16.2 - - [26/Dec/2025:09:42:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:42:51,157 INFO 172.16.16.2 - - [26/Dec/2025:09:42:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:43:01,158 INFO 172.16.16.2 - - [26/Dec/2025:09:43:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:43:01,158 INFO 172.16.16.2 - - [26/Dec/2025:09:43:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:43:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:43:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:43:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:43:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:43:21,156 INFO 172.16.16.2 - - [26/Dec/2025:09:43:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:43:21,156 INFO 172.16.16.2 - - [26/Dec/2025:09:43:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:43:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:43:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:43:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:43:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:43:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:43:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:43:41,157 INFO 172.16.16.2 - - [26/Dec/2025:09:43:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:43:51,157 INFO 172.16.16.2 - - [26/Dec/2025:09:43:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-271]
+2025-12-26 09:43:51,157 INFO 172.16.16.2 - - [26/Dec/2025:09:43:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:43:54,323 INFO 172.16.20.158 - - [26/Dec/2025:09:43:54 +0000] "GET /connector-plugins HTTP/1.1" 200 506 "-" "Java-http-client/17.0.16" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:43:54,378 INFO 172.16.20.158 - - [26/Dec/2025:09:43:54 +0000] "GET /connectors HTTP/1.1" 200 33 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:43:54,507 INFO 172.16.20.158 - - [26/Dec/2025:09:43:54 +0000] "GET /connectors/neft-mq-sink/config HTTP/1.1" 200 522 "-" "Java-http-client/17.0.16" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:43:54,511 INFO 172.16.20.158 - - [26/Dec/2025:09:43:54 +0000] "GET /connectors/neft-mq-source/config HTTP/1.1" 200 521 "-" "Java-http-client/17.0.16" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:43:54,511 INFO 172.16.20.158 - - [26/Dec/2025:09:43:54 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 312 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:43:54,513 INFO 172.16.20.158 - - [26/Dec/2025:09:43:54 +0000] "GET /connectors/neft-mq-source/status HTTP/1.1" 200 316 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:43:54,513 INFO 172.16.20.158 - - [26/Dec/2025:09:43:54 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 312 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:43:54,517 INFO 172.16.20.158 - - [26/Dec/2025:09:43:54 +0000] "GET /connectors/neft-mq-source/status HTTP/1.1" 200 316 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:43:54,517 INFO 172.16.20.158 - - [26/Dec/2025:09:43:54 +0000] "GET /connectors/neft-mq-sink/topics HTTP/1.1" 200 30 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:43:54,520 INFO 172.16.20.158 - - [26/Dec/2025:09:43:54 +0000] "GET /connectors/neft-mq-source/topics HTTP/1.1" 200 54 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:44:01,158 INFO 172.16.16.2 - - [26/Dec/2025:09:44:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:44:01,158 INFO 172.16.16.2 - - [26/Dec/2025:09:44:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:44:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:44:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:44:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:44:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:44:21,156 INFO 172.16.16.2 - - [26/Dec/2025:09:44:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:44:21,156 INFO 172.16.16.2 - - [26/Dec/2025:09:44:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:44:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:44:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:44:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:44:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:44:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:44:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:44:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:44:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:44:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:44:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:44:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:44:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:45:01,156 INFO 172.16.16.2 - - [26/Dec/2025:09:45:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:45:01,157 INFO 172.16.16.2 - - [26/Dec/2025:09:45:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:45:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:45:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:45:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:45:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:45:11,445 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Attempt to heartbeat failed since coordinator dev-kafka-cluster-broker-0.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483647 rack: null) is either not started or not valid (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,445 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Group coordinator dev-kafka-cluster-broker-0.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483647 rack: null) is unavailable or invalid due to cause: error response NOT_COORDINATOR. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,445 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Requesting disconnect from last known coordinator dev-kafka-cluster-broker-0.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483647 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,445 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Client requested disconnect from node 2147483647 (org.apache.kafka.clients.NetworkClient) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,447 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Discovered group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,538 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Attempt to heartbeat failed since coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) is either not started or not valid (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,538 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) is unavailable or invalid due to cause: error response NOT_COORDINATOR. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,538 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Requesting disconnect from last known coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,538 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Client requested disconnect from node 2147483645 (org.apache.kafka.clients.NetworkClient) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,540 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Discovered group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,540 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) is unavailable or invalid due to cause: coordinator unavailable. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,540 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Requesting disconnect from last known coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,635 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Discovered group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,707 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Attempt to heartbeat failed since coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) is either not started or not valid (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,707 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) is unavailable or invalid due to cause: error response NOT_COORDINATOR. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,707 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Requesting disconnect from last known coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,707 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Client requested disconnect from node 2147483645 (org.apache.kafka.clients.NetworkClient) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,709 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Discovered group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,709 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) is unavailable or invalid due to cause: coordinator unavailable. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,709 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Requesting disconnect from last known coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:11,795 INFO [Worker clientId=connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083, groupId=dev-connect-cluster] Discovered group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083-1]
+2025-12-26 09:45:21,157 INFO 172.16.16.2 - - [26/Dec/2025:09:45:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:45:21,157 INFO 172.16.16.2 - - [26/Dec/2025:09:45:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:45:31,157 INFO 172.16.16.2 - - [26/Dec/2025:09:45:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:45:31,157 INFO 172.16.16.2 - - [26/Dec/2025:09:45:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:45:41,157 INFO 172.16.16.2 - - [26/Dec/2025:09:45:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:45:41,157 INFO 172.16.16.2 - - [26/Dec/2025:09:45:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:45:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:45:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:45:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:45:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:45:54,041 INFO 172.16.20.158 - - [26/Dec/2025:09:45:54 +0000] "GET /connectors HTTP/1.1" 200 33 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:45:54,207 INFO 172.16.20.158 - - [26/Dec/2025:09:45:54 +0000] "GET /connectors/neft-mq-sink/config HTTP/1.1" 200 522 "-" "Java-http-client/17.0.16" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:45:54,209 INFO 172.16.20.158 - - [26/Dec/2025:09:45:54 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 312 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:45:54,212 INFO 172.16.20.158 - - [26/Dec/2025:09:45:54 +0000] "GET /connectors/neft-mq-source/status HTTP/1.1" 200 316 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:45:54,215 INFO 172.16.20.158 - - [26/Dec/2025:09:45:54 +0000] "GET /connectors/neft-mq-source/status HTTP/1.1" 200 316 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:46:01,157 INFO 172.16.16.2 - - [26/Dec/2025:09:46:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:46:01,157 INFO 172.16.16.2 - - [26/Dec/2025:09:46:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:46:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:46:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:46:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:46:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:46:21,156 INFO 172.16.16.2 - - [26/Dec/2025:09:46:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:46:21,156 INFO 172.16.16.2 - - [26/Dec/2025:09:46:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:46:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:46:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:46:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:46:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:46:41,157 INFO 172.16.16.2 - - [26/Dec/2025:09:46:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:46:41,158 INFO 172.16.16.2 - - [26/Dec/2025:09:46:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:46:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:46:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:46:51,156 INFO 172.16.16.2 - - [26/Dec/2025:09:46:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:47:01,156 INFO 172.16.16.2 - - [26/Dec/2025:09:47:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:47:01,156 INFO 172.16.16.2 - - [26/Dec/2025:09:47:01 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-273]
+2025-12-26 09:47:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:47:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 2 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:47:11,157 INFO 172.16.16.2 - - [26/Dec/2025:09:47:11 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-269]
+2025-12-26 09:47:21,156 INFO 172.16.16.2 - - [26/Dec/2025:09:47:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:47:21,156 INFO 172.16.16.2 - - [26/Dec/2025:09:47:21 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:47:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:47:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:47:31,156 INFO 172.16.16.2 - - [26/Dec/2025:09:47:31 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
+2025-12-26 09:47:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:47:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-268]
+2025-12-26 09:47:41,156 INFO 172.16.16.2 - - [26/Dec/2025:09:47:41 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-267]
+2025-12-26 09:47:51,157 INFO 172.16.16.2 - - [26/Dec/2025:09:47:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-265]
+2025-12-26 09:47:51,157 INFO 172.16.16.2 - - [26/Dec/2025:09:47:51 +0000] "GET /health HTTP/1.1" 200 94 "-" "kube-probe/1.31" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp958509062-272]
