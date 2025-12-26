@@ -1,0 +1,188 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  creationTimestamp: '2025-12-24T09:19:41Z'
+  generation: 3
+  labels:
+    strimzi.io/cluster: dev-kafka-connect-mq-test
+  managedFields:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:labels':
+            .: {}
+            'f:strimzi.io/cluster': {}
+        'f:spec':
+          .: {}
+          'f:class': {}
+          'f:config':
+            'f:mq.message.body.format': {}
+            'f:mq.connection.name.list': {}
+            'f:mq.channel.name': {}
+            .: {}
+            'f:value.converter': {}
+            'f:topics': {}
+            'f:mq.queue.manager': {}
+            'f:mq.queue': {}
+            'f:value.converter.schemas.enable': {}
+            'f:mq.message.builder': {}
+          'f:tasksMax': {}
+      manager: Mozilla
+      operation: Update
+      time: '2025-12-26T08:08:10Z'
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          .: {}
+          'f:conditions': {}
+          'f:connectorStatus':
+            .: {}
+            'f:connector':
+              .: {}
+              'f:state': {}
+              'f:worker_id': {}
+            'f:name': {}
+            'f:tasks': {}
+            'f:type': {}
+          'f:observedGeneration': {}
+          'f:tasksMax': {}
+          'f:topics': {}
+      manager: strimzi-cluster-operator
+      operation: Update
+      subresource: status
+      time: '2025-12-26T08:08:10Z'
+  name: neft-mq-sink
+  namespace: dev-kafka
+  resourceVersion: '549795828'
+  uid: 49bf61f2-6f58-4b4d-a183-79b57b24a03b
+spec:
+  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
+  config:
+    mq.channel.name: SBIEPAY2.SVRCONN
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    topics: neft.processed.kafka.topic
+    mq.queue.manager: SBI_NEFT
+    mq.queue: TEST
+    mq.message.builder: com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder
+    value.converter.schemas.enable: 'false'
+    mq.message.body.format: string
+    mq.connection.name.list: 10.176.10.213(2001)
+  tasksMax: 1
+status:
+  conditions:
+    - lastTransitionTime: '2025-12-26T08:08:10.572936537Z'
+      status: 'True'
+      type: Ready
+  connectorStatus:
+    connector:
+      state: RUNNING
+      worker_id: 'dev-kafka-connect-mq-test-connect-1.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
+    name: neft-mq-sink
+    tasks:
+      - id: 0
+        state: RUNNING
+        worker_id: 'dev-kafka-connect-mq-test-connect-1.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
+    type: sink
+  observedGeneration: 3
+  tasksMax: 1
+  topics: []
+
+
+
+--------------------------------------------------------------
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  creationTimestamp: '2025-12-24T09:20:25Z'
+  generation: 3
+  labels:
+    strimzi.io/cluster: dev-kafka-connect-mq-test
+  managedFields:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:labels':
+            .: {}
+            'f:strimzi.io/cluster': {}
+        'f:spec':
+          .: {}
+          'f:class': {}
+          'f:config':
+            'f:mq.message.body.format': {}
+            'f:mq.connection.name.list': {}
+            'f:mq.channel.name': {}
+            .: {}
+            'f:value.converter': {}
+            'f:mq.record.builder': {}
+            'f:mq.queue.manager': {}
+            'f:mq.queue': {}
+            'f:topic': {}
+            'f:value.converter.schemas.enable': {}
+          'f:tasksMax': {}
+      manager: Mozilla
+      operation: Update
+      time: '2025-12-26T08:07:24Z'
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          .: {}
+          'f:conditions': {}
+          'f:connectorStatus':
+            .: {}
+            'f:connector':
+              .: {}
+              'f:state': {}
+              'f:worker_id': {}
+            'f:name': {}
+            'f:tasks': {}
+            'f:type': {}
+          'f:observedGeneration': {}
+          'f:tasksMax': {}
+          'f:topics': {}
+      manager: strimzi-cluster-operator
+      operation: Update
+      subresource: status
+      time: '2025-12-26T08:09:54Z'
+  name: neft-mq-source
+  namespace: dev-kafka
+  resourceVersion: '549797204'
+  uid: c1e087e3-da79-4326-876d-357df3c631dc
+spec:
+  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
+  config:
+    mq.channel.name: SBIEPAY2.SVRCONN
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    mq.queue.manager: SBI_NEFT
+    mq.queue: TEST
+    mq.record.builder: com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder
+    value.converter.schemas.enable: 'false'
+    topic: neft.raw.kafka.topic
+    mq.message.body.format: string
+    mq.connection.name.list: 10.176.10.213(2001)
+  tasksMax: 1
+status:
+  conditions:
+    - lastTransitionTime: '2025-12-26T08:09:54.506825651Z'
+      status: 'True'
+      type: Ready
+  connectorStatus:
+    connector:
+      state: RUNNING
+      worker_id: 'dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
+    name: neft-mq-source
+    tasks:
+      - id: 0
+        state: RUNNING
+        worker_id: 'dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
+    type: source
+  observedGeneration: 3
+  tasksMax: 1
+  topics:
+    - neft.raw.kafka.topic
+
+
