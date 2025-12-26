@@ -1,0 +1,9 @@
+sh-5.1$ cd bin
+sh-5.1$ ./kafka-topics.sh --bootstrap-server localhost:9092 --list | grep -i neft
+neft.processed.kafka.topic
+neft.raw.kafka.topic
+sh-5.1$ ./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.processed.kafka.topic --from-beginning
+^CProcessed a total of 0 messages
+sh-5.1$ ./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.raw.kafka.topic --from-beginning
+TEST Message from IPH
+
