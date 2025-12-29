@@ -132,3 +132,21 @@ Thanks to all teams for the coordination and support.
 
 Regards,
 Saadi/Omkar
+
+-------------------------------------------------------------------
+
+Dear Team,
+
+Please find the queue manager/name below.
+
+neft_inqname=NeftInboundQueue
+neft_managerqin=SBIEPAY_NEFT_INWARD
+
+neft_outqname=NeftOutBoundQueue
+neft_managerqout=SBIEPAY_NEFT_OUTWARD
+
+rtgs_inqname=RtgsInboundQueue
+rtgs_managerqin=SBIEPAY_RTGS_INWARD
+
+rtgs_outqname=RtgsOutBoundQueue
+rtgs_managerqout=SBIEPAY_RTGS_OUTWARD 
