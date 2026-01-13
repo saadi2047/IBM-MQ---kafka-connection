@@ -1,0 +1,27 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: neft-mq-sink
+  namespace: dev-kafka
+  labels:
+    strimzi.io/cluster: dev-kafka-connect-mq-test
+spec:
+  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
+  tasksMax: 1
+  config:
+    # Kafka topic
+    topics: neft.outbound.kafka.topic
+
+    # MQ connection details
+    mq.queue.manager: SBI_NEFT
+    mq.queue: NeftOutBoundQueue
+    mq.channel.name: SBIEPAY2.SVRCONN
+    mq.connection.name.list: 10.176.10.213(2001)
+
+    # Message handling
+    mq.message.builder: com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder
+    mq.message.body.format: string
+
+    # Kafka converter
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: "false"
