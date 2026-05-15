@@ -1,0 +1,151 @@
+[osuser@bastion ~]$ oc get pods -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS         AGE
+dev-console-console-deployment-577c797ccf-kwb6l      2/2     Running   2 (6d8h ago)     12d
+dev-kafka-cluster-broker-0                           1/1     Running   7 (14h ago)      15d
+dev-kafka-cluster-broker-1                           1/1     Running   15 (72m ago)     22d
+dev-kafka-cluster-broker-2                           1/1     Running   9 (7h31m ago)    22d
+dev-kafka-cluster-controller-3                       1/1     Running   0                22d
+dev-kafka-cluster-controller-4                       1/1     Running   1 (38h ago)      22d
+dev-kafka-cluster-controller-5                       1/1     Running   0                22d
+dev-kafka-cluster-cruise-control-7678c88585-67rjz    1/1     Running   231 (2d7h ago)   57d
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (45d ago)      57d
+dev-kafka-connect-mq-test-connect-0                  1/1     Running   994 (15h ago)    57d
+dev-kafka-connect-mq-test-connect-1                  1/1     Running   4511 (15h ago)   112d
+dev-kafka-connect-mq-test-connect-2                  1/1     Running   868 (15h ago)    57d
+dev-kafka-mirror-maker-mirrormaker2-0                0/1     Pending   0                134d
+[osuser@bastion ~]$ oc get pods -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS         AGE
+dev-console-console-deployment-577c797ccf-kwb6l      2/2     Running   2 (6d8h ago)     12d
+dev-kafka-cluster-broker-0                           1/1     Running   7 (14h ago)      15d
+dev-kafka-cluster-broker-1                           1/1     Running   15 (73m ago)     22d
+dev-kafka-cluster-broker-2                           1/1     Running   9 (7h32m ago)    22d
+dev-kafka-cluster-controller-3                       1/1     Running   0                22d
+dev-kafka-cluster-controller-4                       1/1     Running   1 (38h ago)      22d
+dev-kafka-cluster-controller-5                       1/1     Running   0                22d
+dev-kafka-cluster-cruise-control-7678c88585-67rjz    1/1     Running   231 (2d7h ago)   57d
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (45d ago)      57d
+dev-kafka-connect-mq-test-connect-0                  1/1     Running   994 (15h ago)    57d
+dev-kafka-connect-mq-test-connect-1                  1/1     Running   4511 (15h ago)   112d
+dev-kafka-connect-mq-test-connect-2                  1/1     Running   868 (15h ago)    57d
+dev-kafka-mirror-maker-mirrormaker2-0                0/1     Pending   0                134d
+[osuser@bastion ~]$ oc describe pod dev-kafka-connect-mq-test-connect-1 -n dev-kafka
+Name:             dev-kafka-connect-mq-test-connect-1
+Namespace:        dev-kafka
+Priority:         0
+Service Account:  dev-kafka-connect-mq-test-connect
+Node:             worker3.dev.sbiepay.sbi/10.177.142.143
+Start Time:       Thu, 22 Jan 2026 13:15:32 +0530
+Labels:           app.kubernetes.io/instance=dev-kafka-connect-mq-test
+                  app.kubernetes.io/managed-by=strimzi-cluster-operator
+                  app.kubernetes.io/name=kafka-connect
+                  app.kubernetes.io/part-of=strimzi-dev-kafka-connect-mq-test
+                  com.company=Red_Hat
+                  rht.comp=AMQ_Streams
+                  rht.comp_ver=3.0.1
+                  rht.prod_name=Red_Hat_Application_Foundations
+                  rht.prod_ver=2025.Q3
+                  rht.subcomp=kafka-connect
+                  rht.subcomp_t=application
+                  strimzi.io/cluster=dev-kafka-connect-mq-test
+                  strimzi.io/component-type=kafka-connect
+                  strimzi.io/controller=strimzipodset
+                  strimzi.io/controller-name=dev-kafka-connect-mq-test-connect
+                  strimzi.io/kind=KafkaConnect
+                  strimzi.io/name=dev-kafka-connect-mq-test-connect
+                  strimzi.io/pod-name=dev-kafka-connect-mq-test-connect-1
+Annotations:      k8s.ovn.org/pod-networks:
+                    {"default":{"ip_addresses":["172.16.16.141/23"],"mac_address":"0a:58:ac:10:10:8d","gateway_ips":["172.16.16.1"],"routes":[{"dest":"172.16....
+                  k8s.v1.cni.cncf.io/network-status:
+                    [{
+                        "name": "ovn-kubernetes",
+                        "interface": "eth0",
+                        "ips": [
+                            "172.16.16.141"
+                        ],
+                        "mac": "0a:58:ac:10:10:8d",
+                        "default": true,
+                        "dns": {}
+                    }]
+                  openshift.io/scc: restricted-v2
+                  seccomp.security.alpha.kubernetes.io/pod: runtime/default
+                  strimzi.io/auth-hash: 1711039365
+                  strimzi.io/configuration-hash: c85232ce
+                  strimzi.io/logging-hash: 06ee78c4
+                  strimzi.io/revision: 7653ce2b
+Status:           Running
+SeccompProfile:   RuntimeDefault
+IP:               172.16.16.141
+IPs:
+  IP:           172.16.16.141
+Controlled By:  StrimziPodSet/dev-kafka-connect-mq-test-connect
+Containers:
+  dev-kafka-connect-mq-test-connect:
+    Container ID:  cri-o://33ebf0368caf97770e08ad6ce2bfcf2fa220b1ca9b79b22a29deee13cbd5cbc8
+    Image:         registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
+    Image ID:      registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq@sha256:2b0378eaedef550022bdb731470969917688d091c0ecc969598ae5418acf842a
+    Port:          8083/TCP
+    Host Port:     0/TCP
+    Args:
+      /opt/kafka/kafka_connect_run.sh
+    State:          Running
+      Started:      Thu, 14 May 2026 21:28:53 +0530
+    Last State:     Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Thu, 14 May 2026 19:05:52 +0530
+      Finished:     Thu, 14 May 2026 21:28:52 +0530
+    Ready:          True
+    Restart Count:  4511
+    Limits:
+      cpu:     4
+      memory:  8Gi
+    Requests:
+      cpu:      2
+      memory:   4Gi
+    Liveness:   http-get http://:rest-api/health delay=60s timeout=5s period=10s #success=1 #failure=3
+    Readiness:  http-get http://:rest-api/health delay=60s timeout=5s period=10s #success=1 #failure=3
+    Environment:
+      KAFKA_CONNECT_METRICS_ENABLED:    false
+      STRIMZI_KAFKA_GC_LOG_ENABLED:     false
+      STRIMZI_DYNAMIC_HEAP_PERCENTAGE:  75
+      KAFKA_CONNECT_TRUSTED_CERTS:      dev-kafka-cluster-cluster-ca-cert/*.crt
+    Mounts:
+      /opt/kafka/connect-certs/dev-kafka-cluster-cluster-ca-cert from dev-kafka-cluster-cluster-ca-cert (rw)
+      /opt/kafka/custom-config/ from kafka-connect-configurations (rw)
+      /tmp from strimzi-tmp (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-rrvk6 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       True
+  ContainersReady             True
+  PodScheduled                True
+Volumes:
+  strimzi-tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  5Mi
+  kafka-connect-configurations:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      dev-kafka-connect-mq-test-connect-config
+    Optional:  false
+  dev-kafka-cluster-cluster-ca-cert:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  dev-kafka-cluster-cluster-ca-cert
+    Optional:    false
+  kube-api-access-rrvk6:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+    ConfigMapName:           openshift-service-ca.crt
+    ConfigMapOptional:       <nil>
+QoS Class:                   Burstable
+Node-Selectors:              env=dev
+Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:                      <none>
+[osuser@bastion ~]$
