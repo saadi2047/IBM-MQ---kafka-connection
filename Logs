@@ -9,3 +9,15 @@ Ncat: Version 7.92 ( https://nmap.org/ncat )
 
 
 ------------------------
+
+Dear Team,
+
+Please find below details as requested below trail mail.
+
+
+1. Queue Manager Name :- SBI_RTGS
+2. MQ Server IP / Hostname :- 10.176.10.213
+3. Listener Port :- 2005
+4. Channel Name :- SBIEPAY2.SVRCONN
+5. Inbound Queue Name :- RTGSInboundQueue
+6. Outbound Queue Name :- RTGSOutBoundQueue
