@@ -1,0 +1,23 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: rtgs-mq-source
+  namespace: dev-kafka
+  labels:
+    strimzi.io/cluster: dev-kafka-connect-mq-test
+
+spec:
+  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
+  tasksMax: 1
+  config:
+    mq.queue.manager: SBI_RTGS
+    mq.connection.name.list: 10.176.10.213(2005)
+    mq.channel.name: SBIEPAY2.SVRCONN
+
+    mq.queue: RTGSInboundQueue
+
+    topic: rtgs.inbound.kafka.topic
+
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+
+    mq.record.builder: com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder
