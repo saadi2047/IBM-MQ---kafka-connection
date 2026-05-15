@@ -9,15 +9,18 @@ metadata:
 spec:
   class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
   tasksMax: 1
-  config:
-    mq.queue.manager: SBI_RTGS
-    mq.connection.name.list: 10.176.10.213(2005)
-    mq.channel.name: SBIEPAY2.SVRCONN
 
+  config:
+    mq.channel.name: SBIEPAY2.SVRCONN
+    mq.connection.name.list: 10.176.10.213(2005)
+
+    mq.queue.manager: SBI_RTGS
     mq.queue: RTGSInboundQueue
 
     topic: rtgs.inbound.kafka.topic
 
     value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: 'false'
 
+    mq.message.body.format: string
     mq.record.builder: com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder
