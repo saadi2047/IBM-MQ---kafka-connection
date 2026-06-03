@@ -45,191 +45,153 @@ sh-5.1$ ./kafka-console-producer.sh --bootstrap-server localhost:9092 --topic rt
 >
 -------------------------------
 
+-------------------------------------
+
+{{- if and .Values.kafka.enabled .Values.kafka.kafkaConnect.enabled }}
+# Kafka Connect Cluster for Database Integration
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: {{ .Values.kafka.kafkaConnect.name }}
+  namespace: {{ .Values.kafka.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.kafka.kafkaConnect.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: kafka-connect
+    environment: {{ .Values.global.environment }}
+  annotations:
+    # Enable use of KafkaConnector resources
+    strimzi.io/use-connector-resources: "true"
+    argocd.argoproj.io/sync-wave: "9"
+spec:
+  version: {{ .Values.kafka.cluster.version }}
+  replicas: {{ .Values.kafka.kafkaConnect.replicas }}
+  bootstrapServers: {{ .Values.kafka.kafkaConnect.bootstrapServers }}
+  
+  # TLS configuration for secure connection (per AMQ examples)
+  tls:
+    trustedCertificates:
+      - secretName: {{ .Values.kafka.cluster.name }}-cluster-ca-cert
+        pattern: "*.crt"
+  
+  # Resource specifications
+  resources:
+    {{- if .Values.kafka.kafkaConnect.resources.requests }}
+    requests:
+      {{- if .Values.kafka.kafkaConnect.resources.requests.memory }}
+      memory: {{ .Values.kafka.kafkaConnect.resources.requests.memory }}
+      {{- end }}
+      {{- if .Values.kafka.kafkaConnect.resources.requests.cpu }}
+      cpu: {{ .Values.kafka.kafkaConnect.resources.requests.cpu }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.kafka.kafkaConnect.resources.limits }}
+    limits:
+      {{- if .Values.kafka.kafkaConnect.resources.limits.memory }}
+      memory: {{ .Values.kafka.kafkaConnect.resources.limits.memory }}
+      {{- end }}
+      {{- if .Values.kafka.kafkaConnect.resources.limits.cpu }}
+      cpu: {{ .Values.kafka.kafkaConnect.resources.limits.cpu }}
+      {{- end }}
+    {{- end }}
+  
+  # Kafka Connect configuration (per AMQ examples)
+  config:
+    group.id: {{ .Values.kafka.kafkaConnect.config.group.id }}
+    offset.storage.topic: {{ .Values.kafka.kafkaConnect.config.offset.storage.topic }}
+    config.storage.topic: {{ .Values.kafka.kafkaConnect.config.config.storage.topic }}
+    status.storage.topic: {{ .Values.kafka.kafkaConnect.config.status.storage.topic }}
+    # Use default replication factor per AMQ examples
+    config.storage.replication.factor: -1
+    offset.storage.replication.factor: -1
+    status.storage.replication.factor: -1
+    {{- if .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
+    offset.flush.interval.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
+    {{- end }}
+    {{- if .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
+    offset.flush.timeout.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
+    {{- end }}
+  
+  # # Build configuration for Debezium Oracle connector
+  # build:
+  #   output:
+  #     type: docker
+  #     image: registry.preprod.epay.sbi:8443/kafka-connect-debezium:latest
+  #   plugins:
+  #     - name: debezium-oracle-connector
+  #       artifacts:
+  #         - type: zip
+  #           url: https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/2.5.0.Final/debezium-connector-oracle-2.5.0.Final-plugin.zip
+  #         - type: zip
+  #           url: https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/21.9.0.0/ojdbc8-21.9.0.0.jar
+  #     - name: confluent-jdbc-connector
+  #       artifacts:
+  #         - type: zip
+  #           url: https://d1i4a15mxbxib1.cloudfront.net/api/plugins/confluentinc/kafka-connect-jdbc/versions/10.7.4/confluentinc-kafka-connect-jdbc-10.7.4.zip
+
+  # Pod template with affinity and tolerations
+  template:
+    pod:
+      {{- if .Values.kafka.kafkaConnect.image }}
+      image: {{ .Values.kafka.kafkaConnect.image }}
+      {{- end }}
+
+      {{- if .Values.kafka.kafkaConnect.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.kafka.kafkaConnect.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/worker
+                operator: Exists
+              - key: workload-type
+                operator: In
+                values: ["kafka"]
+      tolerations:
+        - key: "workload-type"
+          operator: "Equal"
+          value: "kafka"
+          effect: "NoSchedule"
+
+---
+{{- if .Values.kafka.kafkaConnect.connectors }}
+{{- range .Values.kafka.kafkaConnect.connectors }}
+# Kafka Connector: {{ .name }}
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaConnector
 metadata:
-  creationTimestamp: '2026-05-15T07:35:55Z'
-  generation: 1
+  name: {{ .name }}
+  namespace: {{ $.Values.kafka.namespace }}
   labels:
-    strimzi.io/cluster: dev-kafka-connect-mq-test
-  managedFields:
-    - apiVersion: kafka.strimzi.io/v1beta2
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:labels':
-            .: {}
-            'f:strimzi.io/cluster': {}
-        'f:spec':
-          .: {}
-          'f:class': {}
-          'f:config':
-            'f:mq.message.body.format': {}
-            'f:mq.connection.name.list': {}
-            'f:mq.channel.name': {}
-            .: {}
-            'f:value.converter': {}
-            'f:topics': {}
-            'f:mq.queue.manager': {}
-            'f:mq.queue': {}
-            'f:value.converter.schemas.enable': {}
-            'f:mq.message.builder': {}
-          'f:tasksMax': {}
-      manager: Mozilla
-      operation: Update
-      time: '2026-05-15T07:35:55Z'
-    - apiVersion: kafka.strimzi.io/v1beta2
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:status':
-          .: {}
-          'f:conditions': {}
-          'f:connectorStatus':
-            .: {}
-            'f:connector':
-              .: {}
-              'f:state': {}
-              'f:worker_id': {}
-            'f:name': {}
-            'f:tasks': {}
-            'f:type': {}
-          'f:observedGeneration': {}
-          'f:tasksMax': {}
-          'f:topics': {}
-      manager: strimzi-cluster-operator
-      operation: Update
-      subresource: status
-      time: '2026-06-03T06:20:09Z'
-  name: rtgs-mq-sink
-  namespace: dev-kafka
-  resourceVersion: '792337123'
-  uid: f2e092fb-fc4d-4376-88c2-458559b43ddd
+    strimzi.io/cluster: {{ $.Values.kafka.kafkaConnect.name }}
+    app.kubernetes.io/name: {{ .name }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: kafka-connector
+    environment: {{ $.Values.global.environment }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
 spec:
-  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
+  {{- if .config }}
+  {{- if .config.connector }}
+  {{- if .config.connector.class }}
+  class: {{ .config.connector.class }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  tasksMax: 1
   config:
-    mq.channel.name: SBIEPAY2.SVRCONN
-    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
-    topics: rtgs.outbound.kafka.topic
-    mq.queue.manager: SBI_RTGS
-    mq.queue: RTGSOutBoundQueue
-    mq.message.builder: com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder
-    value.converter.schemas.enable: 'false'
-    mq.message.body.format: string
-    mq.connection.name.list: 10.176.10.213(2005)
-  tasksMax: 1
-status:
-  conditions:
-    - lastTransitionTime: '2026-06-03T06:20:09.716272695Z'
-      status: 'True'
-      type: Ready
-  connectorStatus:
-    connector:
-      state: RUNNING
-      worker_id: 'dev-kafka-connect-mq-test-connect-1.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
-    name: rtgs-mq-sink
-    tasks:
-      - id: 0
-        state: RUNNING
-        worker_id: 'dev-kafka-connect-mq-test-connect-1.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
-    type: sink
-  observedGeneration: 1
-  tasksMax: 1
-  topics:
-    - rtgs.outbound.kafka.topic
-
-
-----------------------------------------
-
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaConnector
-metadata:
-  creationTimestamp: '2026-05-15T07:35:21Z'
-  generation: 1
-  labels:
-    strimzi.io/cluster: dev-kafka-connect-mq-test
-  managedFields:
-    - apiVersion: kafka.strimzi.io/v1beta2
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:labels':
-            .: {}
-            'f:strimzi.io/cluster': {}
-        'f:spec':
-          .: {}
-          'f:class': {}
-          'f:config':
-            'f:mq.message.body.format': {}
-            'f:mq.connection.name.list': {}
-            'f:mq.channel.name': {}
-            .: {}
-            'f:value.converter': {}
-            'f:mq.record.builder': {}
-            'f:mq.queue.manager': {}
-            'f:mq.queue': {}
-            'f:topic': {}
-            'f:value.converter.schemas.enable': {}
-          'f:tasksMax': {}
-      manager: Mozilla
-      operation: Update
-      time: '2026-05-15T07:35:21Z'
-    - apiVersion: kafka.strimzi.io/v1beta2
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:status':
-          .: {}
-          'f:conditions': {}
-          'f:connectorStatus':
-            .: {}
-            'f:connector':
-              .: {}
-              'f:state': {}
-              'f:worker_id': {}
-            'f:name': {}
-            'f:tasks': {}
-            'f:type': {}
-          'f:observedGeneration': {}
-          'f:tasksMax': {}
-          'f:topics': {}
-      manager: strimzi-cluster-operator
-      operation: Update
-      subresource: status
-      time: '2026-06-03T06:08:11Z'
-  name: rtgs-mq-source
-  namespace: dev-kafka
-  resourceVersion: '792320931'
-  uid: f6fed49c-627b-49ac-ba18-5bfc64fefbbe
-spec:
-  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
-  config:
-    mq.channel.name: SBIEPAY2.SVRCONN
-    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
-    mq.queue.manager: SBI_RTGS
-    mq.queue: RTGSInboundQueue
-    mq.record.builder: com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder
-    value.converter.schemas.enable: 'false'
-    topic: rtgs.inbound.kafka.topic
-    mq.message.body.format: string
-    mq.connection.name.list: 10.176.10.213(2005)
-  tasksMax: 1
-status:
-  conditions:
-    - lastTransitionTime: '2026-06-03T06:08:10.702782724Z'
-      status: 'True'
-      type: Ready
-  connectorStatus:
-    connector:
-      state: RUNNING
-      worker_id: 'dev-kafka-connect-mq-test-connect-2.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
-    name: rtgs-mq-source
-    tasks:
-      - id: 0
-        state: RUNNING
-        worker_id: 'dev-kafka-connect-mq-test-connect-2.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
-    type: source
-  observedGeneration: 1
-  tasksMax: 1
-  topics:
-    - rtgs.inbound.kafka.topic
-
-
+    {{- if .config }}
+    {{- range $key, $value := .config }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    {{- end }}
+---
+{{- end }}
+{{- end }}
+{{- end }} 
