@@ -1,0 +1,202 @@
+sh-5.1$ nc -vz 10.176.10.213 2003
+Ncat: Version 7.92 ( https://nmap.org/ncat )
+Ncat: Connected to 10.176.10.213:2003.
+Ncat: 0 bytes sent, 0 bytes received in 0.02 seconds.
+sh-5.1$ nc -vz 10.176.10.213 2005
+Ncat: Version 7.92 ( https://nmap.org/ncat )
+Ncat: Connected to 10.176.10.213:2005.
+Ncat: 0 bytes sent, 0 bytes received in 0.02 seconds.
+sh-5.1$ 
+
+
+--------------------------------
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  creationTimestamp: '2026-05-15T07:35:55Z'
+  generation: 1
+  labels:
+    strimzi.io/cluster: dev-kafka-connect-mq-test
+  managedFields:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:labels':
+            .: {}
+            'f:strimzi.io/cluster': {}
+        'f:spec':
+          .: {}
+          'f:class': {}
+          'f:config':
+            'f:mq.message.body.format': {}
+            'f:mq.connection.name.list': {}
+            'f:mq.channel.name': {}
+            .: {}
+            'f:value.converter': {}
+            'f:topics': {}
+            'f:mq.queue.manager': {}
+            'f:mq.queue': {}
+            'f:value.converter.schemas.enable': {}
+            'f:mq.message.builder': {}
+          'f:tasksMax': {}
+      manager: Mozilla
+      operation: Update
+      time: '2026-05-15T07:35:55Z'
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          .: {}
+          'f:conditions': {}
+          'f:connectorStatus':
+            .: {}
+            'f:connector':
+              .: {}
+              'f:state': {}
+              'f:worker_id': {}
+            'f:name': {}
+            'f:tasks': {}
+            'f:type': {}
+          'f:observedGeneration': {}
+          'f:tasksMax': {}
+          'f:topics': {}
+      manager: strimzi-cluster-operator
+      operation: Update
+      subresource: status
+      time: '2026-06-02T19:24:10Z'
+  name: rtgs-mq-sink
+  namespace: dev-kafka
+  resourceVersion: '791467488'
+  uid: f2e092fb-fc4d-4376-88c2-458559b43ddd
+spec:
+  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
+  config:
+    mq.channel.name: SBIEPAY2.SVRCONN
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    topics: rtgs.outbound.kafka.topic
+    mq.queue.manager: SBI_RTGS
+    mq.queue: RTGSOutBoundQueue
+    mq.message.builder: com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder
+    value.converter.schemas.enable: 'false'
+    mq.message.body.format: string
+    mq.connection.name.list: 10.176.10.213(2005)
+  tasksMax: 1
+status:
+  conditions:
+    - lastTransitionTime: '2026-06-02T19:24:10.400350066Z'
+      message: 'The following tasks have failed: 0, see connectorStatus for more details.'
+      reason: Throwable
+      status: 'True'
+      type: NotReady
+  connectorStatus:
+    connector:
+      state: RUNNING
+      worker_id: 'dev-kafka-connect-mq-test-connect-2.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
+    name: rtgs-mq-sink
+    tasks:
+      - id: 0
+        state: FAILED
+        trace: "org.apache.kafka.connect.errors.ConnectException: com.ibm.msg.client.jms.DetailedIllegalStateRuntimeException: JMSWMQ0018: Failed to connect to queue manager 'SBI_RTGS' with connection mode 'Client' and host name '10.176.10.213(2005)'.\nCheck the queue manager is started and if running in client mode, check there is a listener running. Please see the linked exception for more information.\n\tat com.ibm.eventstreams.connect.mqsink.MQSinkTask.start(MQSinkTask.java:94)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.initializeAndStart(WorkerSinkTask.java:324)\n\tat org.apache.kafka.connect.runtime.WorkerTask.doStart(WorkerTask.java:176)\n\tat org.apache.kafka.connect.runtime.WorkerTask.doRun(WorkerTask.java:225)\n\tat org.apache.kafka.connect.runtime.WorkerTask.run(WorkerTask.java:281)\n\tat org.apache.kafka.connect.runtime.isolation.Plugins.lambda$withClassLoader$1(Plugins.java:238)\n\tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\tat java.base/java.lang.Thread.run(Thread.java:840)\nCaused by: com.ibm.msg.client.jms.DetailedIllegalStateRuntimeException: JMSWMQ0018: Failed to connect to queue manager 'SBI_RTGS' with connection mode 'Client' and host name '10.176.10.213(2005)'.\nCheck the queue manager is started and if running in client mode, check there is a listener running. Please see the linked exception for more information.\n\tat com.ibm.msg.client.jms.DetailedIllegalStateException.getUnchecked(DetailedIllegalStateException.java:275)\n\tat com.ibm.msg.client.jms.internal.JmsErrorUtils.convertJMSException(JmsErrorUtils.java:173)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl.createContext(JmsConnectionFactoryImpl.java:577)\n\tat com.ibm.eventstreams.connect.mqsink.JMSWorker.createJMSContext(JMSWorker.java:375)\n\tat com.ibm.eventstreams.connect.mqsink.JMSWorker.connect(JMSWorker.java:147)\n\tat com.ibm.eventstreams.connect.mqsink.MQSinkTask.start(MQSinkTask.java:90)\n\t... 10 more\nCaused by: com.ibm.mq.MQException: JMSCMQ0001: IBM MQ call failed with compcode '2' ('MQCC_FAILED') reason '2538' ('MQRC_HOST_NOT_AVAILABLE').\n\tat com.ibm.msg.client.wmq.common.internal.Reason.createException(Reason.java:217)\n\tat com.ibm.msg.client.wmq.internal.WMQConnection.<init>(WMQConnection.java:506)\n\tat com.ibm.msg.client.wmq.factories.WMQConnectionFactory.createV7ProviderConnection(WMQConnectionFactory.java:9351)\n\tat com.ibm.msg.client.wmq.factories.WMQConnectionFactory.createProviderConnection(WMQConnectionFactory.java:8581)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl._createConnection(JmsConnectionFactoryImpl.java:322)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl.createContext(JmsConnectionFactoryImpl.java:543)\n\t... 13 more\nCaused by: com.ibm.mq.jmqi.JmqiException: CC=2;RC=2538;AMQ9204: Connection to host '10.176.10.213(2005)' rejected. [1=com.ibm.mq.jmqi.JmqiException[CC=2;RC=2538;AMQ9204: Connection to host '/10.176.10.213:2005' rejected. [1=java.net.ConnectException[Connection timed out],3=/10.176.10.213:2005,4=TCP,5=Socket.connect]],3=10.176.10.213(2005),4=,5=RemoteTCPConnection.bindAndConnectSocket]\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.jmqiConnect(RemoteFAP.java:13911)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.access$200(RemoteFAP.java:13340)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP.jmqiConnect(RemoteFAP.java:1544)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP.jmqiConnect(RemoteFAP.java:1413)\n\tat com.ibm.mq.ese.jmqi.InterceptedJmqiImpl.jmqiConnect(InterceptedJmqiImpl.java:377)\n\tat com.ibm.mq.ese.jmqi.ESEJMQI.jmqiConnect(ESEJMQI.java:562)\n\tat com.ibm.msg.client.wmq.internal.WMQConnection.<init>(WMQConnection.java:438)\n\t... 17 more\nCaused by: com.ibm.mq.jmqi.JmqiException: CC=2;RC=2538;AMQ9204: Connection to host '/10.176.10.213:2005' rejected. [1=java.net.ConnectException[Connection timed out],3=/10.176.10.213:2005,4=TCP,5=Socket.connect]\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection.bindAndConnectSocket(RemoteTCPConnection.java:1000)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection.protocolConnect(RemoteTCPConnection.java:1764)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnection.connect(RemoteConnection.java:1006)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getNewConnection(RemoteConnectionSpecification.java:691)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getSessionFromNewConnection(RemoteConnectionSpecification.java:283)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getSession(RemoteConnectionSpecification.java:170)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionPool.getSession(RemoteConnectionPool.java:128)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.jmqiConnect(RemoteFAP.java:13575)\n\t... 23 more\nCaused by: java.net.ConnectException: Connection timed out\n\tat java.base/sun.nio.ch.Net.connect0(Native Method)\n\tat java.base/sun.nio.ch.Net.connect(Net.java:579)\n\tat java.base/sun.nio.ch.Net.connect(Net.java:568)\n\tat java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:593)\n\tat java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)\n\tat java.base/java.net.Socket.connect(Socket.java:633)\n\tat java.base/java.net.Socket.connect(Socket.java:583)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection$4.run(RemoteTCPConnection.java:1174)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection$4.run(RemoteTCPConnection.java:1166)\n\tat java.base/java.security.AccessController.doPrivileged(AccessController.java:318)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection.connectSocket(RemoteTCPConnection.java:1166)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection.bindAndConnectSocket(RemoteTCPConnection.java:906)\n\t... 30 more\n"
+        worker_id: 'dev-kafka-connect-mq-test-connect-2.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
+    type: sink
+  observedGeneration: 1
+  tasksMax: 1
+  topics: []
+
+---------------------------------------------------
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  creationTimestamp: '2026-05-15T07:35:21Z'
+  generation: 1
+  labels:
+    strimzi.io/cluster: dev-kafka-connect-mq-test
+  managedFields:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:labels':
+            .: {}
+            'f:strimzi.io/cluster': {}
+        'f:spec':
+          .: {}
+          'f:class': {}
+          'f:config':
+            'f:mq.message.body.format': {}
+            'f:mq.connection.name.list': {}
+            'f:mq.channel.name': {}
+            .: {}
+            'f:value.converter': {}
+            'f:mq.record.builder': {}
+            'f:mq.queue.manager': {}
+            'f:mq.queue': {}
+            'f:topic': {}
+            'f:value.converter.schemas.enable': {}
+          'f:tasksMax': {}
+      manager: Mozilla
+      operation: Update
+      time: '2026-05-15T07:35:21Z'
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          .: {}
+          'f:conditions': {}
+          'f:connectorStatus':
+            .: {}
+            'f:connector':
+              .: {}
+              'f:state': {}
+              'f:worker_id': {}
+            'f:name': {}
+            'f:tasks': {}
+            'f:type': {}
+          'f:observedGeneration': {}
+          'f:tasksMax': {}
+          'f:topics': {}
+      manager: strimzi-cluster-operator
+      operation: Update
+      subresource: status
+      time: '2026-06-02T19:38:10Z'
+  name: rtgs-mq-source
+  namespace: dev-kafka
+  resourceVersion: '791485784'
+  uid: f6fed49c-627b-49ac-ba18-5bfc64fefbbe
+spec:
+  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
+  config:
+    mq.channel.name: SBIEPAY2.SVRCONN
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    mq.queue.manager: SBI_RTGS
+    mq.queue: RTGSInboundQueue
+    mq.record.builder: com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder
+    value.converter.schemas.enable: 'false'
+    topic: rtgs.inbound.kafka.topic
+    mq.message.body.format: string
+    mq.connection.name.list: 10.176.10.213(2005)
+  tasksMax: 1
+status:
+  conditions:
+    - lastTransitionTime: '2026-06-02T19:38:10.423706278Z'
+      message: 'The following tasks have failed: 0, see connectorStatus for more details.'
+      reason: Throwable
+      status: 'True'
+      type: NotReady
+  connectorStatus:
+    connector:
+      state: RUNNING
+      worker_id: 'dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
+    name: rtgs-mq-source
+    tasks:
+      - id: 0
+        state: FAILED
+        trace: "org.apache.kafka.connect.errors.ConnectException: com.ibm.msg.client.jms.DetailedIllegalStateRuntimeException: JMSWMQ0018: Failed to connect to queue manager 'SBI_RTGS' with connection mode 'Client' and host name '10.176.10.213(2005)'.\nCheck the queue manager is started and if running in client mode, check there is a listener running. Please see the linked exception for more information.\n\tat com.ibm.eventstreams.connect.mqsource.MQSourceTask.start(MQSourceTask.java:207)\n\tat com.ibm.eventstreams.connect.mqsource.MQSourceTask.start(MQSourceTask.java:158)\n\tat org.apache.kafka.connect.runtime.AbstractWorkerSourceTask.initializeAndStart(AbstractWorkerSourceTask.java:279)\n\tat org.apache.kafka.connect.runtime.WorkerTask.doStart(WorkerTask.java:176)\n\tat org.apache.kafka.connect.runtime.WorkerTask.doRun(WorkerTask.java:225)\n\tat org.apache.kafka.connect.runtime.WorkerTask.run(WorkerTask.java:281)\n\tat org.apache.kafka.connect.runtime.AbstractWorkerSourceTask.run(AbstractWorkerSourceTask.java:79)\n\tat org.apache.kafka.connect.runtime.isolation.Plugins.lambda$withClassLoader$1(Plugins.java:238)\n\tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\tat java.base/java.lang.Thread.run(Thread.java:840)\nCaused by: com.ibm.msg.client.jms.DetailedIllegalStateRuntimeException: JMSWMQ0018: Failed to connect to queue manager 'SBI_RTGS' with connection mode 'Client' and host name '10.176.10.213(2005)'.\nCheck the queue manager is started and if running in client mode, check there is a listener running. Please see the linked exception for more information.\n\tat com.ibm.msg.client.jms.DetailedIllegalStateException.getUnchecked(DetailedIllegalStateException.java:275)\n\tat com.ibm.msg.client.jms.internal.JmsErrorUtils.convertJMSException(JmsErrorUtils.java:173)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl.createContext(JmsConnectionFactoryImpl.java:577)\n\tat com.ibm.eventstreams.connect.mqsource.JMSWorker.connect(JMSWorker.java:216)\n\tat com.ibm.eventstreams.connect.mqsource.MQSourceTask.start(MQSourceTask.java:184)\n\t... 12 more\nCaused by: com.ibm.mq.MQException: JMSCMQ0001: IBM MQ call failed with compcode '2' ('MQCC_FAILED') reason '2538' ('MQRC_HOST_NOT_AVAILABLE').\n\tat com.ibm.msg.client.wmq.common.internal.Reason.createException(Reason.java:217)\n\tat com.ibm.msg.client.wmq.internal.WMQConnection.<init>(WMQConnection.java:506)\n\tat com.ibm.msg.client.wmq.factories.WMQConnectionFactory.createV7ProviderConnection(WMQConnectionFactory.java:9351)\n\tat com.ibm.msg.client.wmq.factories.WMQConnectionFactory.createProviderConnection(WMQConnectionFactory.java:8581)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl._createConnection(JmsConnectionFactoryImpl.java:322)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl.createContext(JmsConnectionFactoryImpl.java:543)\n\t... 14 more\nCaused by: com.ibm.mq.jmqi.JmqiException: CC=2;RC=2538;AMQ9204: Connection to host '10.176.10.213(2005)' rejected. [1=com.ibm.mq.jmqi.JmqiException[CC=2;RC=2538;AMQ9204: Connection to host '/10.176.10.213:2005' rejected. [1=java.net.ConnectException[Connection timed out],3=/10.176.10.213:2005,4=TCP,5=Socket.connect]],3=10.176.10.213(2005),4=,5=RemoteTCPConnection.bindAndConnectSocket]\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.jmqiConnect(RemoteFAP.java:13911)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.access$200(RemoteFAP.java:13340)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP.jmqiConnect(RemoteFAP.java:1544)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP.jmqiConnect(RemoteFAP.java:1413)\n\tat com.ibm.mq.ese.jmqi.InterceptedJmqiImpl.jmqiConnect(InterceptedJmqiImpl.java:377)\n\tat com.ibm.mq.ese.jmqi.ESEJMQI.jmqiConnect(ESEJMQI.java:562)\n\tat com.ibm.msg.client.wmq.internal.WMQConnection.<init>(WMQConnection.java:438)\n\t... 18 more\nCaused by: com.ibm.mq.jmqi.JmqiException: CC=2;RC=2538;AMQ9204: Connection to host '/10.176.10.213:2005' rejected. [1=java.net.ConnectException[Connection timed out],3=/10.176.10.213:2005,4=TCP,5=Socket.connect]\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection.bindAndConnectSocket(RemoteTCPConnection.java:1000)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection.protocolConnect(RemoteTCPConnection.java:1764)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnection.connect(RemoteConnection.java:1006)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getNewConnection(RemoteConnectionSpecification.java:691)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getSessionFromNewConnection(RemoteConnectionSpecification.java:283)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getSession(RemoteConnectionSpecification.java:170)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionPool.getSession(RemoteConnectionPool.java:128)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.jmqiConnect(RemoteFAP.java:13575)\n\t... 24 more\nCaused by: java.net.ConnectException: Connection timed out\n\tat java.base/sun.nio.ch.Net.connect0(Native Method)\n\tat java.base/sun.nio.ch.Net.connect(Net.java:579)\n\tat java.base/sun.nio.ch.Net.connect(Net.java:568)\n\tat java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:593)\n\tat java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)\n\tat java.base/java.net.Socket.connect(Socket.java:633)\n\tat java.base/java.net.Socket.connect(Socket.java:583)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection$4.run(RemoteTCPConnection.java:1174)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection$4.run(RemoteTCPConnection.java:1166)\n\tat java.base/java.security.AccessController.doPrivileged(AccessController.java:318)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection.connectSocket(RemoteTCPConnection.java:1166)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteTCPConnection.bindAndConnectSocket(RemoteTCPConnection.java:906)\n\t... 31 more\n"
+        worker_id: 'dev-kafka-connect-mq-test-connect-0.dev-kafka-connect-mq-test-connect.dev-kafka.svc:8083'
+    type: source
+  observedGeneration: 1
+  tasksMax: 1
+  topics: []
