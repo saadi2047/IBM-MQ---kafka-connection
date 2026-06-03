@@ -150,3 +150,52 @@ rtgs_managerqin=SBIEPAY_RTGS_INWARD
 
 rtgs_outqname=RtgsOutBoundQueue
 rtgs_managerqout=SBIEPAY_RTGS_OUTWARD 
+
+
+
+--------------------------------------------
+
+Dear Team,
+
+RTGS Kafka–IBM MQ integration has been completed from our end and the connectivity has been successfully validated.
+
+We have performed end-to-end testing and verified the message flow between Kafka and IBM MQ successfully.
+
+Requesting the application team to perform application-level testing from your end and validate the RTGS transaction flow.
+
+**RTGS Topic Details:**
+
+**Inbound Topic (IBM MQ → Kafka)**
+
+```text
+rtgs.inbound.kafka.topic
+```
+
+**Outbound Topic (Kafka → IBM MQ)**
+
+```text
+rtgs.outbound.kafka.topic
+```
+
+**Flow Details:**
+
+* Messages received from IBM MQ will be published to:
+
+  ```text
+  rtgs.inbound.kafka.topic
+  ```
+
+* Messages published by the application to:
+
+  ```text
+  rtgs.outbound.kafka.topic
+  ```
+
+  will be forwarded to IBM MQ.
+
+Kindly perform the required testing and share the results/observations. In case of any issues, please share the transaction details, timestamps, and relevant logs for further analysis.
+
+Regards,
+Saadi
+Kafka Administration Team
+
