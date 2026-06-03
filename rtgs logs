@@ -8,7 +8,10 @@ Ncat: Connected to 10.176.10.213:2005.
 Ncat: 0 bytes sent, 0 bytes received in 0.02 seconds.
 sh-5.1$ 
 
+--------------------------------
+oc annotate kafkaconnector rtgs-mq-source strimzi.io/restart=true -n dev-kafka
 
+oc annotate kafkaconnector rtgs-mq-sink strimzi.io/restart=true -n dev-kafka
 --------------------------------
 
 apiVersion: kafka.strimzi.io/v1beta2
