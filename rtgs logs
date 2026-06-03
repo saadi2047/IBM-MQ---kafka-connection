@@ -12,6 +12,15 @@ sh-5.1$
 oc annotate kafkaconnector rtgs-mq-source strimzi.io/restart=true -n dev-kafka
 
 oc annotate kafkaconnector rtgs-mq-sink strimzi.io/restart=true -n dev-kafka
+
+[osuser@bastion ~]$ oc annotate kafkaconnector rtgs-mq-source strimzi.io/restart=true -n dev-kafka
+kafkaconnector.kafka.strimzi.io/rtgs-mq-source annotated
+[osuser@bastion ~]$ oc annotate kafkaconnector rtgs-mq-sink strimzi.io/restart=true -n dev-kafka
+kafkaconnector.kafka.strimzi.io/rtgs-mq-sink annotated
+[osuser@bastion ~]$
+
+
+
 --------------------------------
 
 apiVersion: kafka.strimzi.io/v1beta2
