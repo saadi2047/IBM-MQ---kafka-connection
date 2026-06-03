@@ -1,0 +1,98 @@
+kafkaConnect:
+    enabled: true
+    name: "dev-kafka-connect-mq-test"
+    replicas: 3
+    bootstrapServers: "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093"
+    image: "epaynonprod-registry-quay-quay-enterprise.apps.dev.epay.sbi/redhatdefultimage/debeziumconnect:01"
+    imagePullSecrets:
+      - microservices-dev-pull-secret
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "8Gi"
+        cpu: "4"
+    config:
+      group:
+        id: "dev-connect-cluster"
+      offset:
+        storage:
+          topic: "dev-connect-cluster-offsets"
+        flush:
+          interval:
+            ms: 10000
+          timeout:
+            ms: 5000
+      config:
+        storage:
+          topic: "dev-connect-cluster-configs"
+      status:
+        storage:
+          topic: "dev-connect-cluster-status"
+      session:
+        timeout:
+          ms: 60000
+      heartbeat:
+        interval:
+          ms: 20000
+      rebalance:
+        timeout:
+          ms: 120000
+
+    connectors:
+      - name: "neft-mq-source"
+        class: "com.ibm.eventstreams.connect.mqsource.MQSourceConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_NEFT"
+          mq.connection.name.list: "10.176.10.213(2001)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "NeftInboundQueue"
+          mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
+          mq.message.body.format: "string"
+          topic: "neft.inbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
+
+      - name: "neft-mq-sink"
+        class: "com.ibm.eventstreams.connect.mqsink.MQSinkConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_NEFT"
+          mq.connection.name.list: "10.176.10.213(2001)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "NeftOutBoundQueue"
+          mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
+          mq.message.body.format: "string"
+          topics: "neft.outbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
+
+      - name: "rtgs-mq-source"
+        class: "com.ibm.eventstreams.connect.mqsource.MQSourceConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_RTGS"
+          mq.connection.name.list: "10.176.10.213(2005)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "RTGSInboundQueue"
+          mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
+          mq.message.body.format: "string"
+          topic: "rtgs.inbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
+
+      - name: "rtgs-mq-sink"
+        class: "com.ibm.eventstreams.connect.mqsink.MQSinkConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_RTGS"
+          mq.connection.name.list: "10.176.10.213(2005)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "RTGSOutBoundQueue"
+          mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
+          mq.message.body.format: "string"
+          topics: "rtgs.outbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
