@@ -8,3 +8,28 @@ oc get networkpolicy -n dev-kafka
 oc get egressip
 oc get hostsubnet   # or check the node the pod runs on
 
+
+
+[osuser@bastion ~]$ oc exec -n dev-kafka dev-kafka-connect-mq-test-connect-0 -- bash -c "</dev/tcp/10.176.10.213/2005 && echo OPEN || echo BLOCKED"
+OPEN
+[osuser@bastion ~]$ oc exec -n dev-kafka dev-kafka-connect-mq-test-connect-2 -- bash -c "</dev/tcp/10.176.10.213/2005 && echo OPEN || echo BLOCKED"
+OPEN
+[osuser@bastion ~]$ oc get networkpolicy -n dev-kafka
+NAME                                              POD-SELECTOR                                                                                                                      AGE
+dev-kafka-cluster-entity-operator                 strimzi.io/cluster=dev-kafka-cluster,strimzi.io/kind=Kafka,strimzi.io/name=dev-kafka-cluster-entity-operator                      203d
+dev-kafka-cluster-network-policy-cruise-control   strimzi.io/cluster=dev-kafka-cluster,strimzi.io/kind=Kafka,strimzi.io/name=dev-kafka-cluster-cruise-control                       203d
+dev-kafka-cluster-network-policy-kafka            strimzi.io/cluster=dev-kafka-cluster,strimzi.io/kind=Kafka,strimzi.io/name=dev-kafka-cluster-kafka                                203d
+dev-kafka-connect-mq-test-connect                 strimzi.io/cluster=dev-kafka-connect-mq-test,strimzi.io/kind=KafkaConnect,strimzi.io/name=dev-kafka-connect-mq-test-connect       132d
+dev-kafka-mirror-maker-mirrormaker2               strimzi.io/cluster=dev-kafka-mirror-maker,strimzi.io/kind=KafkaMirrorMaker2,strimzi.io/name=dev-kafka-mirror-maker-mirrormaker2   153d
+[osuser@bastion ~]$ oc get egressip
+NAME                EGRESSIPS        ASSIGNED NODE          ASSIGNED EGRESSIPS
+uat-egressgateway   10.177.141.119   worker3.uat.epay.sbi   10.177.141.119
+uat-eip             10.177.141.117   worker3.uat.epay.sbi   10.177.141.117
+[osuser@bastion ~]$ oc get hostsubnet
+error: the server doesn't have a resource type "hostsubnet"
+[osuser@bastion ~]$
+
+
+
+
+
