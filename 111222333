@@ -1,0 +1,8 @@
+[osuser@bastion ~]$ oc get project | grep -i kafka
+dev-kafka                                          dev-kafka           Active
+int-kafka                                                              Active
+pre-prod-kafka                                                         Active
+sit-kafka                                          sit-kafka           Active
+streams-kafka-console                                                  Active
+uat-kafka                                                              Active
+[osuser@bastion ~]$
