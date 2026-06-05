@@ -1,197 +1,159 @@
-oc exec -n dev-kafka dev-kafka-connect-mq-test-connect-0 -- bash -c "</dev/tcp/10.176.10.213/2005 && echo OPEN || echo BLOCKED"
-oc exec -n dev-kafka dev-kafka-connect-mq-test-connect-2 -- bash -c "</dev/tcp/10.176.10.213/2005 && echo OPEN || echo BLOCKED"
-
-
-oc get networkpolicy -n dev-kafka
-
-
-oc get egressip
-oc get hostsubnet   # or check the node the pod runs on
-
-
-
-[osuser@bastion ~]$ oc exec -n dev-kafka dev-kafka-connect-mq-test-connect-0 -- bash -c "</dev/tcp/10.176.10.213/2005 && echo OPEN || echo BLOCKED"
-OPEN
-[osuser@bastion ~]$ oc exec -n dev-kafka dev-kafka-connect-mq-test-connect-2 -- bash -c "</dev/tcp/10.176.10.213/2005 && echo OPEN || echo BLOCKED"
-OPEN
-[osuser@bastion ~]$ oc get networkpolicy -n dev-kafka
-NAME                                              POD-SELECTOR                                                                                                                      AGE
-dev-kafka-cluster-entity-operator                 strimzi.io/cluster=dev-kafka-cluster,strimzi.io/kind=Kafka,strimzi.io/name=dev-kafka-cluster-entity-operator                      203d
-dev-kafka-cluster-network-policy-cruise-control   strimzi.io/cluster=dev-kafka-cluster,strimzi.io/kind=Kafka,strimzi.io/name=dev-kafka-cluster-cruise-control                       203d
-dev-kafka-cluster-network-policy-kafka            strimzi.io/cluster=dev-kafka-cluster,strimzi.io/kind=Kafka,strimzi.io/name=dev-kafka-cluster-kafka                                203d
-dev-kafka-connect-mq-test-connect                 strimzi.io/cluster=dev-kafka-connect-mq-test,strimzi.io/kind=KafkaConnect,strimzi.io/name=dev-kafka-connect-mq-test-connect       132d
-dev-kafka-mirror-maker-mirrormaker2               strimzi.io/cluster=dev-kafka-mirror-maker,strimzi.io/kind=KafkaMirrorMaker2,strimzi.io/name=dev-kafka-mirror-maker-mirrormaker2   153d
-[osuser@bastion ~]$ oc get egressip
-NAME                EGRESSIPS        ASSIGNED NODE          ASSIGNED EGRESSIPS
-uat-egressgateway   10.177.141.119   worker3.uat.epay.sbi   10.177.141.119
-uat-eip             10.177.141.117   worker3.uat.epay.sbi   10.177.141.117
-[osuser@bastion ~]$ oc get hostsubnet
-error: the server doesn't have a resource type "hostsubnet"
-[osuser@bastion ~]$
-
-
-
-------------------------------------------
-sh-5.1$ ./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic rtgs.inbound.kafka.topic --from-beginning
-aaaa
-test iph
-test iph2
-
-
-sh-5.1$ ./kafka-console-producer.sh --bootstrap-server localhost:9092 --topic rtgs.outbound.kafka.topic
->testing kafka to MQ
->Saadi
->mahesh
->
--------------------------------
-
--------------------------------------
-
-{{- if and .Values.kafka.enabled .Values.kafka.kafkaConnect.enabled }}
-# Kafka Connect Cluster for Database Integration
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaConnect
 metadata:
-  name: {{ .Values.kafka.kafkaConnect.name }}
-  namespace: {{ .Values.kafka.namespace }}
-  labels:
-    app.kubernetes.io/name: {{ .Values.kafka.kafkaConnect.name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: kafka-connect
-    environment: {{ .Values.global.environment }}
   annotations:
-    # Enable use of KafkaConnector resources
-    strimzi.io/use-connector-resources: "true"
-    argocd.argoproj.io/sync-wave: "9"
+    argocd.argoproj.io/sync-wave: '9'
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+    strimzi.io/use-connector-resources: 'true'
+  resourceVersion: '796456609'
+  name: dev-kafka-connect-mq
+  uid: ec1c7a90-855e-485c-8837-bf03c51d52f8
+  creationTimestamp: '2026-06-05T09:25:18Z'
+  generation: 1
+  managedFields:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:argocd.argoproj.io/sync-wave': {}
+            'f:meta.helm.sh/release-name': {}
+            'f:meta.helm.sh/release-namespace': {}
+            'f:strimzi.io/use-connector-resources': {}
+          'f:labels':
+            .: {}
+            'f:app.kubernetes.io/component': {}
+            'f:app.kubernetes.io/instance': {}
+            'f:app.kubernetes.io/managed-by': {}
+            'f:app.kubernetes.io/name': {}
+            'f:environment': {}
+        'f:spec':
+          .: {}
+          'f:bootstrapServers': {}
+          'f:config':
+            'f:config.storage.topic': {}
+            'f:offset.flush.timeout.ms': {}
+            'f:heartbeat.interval.ms': {}
+            'f:offset.storage.replication.factor': {}
+            'f:status.storage.replication.factor': {}
+            'f:rebalance.timeout.ms': {}
+            .: {}
+            'f:status.storage.topic': {}
+            'f:offset.storage.topic': {}
+            'f:config.storage.replication.factor': {}
+            'f:offset.flush.interval.ms': {}
+            'f:group.id': {}
+            'f:session.timeout.ms': {}
+          'f:replicas': {}
+          'f:resources':
+            .: {}
+            'f:limits':
+              .: {}
+              'f:cpu': {}
+              'f:memory': {}
+            'f:requests':
+              .: {}
+              'f:cpu': {}
+              'f:memory': {}
+          'f:template':
+            .: {}
+            'f:pod':
+              .: {}
+              'f:affinity':
+                .: {}
+                'f:nodeAffinity':
+                  .: {}
+                  'f:requiredDuringSchedulingIgnoredDuringExecution':
+                    .: {}
+                    'f:nodeSelectorTerms': {}
+              'f:imagePullSecrets': {}
+              'f:tolerations': {}
+          'f:tls':
+            .: {}
+            'f:trustedCertificates': {}
+          'f:version': {}
+      manager: helm
+      operation: Update
+      time: '2026-06-05T09:25:18Z'
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          .: {}
+          'f:conditions': {}
+          'f:labelSelector': {}
+          'f:observedGeneration': {}
+          'f:replicas': {}
+          'f:url': {}
+      manager: strimzi-cluster-operator
+      operation: Update
+      subresource: status
+      time: '2026-06-05T09:30:19Z'
+  namespace: dev-kafka
+  labels:
+    app.kubernetes.io/component: kafka-connect
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: dev-kafka-connect-mq
+    environment: dev
 spec:
-  version: {{ .Values.kafka.cluster.version }}
-  replicas: {{ .Values.kafka.kafkaConnect.replicas }}
-  bootstrapServers: {{ .Values.kafka.kafkaConnect.bootstrapServers }}
-  
-  # TLS configuration for secure connection (per AMQ examples)
-  tls:
-    trustedCertificates:
-      - secretName: {{ .Values.kafka.cluster.name }}-cluster-ca-cert
-        pattern: "*.crt"
-  
-  # Resource specifications
-  resources:
-    {{- if .Values.kafka.kafkaConnect.resources.requests }}
-    requests:
-      {{- if .Values.kafka.kafkaConnect.resources.requests.memory }}
-      memory: {{ .Values.kafka.kafkaConnect.resources.requests.memory }}
-      {{- end }}
-      {{- if .Values.kafka.kafkaConnect.resources.requests.cpu }}
-      cpu: {{ .Values.kafka.kafkaConnect.resources.requests.cpu }}
-      {{- end }}
-    {{- end }}
-    {{- if .Values.kafka.kafkaConnect.resources.limits }}
-    limits:
-      {{- if .Values.kafka.kafkaConnect.resources.limits.memory }}
-      memory: {{ .Values.kafka.kafkaConnect.resources.limits.memory }}
-      {{- end }}
-      {{- if .Values.kafka.kafkaConnect.resources.limits.cpu }}
-      cpu: {{ .Values.kafka.kafkaConnect.resources.limits.cpu }}
-      {{- end }}
-    {{- end }}
-  
-  # Kafka Connect configuration (per AMQ examples)
+  bootstrapServers: 'dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093'
   config:
-    group.id: {{ .Values.kafka.kafkaConnect.config.group.id }}
-    offset.storage.topic: {{ .Values.kafka.kafkaConnect.config.offset.storage.topic }}
-    config.storage.topic: {{ .Values.kafka.kafkaConnect.config.config.storage.topic }}
-    status.storage.topic: {{ .Values.kafka.kafkaConnect.config.status.storage.topic }}
-    # Use default replication factor per AMQ examples
-    config.storage.replication.factor: -1
-    offset.storage.replication.factor: -1
+    status.storage.topic: dev-kafka-connect-mq-status
     status.storage.replication.factor: -1
-    {{- if .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
-    offset.flush.interval.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
-    {{- end }}
-    {{- if .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
-    offset.flush.timeout.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
-    {{- end }}
-  
-  # # Build configuration for Debezium Oracle connector
-  # build:
-  #   output:
-  #     type: docker
-  #     image: registry.preprod.epay.sbi:8443/kafka-connect-debezium:latest
-  #   plugins:
-  #     - name: debezium-oracle-connector
-  #       artifacts:
-  #         - type: zip
-  #           url: https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/2.5.0.Final/debezium-connector-oracle-2.5.0.Final-plugin.zip
-  #         - type: zip
-  #           url: https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/21.9.0.0/ojdbc8-21.9.0.0.jar
-  #     - name: confluent-jdbc-connector
-  #       artifacts:
-  #         - type: zip
-  #           url: https://d1i4a15mxbxib1.cloudfront.net/api/plugins/confluentinc/kafka-connect-jdbc/versions/10.7.4/confluentinc-kafka-connect-jdbc-10.7.4.zip
-
-  # Pod template with affinity and tolerations
+    offset.storage.topic: dev-kafka-connect-mq-offsets
+    offset.flush.interval.ms: 10000
+    group.id: dev-kafka-connect-mq-cluster
+    session.timeout.ms: 60000
+    config.storage.replication.factor: -1
+    config.storage.topic: dev-kafka-connect-mq-configs
+    offset.flush.timeout.ms: 5000
+    rebalance.timeout.ms: 120000
+    heartbeat.interval.ms: 20000
+    offset.storage.replication.factor: -1
+  replicas: 3
+  resources:
+    limits:
+      cpu: 4
+      memory: 8Gi
+    requests:
+      cpu: 2
+      memory: 4Gi
   template:
     pod:
-      {{- if .Values.kafka.kafkaConnect.image }}
-      image: {{ .Values.kafka.kafkaConnect.image }}
-      {{- end }}
-
-      {{- if .Values.kafka.kafkaConnect.imagePullSecrets }}
-      imagePullSecrets:
-        {{- range .Values.kafka.kafkaConnect.imagePullSecrets }}
-        - name: {{ . }}
-        {{- end }}
-      {{- end }}
-
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
-            - matchExpressions:
-              - key: node-role.kubernetes.io/worker
-                operator: Exists
-              - key: workload-type
-                operator: In
-                values: ["kafka"]
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+                  - key: workload-type
+                    operator: In
+                    values:
+                      - kafka
+      imagePullSecrets:
+        - name: microservices-dev-pull-secret
       tolerations:
-        - key: "workload-type"
-          operator: "Equal"
-          value: "kafka"
-          effect: "NoSchedule"
-
----
-{{- if .Values.kafka.kafkaConnect.connectors }}
-{{- range .Values.kafka.kafkaConnect.connectors }}
-# Kafka Connector: {{ .name }}
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaConnector
-metadata:
-  name: {{ .name }}
-  namespace: {{ $.Values.kafka.namespace }}
-  labels:
-    strimzi.io/cluster: {{ $.Values.kafka.kafkaConnect.name }}
-    app.kubernetes.io/name: {{ .name }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
-    app.kubernetes.io/component: kafka-connector
-    environment: {{ $.Values.global.environment }}
-  annotations:
-    argocd.argoproj.io/sync-wave: "10"
-spec:
-  {{- if .config }}
-  {{- if .config.connector }}
-  {{- if .config.connector.class }}
-  class: {{ .config.connector.class }}
-  {{- end }}
-  {{- end }}
-  {{- end }}
-  tasksMax: 1
-  config:
-    {{- if .config }}
-    {{- range $key, $value := .config }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
-    {{- end }}
----
-{{- end }}
-{{- end }}
-{{- end }} 
+        - effect: NoSchedule
+          key: workload-type
+          operator: Equal
+          value: kafka
+  tls:
+    trustedCertificates:
+      - pattern: '*.crt'
+        secretName: dev-kafka-cluster-cluster-ca-cert
+  version: 3.9.0
+status:
+  conditions:
+    - lastTransitionTime: '2026-06-05T09:30:19.011792196Z'
+      message: Exceeded timeout of 300000ms while waiting for Pods resource dev-kafka-connect-mq-connect-2 in namespace dev-kafka to be ready
+      reason: TimeoutException
+      status: 'True'
+      type: NotReady
+  labelSelector: 'strimzi.io/cluster=dev-kafka-connect-mq,strimzi.io/name=dev-kafka-connect-mq-connect,strimzi.io/kind=KafkaConnect'
+  observedGeneration: 1
+  replicas: 3
+  url: 'http://dev-kafka-connect-mq-connect-api.dev-kafka.svc:8083'
