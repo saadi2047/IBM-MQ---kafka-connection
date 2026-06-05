@@ -1,403 +1,67 @@
-status:
-  conditions:
-    - lastTransitionTime: '2026-06-05T11:54:10.316051004Z'
-      message: 'The following tasks have failed: 0, see connectorStatus for more details.'
-      reason: Throwable
-      status: 'True'
-      type: NotReady
-  connectorStatus:
-    connector:
-      state: RUNNING
-      worker_id: 'dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083'
-    name: neft-mq-sink
-    tasks:
-      - id: 0
-        state: FAILED
-        trace: "org.apache.kafka.connect.errors.ConnectException: Tolerance exceeded in error handler\n\tat org.apache.kafka.connect.runtime.errors.RetryWithToleranceOperator.execAndHandleError(RetryWithToleranceOperator.java:261)\n\tat org.apache.kafka.connect.runtime.errors.RetryWithToleranceOperator.execute(RetryWithToleranceOperator.java:180)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.convertAndTransformRecord(WorkerSinkTask.java:538)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.convertMessages(WorkerSinkTask.java:518)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.poll(WorkerSinkTask.java:344)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.iteration(WorkerSinkTask.java:247)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.execute(WorkerSinkTask.java:216)\n\tat org.apache.kafka.connect.runtime.WorkerTask.doRun(WorkerTask.java:226)\n\tat org.apache.kafka.connect.runtime.WorkerTask.run(WorkerTask.java:281)\n\tat org.apache.kafka.connect.runtime.isolation.Plugins.lambda$withClassLoader$1(Plugins.java:238)\n\tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\tat java.base/java.lang.Thread.run(Thread.java:840)\nCaused by: org.apache.kafka.connect.errors.DataException: Converting byte[] to Kafka Connect data failed due to serialization error: \n\tat org.apache.kafka.connect.json.JsonConverter.toConnectData(JsonConverter.java:347)\n\tat org.apache.kafka.connect.storage.Converter.toConnectData(Converter.java:91)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.lambda$convertAndTransformRecord$3(WorkerSinkTask.java:538)\n\tat org.apache.kafka.connect.runtime.errors.RetryWithToleranceOperator.execAndRetry(RetryWithToleranceOperator.java:208)\n\tat org.apache.kafka.connect.runtime.errors.RetryWithToleranceOperator.execAndHandleError(RetryWithToleranceOperator.java:245)\n\t... 14 more\nCaused by: org.apache.kafka.common.errors.SerializationException: com.fasterxml.jackson.core.JsonParseException: Unrecognized token 'SBIEPAY_Dealer_Validation': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 26]\n\tat org.apache.kafka.connect.json.JsonDeserializer.deserialize(JsonDeserializer.java:75)\n\tat org.apache.kafka.connect.json.JsonConverter.toConnectData(JsonConverter.java:345)\n\t... 18 more\nCaused by: com.fasterxml.jackson.core.JsonParseException: Unrecognized token 'SBIEPAY_Dealer_Validation': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 26]\n\tat com.fasterxml.jackson.core.JsonParser._constructError(JsonParser.java:2481)\n\tat com.fasterxml.jackson.core.base.ParserMinimalBase._reportError(ParserMinimalBase.java:762)\n\tat com.fasterxml.jackson.core.json.UTF8StreamJsonParser._reportInvalidToken(UTF8StreamJsonParser.java:3703)\n\tat com.fasterxml.jackson.core.json.UTF8StreamJsonParser._handleUnexpectedValue(UTF8StreamJsonParser.java:2791)\n\tat com.fasterxml.jackson.core.json.UTF8StreamJsonParser._nextTokenNotInObject(UTF8StreamJsonParser.java:911)\n\tat com.fasterxml.jackson.core.json.UTF8StreamJsonParser.nextToken(UTF8StreamJsonParser.java:797)\n\tat com.fasterxml.jackson.databind.ObjectMapper._readTreeAndClose(ObjectMapper.java:4928)\n\tat com.fasterxml.jackson.databind.ObjectMapper.readTree(ObjectMapper.java:3292)\n\tat org.apache.kafka.connect.json.JsonDeserializer.deserialize(JsonDeserializer.java:73)\n\t... 19 more\n"
-        worker_id: 'dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083'
-    type: sink
-  observedGeneration: 1
-  tasksMax: 1
-  topics:
-    - neft.outbound.kafka.topic
+The sink connectors (`neft-mq-sink` and `rtgs-mq-sink`) failed — and it's your own SOP test that broke them, not a regression. This is benign and easy to fix. Here's exactly what happened.
 
+The trace says it precisely:
 
-----------------------------------------
+```
+DataException: Converting byte[] to Kafka Connect data failed due to serialization error
+Caused by: JsonParseException: Unrecognized token 'SBIEPAY_Dealer_Validation':
+  was expecting (JSON String, Number, Array, Object ...)
+```
 
-[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka
-NAME                   DESIRED REPLICAS   READY
-dev-kafka-connect-mq   3                  True
-[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
-NAME                             READY   STATUS    RESTARTS   AGE
-dev-kafka-connect-mq-connect-0   1/1     Running   0          6m52s
-dev-kafka-connect-mq-connect-1   1/1     Running   0          6m52s
-dev-kafka-connect-mq-connect-2   1/1     Running   0          6m52s
-[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq \
->   -o custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image
-NAME                             IMAGE
-dev-kafka-connect-mq-connect-0   registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
-dev-kafka-connect-mq-connect-1   registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
-dev-kafka-connect-mq-connect-2   registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
-[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o jsonpath='{.spec.image}{"\n"}'
-registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
-[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka \
->   -o jsonpath='{range .status.connectorPlugins[*]}{.class}{"  "}{.version}{"\n"}{end}'
-com.ibm.eventstreams.connect.mqsink.MQSinkConnector  2.2.1
-com.ibm.eventstreams.connect.mqsource.MQSourceConnector  2.6.0
-org.apache.kafka.connect.mirror.MirrorCheckpointConnector  3.9.0
-org.apache.kafka.connect.mirror.MirrorHeartbeatConnector  3.9.0
-org.apache.kafka.connect.mirror.MirrorSourceConnector  3.9.0
-[osuser@bastion ~]$ oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
->   find /opt/kafka/plugins -iname "*mq*" 2>/dev/null
-/opt/kafka/plugins/ibm-mq
-/opt/kafka/plugins/ibm-mq/com.ibm.mq.allclient-9.4.4.1.jar
-/opt/kafka/plugins/ibm-mq/kafka-connect-mq-sink-2.2.1-jar-with-dependencies.jar
-/opt/kafka/plugins/ibm-mq/kafka-connect-mq-source-2.6.0-jar-with-dependencies.jar
-[osuser@bastion ~]$ oc get kafkaconnector -n dev-kafka
-NAME             CLUSTER                CONNECTOR CLASS                                           MAX TASKS   READY
-neft-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1           True
-neft-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1           True
-rtgs-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1           True
-rtgs-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1           True
-[osuser@bastion ~]$ oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
->   curl -s http://localhost:8083/connectors?expand=status | python3 -m json.tool
-{
-    "neft-mq-sink": {
-        "status": {
-            "name": "neft-mq-sink",
-            "connector": {
-                "state": "RUNNING",
-                "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-            },
-            "tasks": [
-                {
-                    "id": 0,
-                    "state": "RUNNING",
-                    "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-                }
-            ],
-            "type": "sink"
-        }
-    },
-    "rtgs-mq-source": {
-        "status": {
-            "name": "rtgs-mq-source",
-            "connector": {
-                "state": "RUNNING",
-                "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-            },
-            "tasks": [
-                {
-                    "id": 0,
-                    "state": "RUNNING",
-                    "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-                }
-            ],
-            "type": "source"
-        }
-    },
-    "rtgs-mq-sink": {
-        "status": {
-            "name": "rtgs-mq-sink",
-            "connector": {
-                "state": "RUNNING",
-                "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-            },
-            "tasks": [
-                {
-                    "id": 0,
-                    "state": "RUNNING",
-                    "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-                }
-            ],
-            "type": "sink"
-        }
-    },
-    "neft-mq-source": {
-        "status": {
-            "name": "neft-mq-source",
-            "connector": {
-                "state": "RUNNING",
-                "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-            },
-            "tasks": [
-                {
-                    "id": 0,
-                    "state": "RUNNING",
-                    "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-                }
-            ],
-            "type": "source"
-        }
-    }
-}
-[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
->   echo "== $c =="
->   oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
->     curl -s http://localhost:8083/connectors/$c/status
->   echo
-> done
-== neft-mq-source ==
-{"name":"neft-mq-source","connector":{"state":"RUNNING","worker_id":"dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"},"tasks":[{"id":0,"state":"RUNNING","worker_id":"dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"}],"type":"source"}
-== neft-mq-sink ==
-{"name":"neft-mq-sink","connector":{"state":"RUNNING","worker_id":"dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"},"tasks":[{"id":0,"state":"RUNNING","worker_id":"dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"}],"type":"sink"}
-== rtgs-mq-source ==
-{"name":"rtgs-mq-source","connector":{"state":"RUNNING","worker_id":"dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"},"tasks":[{"id":0,"state":"RUNNING","worker_id":"dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"}],"type":"source"}
-== rtgs-mq-sink ==
-{"name":"rtgs-mq-sink","connector":{"state":"RUNNING","worker_id":"dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"},"tasks":[{"id":0,"state":"RUNNING","worker_id":"dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"}],"type":"sink"}
-[osuser@bastion ~]$ oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
->   bash -c "</dev/tcp/10.176.10.213/2001 && echo NEFT-2001-OPEN || echo NEFT-2001-BLOCKED"
-NEFT-2001-OPEN
-[osuser@bastion ~]$ oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
->   bash -c "</dev/tcp/10.176.10.213/2005 && echo RTGS-2005-OPEN || echo RTGS-2005-BLOCKED"
-RTGS-2005-OPEN
-[osuser@bastion ~]$ oc exec -it -n dev-kafka dev-kafka-cluster-kafka-0 -- bash -c \
->   "echo 'SOP-TEST-BY-SAADI-RTGS-SINK' | bin/kafka-console-producer.sh \
->    --bootstrap-server localhost:9092 --topic rtgs.outbound.kafka.topic"
-Error from server (NotFound): pods "dev-kafka-cluster-kafka-0" not found
-[osuser@bastion ~]$ OC GET PODS
-bash: OC: command not found...
-Similar command is: 'oc'
-[osuser@bastion ~]$ oc get pods
-NAME                                                 READY   STATUS    RESTARTS          AGE
-dev-console-console-deployment-577c797ccf-kwb6l      2/2     Running   2 (27d ago)       34d
-dev-kafka-cluster-broker-0                           1/1     Running   15 (3d15h ago)    36d
-dev-kafka-cluster-broker-1                           1/1     Running   23 (2d4h ago)     44d
-dev-kafka-cluster-broker-2                           1/1     Running   16 (3d16h ago)    44d
-dev-kafka-cluster-controller-3                       1/1     Running   0                 44d
-dev-kafka-cluster-controller-4                       1/1     Running   1 (22d ago)       44d
-dev-kafka-cluster-controller-5                       1/1     Running   0                 44d
-dev-kafka-cluster-cruise-control-7678c88585-67rjz    1/1     Running   392 (3d15h ago)   78d
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (66d ago)       78d
-dev-kafka-connect-mq-connect-0                       1/1     Running   0                 15m
-dev-kafka-connect-mq-connect-1                       1/1     Running   0                 15m
-dev-kafka-connect-mq-connect-2                       1/1     Running   0                 15m
-dev-kafka-mirror-maker-mirrormaker2-0                0/1     Pending   0                 155d
-[osuser@bastion ~]$ oc exec -it -n dev-kafka dev-kafka-cluster-broker-0 -- bash -c \
->   "echo 'SOP-TEST-BY-SAADI-RTGS-SINK' | bin/kafka-console-producer.sh \
->    --bootstrap-server localhost:9092 --topic rtgs.outbound.kafka.topic"
-[osuser@bastion ~]$ oc exec -it -n dev-kafka dev-kafka-cluster-broker-0 -- bash -c \
->   "echo 'SOP-TEST-BY-SAADI-NEFT-SINK' | bin/kafka-console-producer.sh \
->    --bootstrap-server localhost:9092 --topic neft.outbound.kafka.topic"
-[osuser@bastion ~]$
-[osuser@bastion ~]$
-[osuser@bastion ~]$
-[osuser@bastion ~]$
-[osuser@bastion ~]$ oc exec -it -n dev-kafka dev-kafka-cluster-broker-0 -- bash -c \
->   "bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
->    --topic rtgs.inbound.kafka.topic --from-beginning --timeout-ms 10000"
-aaaa
-test iph
-test iph2
-<RequestPayload>
-<AppHdr xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.01">
-    <Fr>
-        <FIId>
-            <FinInstnId>
-                <ClrSysMmbId>
-                    <MmbId>RBIN0RTGS00</MmbId>
-                </ClrSysMmbId>
-            </FinInstnId>
-        </FIId>
-    </Fr>
-    <To>
-        <FIId>
-            <FinInstnId>
-                <ClrSysMmbId>
-                    <MmbId>SBIN0004343</MmbId>
-                </ClrSysMmbId>
-            </FinInstnId>
-        </FIId>
-    </To>
-    <BizMsgIdr>RBIN202603059937692093</BizMsgIdr>
-    <MsgDefIdr>pacs.008.001.03</MsgDefIdr>
-    <BizSvc>RTGSFIToFICustomerCredit</BizSvc>
-    <CreDt>2026-06-02T04:38:56Z</CreDt>
-    <Sgntr>
-        <any xsi:type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"></any>
-        <XMLSgntrs>SIGNATURE REMOVED</XMLSgntrs>
-    </Sgntr>
-</AppHdr>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.03">
-    <FIToFICstmrCdtTrf>
-        <GrpHdr>
-            <MsgId>HDFC202603055077308225</MsgId>
-            <CreDtTm>2026-06-02T04:38:48</CreDtTm>
-            <NbOfTxs>1</NbOfTxs>
-            <TtlIntrBkSttlmAmt Ccy="INR">10.00</TtlIntrBkSttlmAmt>
-            <IntrBkSttlmDt>2026-06-02</IntrBkSttlmDt>
-            <SttlmInf>
-                <SttlmMtd>CLRG</SttlmMtd>
-            </SttlmInf>
-            <InstgAgt>
-                <FinInstnId>
-                    <ClrSysMmbId>
-                        <MmbId>HDFC0999999</MmbId>
-                    </ClrSysMmbId>
-                </FinInstnId>
-            </InstgAgt>
-            <InstdAgt>
-                <FinInstnId>
-                    <ClrSysMmbId>
-                        <MmbId>SBIN0004343</MmbId>
-                    </ClrSysMmbId>
-                </FinInstnId>
-            </InstdAgt>
-        </GrpHdr>
-        <CdtTrfTxInf>
-            <PmtId>
-                <InstrId>R064260361364633</InstrId>
-                <EndToEndId>YESB53258978909</EndToEndId>
-                <TxId>YESB53258978909</TxId>
-            </PmtId>
-            <PmtTpInf>
-                <InstrPrty>HIGH</InstrPrty>
-                <SvcLvl>
-                    <Prtry>TTC=1000,PRI=31</Prtry>
-                </SvcLvl>
-                <LclInstrm>
-                    <Prtry>RTGSFIToFICustomerCredit</Prtry>
-                </LclInstrm>
-                <CtgyPurp>
-                    <Cd>CASH</Cd>
-                </CtgyPurp>
-            </PmtTpInf>
-            <IntrBkSttlmAmt Ccy="INR">10.00</IntrBkSttlmAmt>
-            <ChrgBr>DEBT</ChrgBr>
-            <Dbtr>
-                <Nm>MPKHAITAN</Nm>
-                <PstlAdr>
-                    <AdrLine>15GANESHCHANDRAAVENUENRBANKOFINDIAG</AdrLine>
-                    <AdrLine>15GANESHCHANDRAAVENUENRBANKOFINDIAG</AdrLine>
-                </PstlAdr>
-            </Dbtr>
-            <DbtrAcct>
-                <Id>
-                    <Othr>
-                        <Id>NE003V51WW2OMHNXNNZT</Id>
-                    </Othr>
-                </Id>
-                <Tp>
-                    <Prtry></Prtry>
-                </Tp>
-                <Ccy>INR</Ccy>
-            </DbtrAcct>
-            <DbtrAgt>
-                <FinInstnId>
-                    <ClrSysMmbId>
-                        <MmbId>HDFC0000240</MmbId>
-                    </ClrSysMmbId>
-                    <Nm></Nm>
-                    <PstlAdr/>
-                </FinInstnId>
-            </DbtrAgt>
-            <CdtrAgt>
-                <FinInstnId>
-                    <ClrSysMmbId>
-                        <MmbId>SBIN0000INB</MmbId>
-                    </ClrSysMmbId>
-                    <Nm>STATE BANK OF INDIA</Nm>
-                </FinInstnId>
-            </CdtrAgt>
-            <Cdtr>
-                <Nm>AssameTendering</Nm>
-                <PstlAdr>
-                    <AdrLine>603025869647</AdrLine>
-                </PstlAdr>
-            </Cdtr>
-            <CdtrAcct>
-                <Id>
-                    <Othr>
-                        <Id>NE003EXXGX2OMSEAQ1XQ</Id>
-                    </Othr>
-                </Id>
-                <Tp>
-                    <Prtry></Prtry>
-                </Tp>
-                <Ccy>INR</Ccy>
-            </CdtrAcct>
-            <InstrForCdtrAgt>
-                <Cd>PHOB</Cd>
-                <InstrInf></InstrInf>
-            </InstrForCdtrAgt>
-            <RmtInf/>
-        </CdtTrfTxInf>
-    </FIToFICstmrCdtTrf>
-</Document>
-</RequestPayload>
-AGG|HDFCH00625297377|HDFC0009142|04-Jun-26|10.00|NE00308OC3BPMZMP8LDC
-HI TEST MESSAGE FROM IPH
-[2026-06-05 10:52:41,982] ERROR Error processing message, terminating consumer process:  (org.apache.kafka.tools.consumer.ConsoleConsumer)
-org.apache.kafka.common.errors.TimeoutException
-Processed a total of 6 messages
-[osuser@bastion ~]$
-[osuser@bastion ~]$
-[osuser@bastion ~]$
-[osuser@bastion ~]$  oc exec -it -n dev-kafka dev-kafka-cluster-broker-0 -- bash -c \
->   "bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
->    --topic neft.inbound.kafka.topic --from-beginning --timeout-ms 10000"
-[2026-06-05 10:54:03,615] ERROR Error processing message, terminating consumer process:  (org.apache.kafka.tools.consumer.ConsoleConsumer)
-org.apache.kafka.common.errors.TimeoutException
-Processed a total of 0 messages
-[osuser@bastion ~]$  oc exec -it -n dev-kafka dev-kafka-cluster-broker-0 -- bash -c   "bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
-   --topic neft.inbound.kafka.topic --from-beginning --timeout-ms 100000"
-{
-    "message" : "Hi sir...."
-}
-NEFT TEST MESSAGE FROM IPH
-oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --since=30m | grep -c "Joined group"[2026-06-05 10:56:06,327] ERROR Error processing message, terminating consumer process:  (org.apache.kafka.tools.consumer.ConsoleConsumer)
-org.apache.kafka.common.errors.TimeoutException
-Processed a total of 2 messages
-[osuser@bastion ~]$ oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --since=30m | grep -c "Joined group"
-7
-[osuser@bastion ~]$ oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --since=30m \
->   | grep -iE "coordinator was unreachable|UNKNOWN_MEMBER_ID" | wc -l
-0
-[osuser@bastion ~]$ oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --since=30m \
->   | grep -iE "ERROR|MQRC|unrecoverable" | tail -20
-        errors.log.include.messages = false
-        errors.retry.delay.max.ms = 60000
-        errors.retry.timeout = 0
-        errors.tolerance = none
-        errors.deadletterqueue.context.headers.enable = false
-        errors.deadletterqueue.topic.name =
-        errors.deadletterqueue.topic.replication.factor = 3
-        errors.log.enable = false
-        errors.log.include.messages = false
-        errors.retry.delay.max.ms = 60000
-        errors.retry.timeout = 0
-        errors.tolerance = none
-        errors.deadletterqueue.context.headers.enable = false
-        errors.deadletterqueue.topic.name =
-        errors.deadletterqueue.topic.replication.factor = 3
-        errors.log.enable = false
-        errors.log.include.messages = false
-        errors.retry.delay.max.ms = 60000
-        errors.retry.timeout = 0
-        errors.tolerance = none
-[osuser@bastion ~]$ oc get kafkaconnector -n dev-kafka
-NAME             CLUSTER                CONNECTOR CLASS                                           MAX TASKS   READY
-neft-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1
-neft-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1           True
-rtgs-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1
-rtgs-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1           True
-[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka   -o jsonpath='{range .status.connectorPlugins[*]}{.class}{"  "}{.version}{"\n"}{end}'
-com.ibm.eventstreams.connect.mqsink.MQSinkConnector  2.2.1
-com.ibm.eventstreams.connect.mqsource.MQSourceConnector  2.6.0
-org.apache.kafka.connect.mirror.MirrorCheckpointConnector  3.9.0
-org.apache.kafka.connect.mirror.MirrorHeartbeatConnector  3.9.0
-org.apache.kafka.connect.mirror.MirrorSourceConnector  3.9.0
-[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o jsonpath='{.spec.image}{"\n"}'
-registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
-[osuser@bastion ~]$ oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 --   bash -c "</dev/tcp/10.176.10.213/2001 && echo NEFT-2001-OPEN || echo NEFT-2001-BLOCKED"
-NEFT-2001-OPEN
-[osuser@bastion ~]$ oc get kafkaconnect -n dev-kafka
-NAME                   DESIRED REPLICAS   READY
-dev-kafka-connect-mq   3                  True
-[osuser@bastion ~]$ oc get kafkaconnector -n dev-kafka
-NAME             CLUSTER                CONNECTOR CLASS                                           MAX TASKS   READY
-neft-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1
-neft-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1           True
-rtgs-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1
-rtgs-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1           True
-[osuser@bastion ~]$
+The sink task tried to read a message off `neft.outbound.kafka.topic` and parse it as **JSON**, but the message wasn't JSON — it was a plain string (`SBIEPAY_Dealer_Validation`, and your test messages like `SOP-TEST-BY-SAADI-NEFT-SINK`). With `errors.tolerance = none` (the default, visible in your log), one unparseable record kills the task. So the connector state stays RUNNING but the task goes FAILED → `READY` blank.
+
+Two things combined here:
+
+The sink is using a **JSON converter** somewhere in the effective config, even though your connector YAML specifies `value.converter: ByteArrayConverter`. Notice the cluster-level config from the working test CR had `value.converter: ByteArrayConverter` set as a **worker default** — but your new chart's cluster `config:` does **not** include the converter defaults. So the worker default converter fell back to `JsonConverter`, and something in the chain is applying it. The `JsonParseException` proves JSON conversion is active on the sink path.
+
+Your manual test wrote a non-JSON plain string into the outbound topic, which the JSON converter immediately choked on.
+
+So the real test produced real data fine (you can see actual RTGS pacs.008 XML and NEFT messages flowed through on the source side — that path works). It's the sink converter config that's the gap.
+
+## The fix
+
+Two parts. First, the immediate recovery — restart the failed sink tasks so they move past the poisoned test message:
+
+```
+oc annotate kafkaconnector neft-mq-sink rtgs-mq-sink strimzi.io/restart=true -n dev-kafka --overwrite
+```
+
+But that alone won't hold if the bad message is still at the consumer offset and the converter is still JSON — it'll re-fail. The durable fix is to make the converters match the working cluster.
+
+Second, add the converter defaults to the cluster `config:` in `kafka-connect.yaml`, exactly as the working test CR had them:
+
+```yaml
+  config:
+    group.id: {{ ... }}
+    ...
+    plugin.path: /opt/kafka/plugins
+    security.protocol: SSL
+    ssl.endpoint.identification.algorithm: HTTPS
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: "false"
+    ...
+```
+
+The working cluster had `key.converter: StringConverter` and `value.converter: ByteArrayConverter` as **worker-level defaults** — I flagged these as missing two steps ago. They're the gap. With ByteArrayConverter at the worker level (and on the connectors, which you already have), the sink treats messages as raw bytes and passes them to MQ as-is, no JSON parsing, no choking on plain strings.
+
+So your chart's cluster config is still missing `key.converter`, `value.converter`, and `value.converter.schemas.enable`. Add those three lines, commit, sync.
+
+## After the chart change
+
+The pods roll with the new worker defaults. Then clear the failed tasks:
+
+```
+oc annotate kafkaconnector neft-mq-sink rtgs-mq-sink strimzi.io/restart=true -n dev-kafka --overwrite
+oc get kafkaconnector -n dev-kafka
+```
+
+Both sinks should go back to `READY=True`.
+
+## One SOP correction
+
+Your sink test wrote a bare string. That's fine *with ByteArrayConverter* (it's delivered to MQ as bytes), but it's worth noting in the SOP: the outbound topic carries whatever the app produces, and the sink passes bytes through to MQ. Don't worry about the message being "valid" — with the byte converter there's no parsing. The earlier failure only happened because the converter was wrong at the worker level.
+
+So to directly answer "why were NEFT connectors not available when they worked before": the **source** connectors are fine and still `True`. The **sink** connectors failed because the new chart dropped the worker-level `value.converter: ByteArrayConverter` default that the original working cluster had, so the sink fell back to JSON parsing and died on the first non-JSON message (your test string). Add the three converter lines to the cluster config, sync, restart the two sinks.
+
+Want me to give you the complete corrected `config:` block with all the now-confirmed-required keys (converters + plugin.path + SSL + stability) in one piece so you can paste it and not miss any?
