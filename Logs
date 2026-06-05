@@ -1,19 +1,4 @@
 config:
-    group.id: {{ ... }}
-    offset.storage.topic: {{ ... }}
-    config.storage.topic: {{ ... }}
-    status.storage.topic: {{ ... }}
-    config.storage.replication.factor: -1
-    offset.storage.replication.factor: -1
-    status.storage.replication.factor: -1
-    plugin.path: /opt/kafka/plugins
-    key.converter: org.apache.kafka.connect.storage.StringConverter
-    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
-    value.converter.schemas.enable: "false"
-    ...stability keys...
-
-
-  config:
     group.id: {{ .Values.kafka.kafkaConnect.config.group.id }}
     offset.storage.topic: {{ .Values.kafka.kafkaConnect.config.offset.storage.topic }}
     config.storage.topic: {{ .Values.kafka.kafkaConnect.config.config.storage.topic }}
@@ -22,6 +7,11 @@ config:
     config.storage.replication.factor: -1
     offset.storage.replication.factor: -1
     status.storage.replication.factor: -1
+    # Plugin path + worker-default converters (match working cluster)
+    plugin.path: /opt/kafka/plugins
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: "false"
     {{- if .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
     offset.flush.interval.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
     {{- end }}
@@ -31,4 +21,4 @@ config:
     # Stability: prevent worker eviction on transient broker blips
     session.timeout.ms: {{ .Values.kafka.kafkaConnect.config.session.timeout.ms | default 60000 }}
     heartbeat.interval.ms: {{ .Values.kafka.kafkaConnect.config.heartbeat.interval.ms | default 20000 }}
-    rebalance.timeout.ms: {{ .Values.kafka.kafkaConnect.config.rebalance.timeout.ms | default 120000 }}  
+    rebalance.timeout.ms: {{ .Values.kafka.kafkaConnect.config.rebalance.timeout.ms | default 120000 }}
