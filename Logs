@@ -39,3 +39,17 @@ template:
                   - key: env
                     operator: In
                     values: ["dev"]
+
+
+--------------------
+
+affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+                  - key: env
+                    operator: In
+                    values: ["dev"]
