@@ -1,47 +1,96 @@
-The cluster CR rendered perfectly — config, name, stability settings all correct. The problem isn't your YAML, it's that a pod won't start:
-
-`Exceeded timeout of 300000ms while waiting for Pods resource dev-kafka-connect-mq-connect-2 ... to be ready`
-
-The operator created the deployment but pod `-connect-2` never became Ready within 5 minutes. That's a pod-scheduling or container-startup issue, not a config error. Let me give you the diagnosis path in order of likelihood for your setup.
-
-First, look at the pod itself — this tells you almost everything:
-
-```
-oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
-oc describe pod dev-kafka-connect-mq-connect-2 -n dev-kafka | tail -40
-```
-
-The `describe` Events section is the answer. The most probable causes, given your chart:
-
-**Scheduling — node affinity/taint (most likely).** Your pod template requires nodes with `workload-type=kafka` label AND the matching toleration. If only 1–2 nodes carry that label, three replicas can't all schedule, and `-connect-2` sits `Pending`. The earlier test cluster ran 3 replicas, so labels likely exist — but confirm:
-
-```
-oc get nodes -l workload-type=kafka
-```
-
-If fewer than 3 nodes return, that's your cause. Either label another worker, or drop `replicas` to match available kafka-labeled nodes. In `describe` this shows as `FailedScheduling ... didn't match node selector / had untolerated taint`.
-
-**Image pull failure.** The pod uses your custom image `...debeziumconnect:01` via `imagePullSecrets: microservices-dev-pull-secret`. If that secret isn't in the `dev-kafka` namespace (it may only exist in `dev-epay-common` or wherever the app runs), the pull fails. In an air-gapped env this is common — the registry path must be reachable from the kafka nodes. `describe` shows `ImagePullBackOff` / `ErrImagePull`. Check:
-
-```
-oc get secret microservices-dev-pull-secret -n dev-kafka
-oc get pod dev-kafka-connect-mq-connect-2 -n dev-kafka -o jsonpath='{.status.containerStatuses[*].state}'
-```
-
-**Resource pressure.** You request 2 CPU / 4Gi and limit 8Gi per replica × 3. If the kafka-labeled nodes are already running the old test connect cluster (still present?) plus brokers, there may not be room. `describe` shows `Insufficient cpu/memory`. Check whether the old cluster is still up competing for the same nodes:
-
-```
-oc get pods -n dev-kafka | grep connect
-```
-
-If `dev-kafka-connect-mq-test-connect-*` pods are still running, they're holding resources on those tainted nodes — you may need to delete the old cluster first (which you were going to do anyway in the cutover) to free capacity.
-
-**Container crash on startup.** Less likely since config is valid, but if the pod is `Running`→`CrashLoopBackOff` rather than `Pending`, check logs:
-
-```
-oc logs dev-kafka-connect-mq-connect-2 -n dev-kafka --tail=50
-```
-
-One CR detail to note: `app.kubernetes.io/managed-by: Helm` and `meta.helm.sh/release-namespace: dev-epay-common` are set, so this came through Helm cleanly — ownership is fine, not the issue.
-
-Run the first two commands (`get pods` + `describe ... | tail -40`) and paste the Events section. The reason will be one line in there — `FailedScheduling`, `ErrImagePull`, or `Insufficient ...` — and I'll give you the exact fix. My lead bet is either node-label capacity (only 2 kafka nodes for 3 replicas) or the old test cluster still occupying those nodes.
+[osuser@bastion ~]$ oc project dev-kafka
+Now using project "dev-kafka" on server "https://api.dev.sbiepay.sbi:6443".
+[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
+NAME                             READY   STATUS    RESTARTS   AGE
+dev-kafka-connect-mq-connect-0   0/1     Pending   0          10m
+dev-kafka-connect-mq-connect-1   0/1     Pending   0          10m
+dev-kafka-connect-mq-connect-2   0/1     Pending   0          10m
+[osuser@bastion ~]$ oc describe pod dev-kafka-connect-mq-connect-2 -n dev-kafka | tail -40
+      KAFKA_CONNECT_TRUSTED_CERTS:      dev-kafka-cluster-cluster-ca-cert/*.crt
+    Mounts:
+      /opt/kafka/connect-certs/dev-kafka-cluster-cluster-ca-cert from dev-kafka-cluster-cluster-ca-cert (rw)
+      /opt/kafka/custom-config/ from kafka-connect-configurations (rw)
+      /tmp from strimzi-tmp (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-z7cqg (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False
+Volumes:
+  strimzi-tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  5Mi
+  kafka-connect-configurations:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      dev-kafka-connect-mq-connect-config
+    Optional:  false
+  dev-kafka-cluster-cluster-ca-cert:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  dev-kafka-cluster-cluster-ca-cert
+    Optional:    false
+  kube-api-access-z7cqg:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+    ConfigMapName:           openshift-service-ca.crt
+    ConfigMapOptional:       <nil>
+QoS Class:                   Burstable
+Node-Selectors:              env=dev
+Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+                             workload-type=kafka:NoSchedule
+Events:
+  Type     Reason            Age                From               Message
+  ----     ------            ----               ----               -------
+  Warning  FailedScheduling  21s (x3 over 10m)  default-scheduler  0/18 nodes are available: 12 node(s) didn't match Pod's node affinity/selector, 3 node(s) had untolerated taint {node-role.kubernetes.io/infra: reserved}, 3 node(s) had untolerated taint {node-role.kubernetes.io/master: }. preemption: 0/18 nodes are available: 18 Preemption is not helpful for scheduling.
+[osuser@bastion ~]$ oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka | tail -40
+      KAFKA_CONNECT_TRUSTED_CERTS:      dev-kafka-cluster-cluster-ca-cert/*.crt
+    Mounts:
+      /opt/kafka/connect-certs/dev-kafka-cluster-cluster-ca-cert from dev-kafka-cluster-cluster-ca-cert (rw)
+      /opt/kafka/custom-config/ from kafka-connect-configurations (rw)
+      /tmp from strimzi-tmp (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-8c4w2 (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False
+Volumes:
+  strimzi-tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  5Mi
+  kafka-connect-configurations:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      dev-kafka-connect-mq-connect-config
+    Optional:  false
+  dev-kafka-cluster-cluster-ca-cert:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  dev-kafka-cluster-cluster-ca-cert
+    Optional:    false
+  kube-api-access-8c4w2:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+    ConfigMapName:           openshift-service-ca.crt
+    ConfigMapOptional:       <nil>
+QoS Class:                   Burstable
+Node-Selectors:              env=dev
+Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+                             workload-type=kafka:NoSchedule
+Events:
+  Type     Reason            Age                From               Message
+  ----     ------            ----               ----               -------
+  Warning  FailedScheduling  29s (x3 over 10m)  default-scheduler  0/18 nodes are available: 12 node(s) didn't match Pod's node affinity/selector, 3 node(s) had untolerated taint {node-role.kubernetes.io/infra: reserved}, 3 node(s) had untolerated taint {node-role.kubernetes.io/master: }. preemption: 0/18 nodes are available: 18 Preemption is not helpful for scheduling.
+[osuser@bastion ~]$ oc get nodes -l workload-type=kafka
+No resources found
+[osuser@bastion ~]$ oc get secret microservices-dev-pull-secret -n dev-kafka
+NAME                            TYPE                             DATA   AGE
+microservices-dev-pull-secret   kubernetes.io/dockerconfigjson   1      77d
+[osuser@bastion ~]$ oc get pod dev-kafka-connect-mq-connect-2 -n dev-kafka -o jsonpath='{.status.containerStatuses[*].state}'
+[osuser@bastion ~]$
