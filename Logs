@@ -1,96 +1,24 @@
-[osuser@bastion ~]$ oc project dev-kafka
-Now using project "dev-kafka" on server "https://api.dev.sbiepay.sbi:6443".
-[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
-NAME                             READY   STATUS    RESTARTS   AGE
-dev-kafka-connect-mq-connect-0   0/1     Pending   0          10m
-dev-kafka-connect-mq-connect-1   0/1     Pending   0          10m
-dev-kafka-connect-mq-connect-2   0/1     Pending   0          10m
-[osuser@bastion ~]$ oc describe pod dev-kafka-connect-mq-connect-2 -n dev-kafka | tail -40
-      KAFKA_CONNECT_TRUSTED_CERTS:      dev-kafka-cluster-cluster-ca-cert/*.crt
-    Mounts:
-      /opt/kafka/connect-certs/dev-kafka-cluster-cluster-ca-cert from dev-kafka-cluster-cluster-ca-cert (rw)
-      /opt/kafka/custom-config/ from kafka-connect-configurations (rw)
-      /tmp from strimzi-tmp (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-z7cqg (ro)
-Conditions:
-  Type           Status
-  PodScheduled   False
-Volumes:
-  strimzi-tmp:
-    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
-    Medium:     Memory
-    SizeLimit:  5Mi
-  kafka-connect-configurations:
-    Type:      ConfigMap (a volume populated by a ConfigMap)
-    Name:      dev-kafka-connect-mq-connect-config
-    Optional:  false
-  dev-kafka-cluster-cluster-ca-cert:
-    Type:        Secret (a volume populated by a Secret)
-    SecretName:  dev-kafka-cluster-cluster-ca-cert
-    Optional:    false
-  kube-api-access-z7cqg:
-    Type:                    Projected (a volume that contains injected data from multiple sources)
-    TokenExpirationSeconds:  3607
-    ConfigMapName:           kube-root-ca.crt
-    ConfigMapOptional:       <nil>
-    DownwardAPI:             true
-    ConfigMapName:           openshift-service-ca.crt
-    ConfigMapOptional:       <nil>
-QoS Class:                   Burstable
-Node-Selectors:              env=dev
-Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
-                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-                             workload-type=kafka:NoSchedule
-Events:
-  Type     Reason            Age                From               Message
-  ----     ------            ----               ----               -------
-  Warning  FailedScheduling  21s (x3 over 10m)  default-scheduler  0/18 nodes are available: 12 node(s) didn't match Pod's node affinity/selector, 3 node(s) had untolerated taint {node-role.kubernetes.io/infra: reserved}, 3 node(s) had untolerated taint {node-role.kubernetes.io/master: }. preemption: 0/18 nodes are available: 18 Preemption is not helpful for scheduling.
-[osuser@bastion ~]$ oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka | tail -40
-      KAFKA_CONNECT_TRUSTED_CERTS:      dev-kafka-cluster-cluster-ca-cert/*.crt
-    Mounts:
-      /opt/kafka/connect-certs/dev-kafka-cluster-cluster-ca-cert from dev-kafka-cluster-cluster-ca-cert (rw)
-      /opt/kafka/custom-config/ from kafka-connect-configurations (rw)
-      /tmp from strimzi-tmp (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-8c4w2 (ro)
-Conditions:
-  Type           Status
-  PodScheduled   False
-Volumes:
-  strimzi-tmp:
-    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
-    Medium:     Memory
-    SizeLimit:  5Mi
-  kafka-connect-configurations:
-    Type:      ConfigMap (a volume populated by a ConfigMap)
-    Name:      dev-kafka-connect-mq-connect-config
-    Optional:  false
-  dev-kafka-cluster-cluster-ca-cert:
-    Type:        Secret (a volume populated by a Secret)
-    SecretName:  dev-kafka-cluster-cluster-ca-cert
-    Optional:    false
-  kube-api-access-8c4w2:
-    Type:                    Projected (a volume that contains injected data from multiple sources)
-    TokenExpirationSeconds:  3607
-    ConfigMapName:           kube-root-ca.crt
-    ConfigMapOptional:       <nil>
-    DownwardAPI:             true
-    ConfigMapName:           openshift-service-ca.crt
-    ConfigMapOptional:       <nil>
-QoS Class:                   Burstable
-Node-Selectors:              env=dev
-Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
-                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-                             workload-type=kafka:NoSchedule
-Events:
-  Type     Reason            Age                From               Message
-  ----     ------            ----               ----               -------
-  Warning  FailedScheduling  29s (x3 over 10m)  default-scheduler  0/18 nodes are available: 12 node(s) didn't match Pod's node affinity/selector, 3 node(s) had untolerated taint {node-role.kubernetes.io/infra: reserved}, 3 node(s) had untolerated taint {node-role.kubernetes.io/master: }. preemption: 0/18 nodes are available: 18 Preemption is not helpful for scheduling.
-[osuser@bastion ~]$ oc get nodes -l workload-type=kafka
-No resources found
-[osuser@bastion ~]$ oc get secret microservices-dev-pull-secret -n dev-kafka
-NAME                            TYPE                             DATA   AGE
-microservices-dev-pull-secret   kubernetes.io/dockerconfigjson   1      77d
-[osuser@bastion ~]$ oc get pod dev-kafka-connect-mq-connect-2 -n dev-kafka -o jsonpath='{.status.containerStatuses[*].state}'
-[osuser@bastion ~]$
+oc get nodes -l env=dev
+oc get nodes --show-labels | grep -v master | grep -v infra | head
+
+
+
+template:
+    pod:
+      {{- if .Values.kafka.kafkaConnect.image }}
+      image: {{ .Values.kafka.kafkaConnect.image }}
+      {{- end }}
+      {{- if .Values.kafka.kafkaConnect.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.kafka.kafkaConnect.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: env
+                    operator: In
+                    values: ["dev"]
