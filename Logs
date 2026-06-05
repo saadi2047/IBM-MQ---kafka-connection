@@ -11,3 +11,24 @@ config:
     value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
     value.converter.schemas.enable: "false"
     ...stability keys...
+
+
+  config:
+    group.id: {{ .Values.kafka.kafkaConnect.config.group.id }}
+    offset.storage.topic: {{ .Values.kafka.kafkaConnect.config.offset.storage.topic }}
+    config.storage.topic: {{ .Values.kafka.kafkaConnect.config.config.storage.topic }}
+    status.storage.topic: {{ .Values.kafka.kafkaConnect.config.status.storage.topic }}
+    # Use default replication factor per AMQ examples
+    config.storage.replication.factor: -1
+    offset.storage.replication.factor: -1
+    status.storage.replication.factor: -1
+    {{- if .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
+    offset.flush.interval.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
+    {{- end }}
+    {{- if .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
+    offset.flush.timeout.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
+    {{- end }}
+    # Stability: prevent worker eviction on transient broker blips
+    session.timeout.ms: {{ .Values.kafka.kafkaConnect.config.session.timeout.ms | default 60000 }}
+    heartbeat.interval.ms: {{ .Values.kafka.kafkaConnect.config.heartbeat.interval.ms | default 20000 }}
+    rebalance.timeout.ms: {{ .Values.kafka.kafkaConnect.config.rebalance.timeout.ms | default 120000 }}  
