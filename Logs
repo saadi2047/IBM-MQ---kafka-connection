@@ -1,99 +1,74 @@
-image: "registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3"
+[1]+  Stopped                 oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq -w
+[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
+NAME                             READY   STATUS    RESTARTS   AGE
+dev-kafka-connect-mq-connect-0   1/1     Running   0          2m6s
+dev-kafka-connect-mq-connect-1   1/1     Running   0          3m9s
+dev-kafka-connect-mq-connect-2   1/1     Running   0          4m12s
+[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq -w
+NAME                             READY   STATUS    RESTARTS   AGE
+dev-kafka-connect-mq-connect-0   1/1     Running   0          14m
+dev-kafka-connect-mq-connect-1   1/1     Running   0          15m
+dev-kafka-connect-mq-connect-2   1/1     Running   0          16m
+^Z
+[2]+  Stopped                 oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq -w
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o jsonpath='{.spec.image}{"\n"}'
 
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o jsonpath='{.spec.image}{"\n"}'
 
+[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq \
+>   -o custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image,AGE:.metadata.creationTimestampoc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq \
+>
+error: name cannot be provided when a selector is specified
+[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq \
+>   -o custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image,AGE:.metadata.creationTimestamp
+NAME                             IMAGE                                                                                                                   AGE
+dev-kafka-connect-mq-connect-0   registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa   2026-06-05T09:56:14Z
+dev-kafka-connect-mq-connect-1   registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa   2026-06-05T09:55:11Z
+dev-kafka-connect-mq-connect-2   registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa   2026-06-05T09:54:08Z
+[osuser@bastion ~]$ oc delete pod -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
+pod "dev-kafka-connect-mq-connect-0" deleted
+pod "dev-kafka-connect-mq-connect-1" deleted
+pod "dev-kafka-connect-mq-connect-2" deleted
+[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq -w                                                                                                                                                   NAME                             READY   STATUS    RESTARTS   AGE
+dev-kafka-connect-mq-connect-0   0/1     Running   0          9s
+dev-kafka-connect-mq-connect-1   0/1     Running   0          9s
+dev-kafka-connect-mq-connect-2   0/1     Running   0          9s
+dev-kafka-connect-mq-connect-0   1/1     Running   0          62s
+dev-kafka-connect-mq-connect-2   1/1     Running   0          63s
+dev-kafka-connect-mq-connect-1   1/1     Running   0          64s
+^Z
+[3]+  Stopped                 oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq -w
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o jsonpath='{.spec.image}{"\n"}'
 
-If you're on ArgoCD with auto-sync, no manual restart needed — but there's one catch with how Strimzi handles image changes that's worth knowing so you can confirm it actually rolled.
-
-What happens automatically: when the synced `KafkaConnect` CR changes its `spec.image`, the Strimzi operator detects the diff and performs a **rolling restart** of the three Connect pods on its own — one at a time, pulling the new `v3` image. You don't need to delete pods manually. The connectors then reconnect and, because the new image has the MQ plugin classes, they resolve and go Ready.
-
-The catch: Strimzi sometimes doesn't roll pods for an image-only change as promptly as you'd expect, and image-pull caching can mean a pod technically "restarts" but the node serves a stale layer if the tag was ever reused. Two things to verify rather than assume.
-
-First, confirm the CR actually has the new image after sync:
-
-```
-oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o jsonpath='{.spec.image}{"\n"}'
-```
-
-Should print `...kafka-connect-mq:v3`. If it still shows the old image, ArgoCD hasn't synced yet (or auto-sync is off and you need to sync the Application manually).
-
-Second, confirm the pods are actually running the new image, not just restarted:
-
-```
-oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq \
-  -o custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image,AGE:.metadata.creationTimestamp
-```
-
-All three should show `v3` and a fresh creation timestamp.
-
-If the operator hasn't rolled them within a couple of minutes of the CR updating, force it:
-
-```
-oc delete pod -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
-```
-
-That's safe — the operator recreates them immediately with the new image. (You already did exactly this for the affinity fix and it came back clean.)
-
-Then watch them come up and check the plugins loaded:
-
-```
-oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq -w
-# once Running:
-oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- find /opt/kafka/plugins -iname "*mq*" 2>/dev/null
-```
-
-You should see the IBM MQ source/sink/allclient JARs under `/opt/kafka/plugins/ibm-mq/`. Finally the connectors:
-
-```
-oc get kafkaconnector -n dev-kafka
-```
-
-The connector CRs themselves don't need a restart — once the workers have the plugin class, the operator reconciles them automatically. If any connector stays `NotReady` after the pods are confirmed on v3, nudge it:
-
-```
-oc annotate kafkaconnector neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink strimzi.io/restart=true -n dev-kafka
-
-
-
-
-
-
-You're right to want this cross-checked rather than trusting my read. Let me pull the actual image string from the working test cluster's YAML in this conversation rather than inferring it from the Dockerfiles.Cross-checked against the working test cluster's documented spec — and there's a correction. The image tag is **not** `v1`. The RCA document for the working `dev-kafka-connect-mq-test` cluster shows:
-
-```
-image: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
-```
-
-So the build log you just shared (`kafka-connect-mq:v1`) was an earlier build. The cluster that actually worked in testing was running **`v3`**, not v1. The registry host and path are identical (`registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq`) — only the tag differs.
-
-So the correct line for your chart values is:
-
-```yaml
-    image: "registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3"
-```
-
-Before you commit, verify which tags actually exist in the registry, since you have build artifacts for v1 but the running cluster referenced v3 — make sure v3 is really there and is the one with the working MQ JARs:
-
-```
-oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- cat /proc/1/cmdline 2>/dev/null | tr '\0' ' '
-```
-
-That won't show the tag directly. Better — if the test cluster still exists, get the truth straight from it:
-
-```
-oc get kafkaconnect dev-kafka-connect-mq-test -n dev-kafka -o jsonpath='{.spec.image}{"\n"}'
-```
-
-If the test cluster is already deleted, check the registry catalog for available tags (from a host that can reach it):
-
-```
-curl -sk https://registry.dev.sbiepay.sbi:8443/v2/library/kafka-connect-mq/tags/list
-```
-
-That returns the list of tags (`v1`, `v2`, `v3`, …) actually pushed. Use the highest/working one — per the test cluster's spec, that's `v3`.
-
-The reason this matters: v1 vs v3 likely differ in the MQ JAR versions or the `com.ibm.mq.allclient` included. Your Dockerfile2 (the `0.46.1-kafka-3.9.0` base, matching your cluster's `version: 3.9.0`) is the lineage that produced the working image — v3 is presumably a rebuild of that with corrected/updated JARs. Pinning to v3 reproduces exactly what passed testing.
-
-So: set the image to `:v3` (not v1), confirm the tag exists via the test cluster spec or the registry tags list, confirm the pull secret targets `registry.dev.sbiepay.sbi:8443`, then sync and roll the pods. If `oc get kafkaconnect dev-kafka-connect-mq-test` still returns a spec, paste its `.spec.image` and we'll lock the exact tag with certainty rather than relying on the documented value.
-```
-
-So: image change rolls the pods automatically via the operator, but verify the CR synced and the pods are genuinely on v3. If they don't roll on their own in ~2 min, delete the pods to force it. No change needed to the connector CRs beyond an optional restart annotation if they don't self-recover.
+[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq \
+>   -o custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image,AGE:.metadata.creationTimestamp
+NAME                             IMAGE                                                                                                                   AGE
+dev-kafka-connect-mq-connect-0   registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa   2026-06-05T10:16:16Z
+dev-kafka-connect-mq-connect-1   registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa   2026-06-05T10:16:16Z
+dev-kafka-connect-mq-connect-2   registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa   2026-06-05T10:16:16Z
+[osuser@bastion ~]$ oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- find /opt/kafka/plugins -iname "*mq*" 2>/dev/null
+[osuser@bastion ~]$ oc get kafkaconnector -n dev-kafka
+NAME             CLUSTER                CONNECTOR CLASS                                           MAX TASKS   READY
+neft-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1
+neft-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1
+rtgs-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1
+rtgs-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1
+[osuser@bastion ~]$ oc annotate kafkaconnector neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink strimzi.io/restart=true -n dev-kafka
+kafkaconnector.kafka.strimzi.io/neft-mq-source annotated
+kafkaconnector.kafka.strimzi.io/neft-mq-sink annotated
+kafkaconnector.kafka.strimzi.io/rtgs-mq-source annotated
+kafkaconnector.kafka.strimzi.io/rtgs-mq-sink annotated
+[osuser@bastion ~]$ oc get kafkaconnector -n dev-kafka
+NAME             CLUSTER                CONNECTOR CLASS                                           MAX TASKS   READY
+neft-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1
+neft-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1
+rtgs-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1
+rtgs-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1
+[osuser@bastion ~]$ oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- cat /proc/1/cmdline 2>/dev/null | tr '\0' ' '
+/usr/bin/tini -w -e 143 -- /opt/kafka/bin/connect-distributed.sh /tmp/strimzi-connect.properties [osuser@bastion ~]$
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq-test -n dev-kafka -o jsonpath='{.spec.image}{"\n"}'
+Error from server (NotFound): kafkaconnects.kafka.strimzi.io "dev-kafka-connect-mq-test" not found
+[osuser@bastion ~]$ curl -sk https://registry.dev.sbiepay.sbi:8443/v2/library/kafka-connect-mq/tags/list
+{"errors":[{"code":"UNAUTHORIZED","detail":{},"message":"access to the requested resource is not authorized"}]}
+[osuser@bastion ~]$
