@@ -1,0 +1,251 @@
+1. 
+oc delete kafkaconnector neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink -n dev-kafka
+oc delete kafkaconnect dev-kafka-connect-mq-test -n dev-kafka
+
+2.
+oc exec -n dev-kafka dev-kafka-cluster-kafka-0 -- bin/kafka-topics.sh \
+  --bootstrap-server localhost:9092 --delete \
+  --topic 'dev-connect-cluster-offsets|dev-connect-cluster-configs|dev-connect-cluster-status'
+
+3.
+File 1: dev/charts/epay_common/templates/kafka/kafka-connect.yaml
+
+
+----------------
+
+{{- if and .Values.kafka.enabled .Values.kafka.kafkaConnect.enabled }}
+# Kafka Connect Cluster for MQ Integration
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: {{ .Values.kafka.kafkaConnect.name }}
+  namespace: {{ .Values.kafka.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.kafka.kafkaConnect.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: kafka-connect
+    environment: {{ .Values.global.environment }}
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+    argocd.argoproj.io/sync-wave: "9"
+spec:
+  version: {{ .Values.kafka.cluster.version }}
+  replicas: {{ .Values.kafka.kafkaConnect.replicas }}
+  bootstrapServers: {{ .Values.kafka.kafkaConnect.bootstrapServers }}
+
+  # TLS configuration for secure connection
+  tls:
+    trustedCertificates:
+      - secretName: {{ .Values.kafka.cluster.name }}-cluster-ca-cert
+        pattern: "*.crt"
+
+  # Resource specifications
+  resources:
+    {{- if .Values.kafka.kafkaConnect.resources.requests }}
+    requests:
+      {{- if .Values.kafka.kafkaConnect.resources.requests.memory }}
+      memory: {{ .Values.kafka.kafkaConnect.resources.requests.memory }}
+      {{- end }}
+      {{- if .Values.kafka.kafkaConnect.resources.requests.cpu }}
+      cpu: {{ .Values.kafka.kafkaConnect.resources.requests.cpu }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.kafka.kafkaConnect.resources.limits }}
+    limits:
+      {{- if .Values.kafka.kafkaConnect.resources.limits.memory }}
+      memory: {{ .Values.kafka.kafkaConnect.resources.limits.memory }}
+      {{- end }}
+      {{- if .Values.kafka.kafkaConnect.resources.limits.cpu }}
+      cpu: {{ .Values.kafka.kafkaConnect.resources.limits.cpu }}
+      {{- end }}
+    {{- end }}
+
+  # Kafka Connect configuration
+  config:
+    group.id: {{ .Values.kafka.kafkaConnect.config.group.id }}
+    offset.storage.topic: {{ .Values.kafka.kafkaConnect.config.offset.storage.topic }}
+    config.storage.topic: {{ .Values.kafka.kafkaConnect.config.config.storage.topic }}
+    status.storage.topic: {{ .Values.kafka.kafkaConnect.config.status.storage.topic }}
+    config.storage.replication.factor: -1
+    offset.storage.replication.factor: -1
+    status.storage.replication.factor: -1
+    {{- if .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
+    offset.flush.interval.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
+    {{- end }}
+    {{- if .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
+    offset.flush.timeout.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
+    {{- end }}
+    # Stability: prevent worker eviction on transient broker blips
+    session.timeout.ms: {{ .Values.kafka.kafkaConnect.config.session.timeout.ms | default 60000 }}
+    heartbeat.interval.ms: {{ .Values.kafka.kafkaConnect.config.heartbeat.interval.ms | default 20000 }}
+    rebalance.timeout.ms: {{ .Values.kafka.kafkaConnect.config.rebalance.timeout.ms | default 120000 }}
+
+  # Pod template with affinity and tolerations
+  template:
+    pod:
+      {{- if .Values.kafka.kafkaConnect.image }}
+      image: {{ .Values.kafka.kafkaConnect.image }}
+      {{- end }}
+      {{- if .Values.kafka.kafkaConnect.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.kafka.kafkaConnect.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/worker
+                operator: Exists
+              - key: workload-type
+                operator: In
+                values: ["kafka"]
+      tolerations:
+        - key: "workload-type"
+          operator: "Equal"
+          value: "kafka"
+          effect: "NoSchedule"
+
+{{- if .Values.kafka.kafkaConnect.connectors }}
+{{- range .Values.kafka.kafkaConnect.connectors }}
+---
+# Kafka Connector: {{ .name }}
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.kafka.namespace }}
+  labels:
+    strimzi.io/cluster: {{ $.Values.kafka.kafkaConnect.name }}
+    app.kubernetes.io/name: {{ .name }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: kafka-connector
+    environment: {{ $.Values.global.environment }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  class: {{ .class }}
+  tasksMax: {{ .tasksMax | default 1 }}
+  config:
+    {{- range $key, $value := .config }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+----------------------
+
+4.
+
+File 2: dev/charts/epay_common/values.yaml — the kafkaConnect: block
+
+--------------------------
+
+kafkaConnect:
+    enabled: true
+    name: "dev-kafka-connect-mq"
+    replicas: 3
+    bootstrapServers: "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093"
+    image: "epaynonprod-registry-quay-quay-enterprise.apps.dev.epay.sbi/redhatdefultimage/debeziumconnect:01"
+    imagePullSecrets:
+      - microservices-dev-pull-secret
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "8Gi"
+        cpu: "4"
+    config:
+      group:
+        id: "dev-kafka-connect-mq-cluster"
+      offset:
+        storage:
+          topic: "dev-kafka-connect-mq-offsets"
+        flush:
+          interval:
+            ms: 10000
+          timeout:
+            ms: 5000
+      config:
+        storage:
+          topic: "dev-kafka-connect-mq-configs"
+      status:
+        storage:
+          topic: "dev-kafka-connect-mq-status"
+      session:
+        timeout:
+          ms: 60000
+      heartbeat:
+        interval:
+          ms: 20000
+      rebalance:
+        timeout:
+          ms: 120000
+
+    connectors:
+      - name: "neft-mq-source"
+        class: "com.ibm.eventstreams.connect.mqsource.MQSourceConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_NEFT"
+          mq.connection.name.list: "10.176.10.213(2001)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "NeftInboundQueue"
+          mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
+          mq.message.body.format: "string"
+          topic: "neft.inbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
+
+      - name: "neft-mq-sink"
+        class: "com.ibm.eventstreams.connect.mqsink.MQSinkConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_NEFT"
+          mq.connection.name.list: "10.176.10.213(2001)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "NeftOutBoundQueue"
+          mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
+          mq.message.body.format: "string"
+          topics: "neft.outbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
+
+      - name: "rtgs-mq-source"
+        class: "com.ibm.eventstreams.connect.mqsource.MQSourceConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_RTGS"
+          mq.connection.name.list: "10.176.10.213(2005)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "RTGSInboundQueue"
+          mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
+          mq.message.body.format: "string"
+          topic: "rtgs.inbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
+
+      - name: "rtgs-mq-sink"
+        class: "com.ibm.eventstreams.connect.mqsink.MQSinkConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_RTGS"
+          mq.connection.name.list: "10.176.10.213(2005)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "RTGSOutBoundQueue"
+          mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
+          mq.message.body.format: "string"
+          topics: "rtgs.outbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
+
+
+-------------------------------------
+
+5.
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka
+oc get kafkaconnector -n dev-kafka
