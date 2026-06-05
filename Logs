@@ -1,67 +1,13 @@
-The sink connectors (`neft-mq-sink` and `rtgs-mq-sink`) failed — and it's your own SOP test that broke them, not a regression. This is benign and easy to fix. Here's exactly what happened.
-
-The trace says it precisely:
-
-```
-DataException: Converting byte[] to Kafka Connect data failed due to serialization error
-Caused by: JsonParseException: Unrecognized token 'SBIEPAY_Dealer_Validation':
-  was expecting (JSON String, Number, Array, Object ...)
-```
-
-The sink task tried to read a message off `neft.outbound.kafka.topic` and parse it as **JSON**, but the message wasn't JSON — it was a plain string (`SBIEPAY_Dealer_Validation`, and your test messages like `SOP-TEST-BY-SAADI-NEFT-SINK`). With `errors.tolerance = none` (the default, visible in your log), one unparseable record kills the task. So the connector state stays RUNNING but the task goes FAILED → `READY` blank.
-
-Two things combined here:
-
-The sink is using a **JSON converter** somewhere in the effective config, even though your connector YAML specifies `value.converter: ByteArrayConverter`. Notice the cluster-level config from the working test CR had `value.converter: ByteArrayConverter` set as a **worker default** — but your new chart's cluster `config:` does **not** include the converter defaults. So the worker default converter fell back to `JsonConverter`, and something in the chain is applying it. The `JsonParseException` proves JSON conversion is active on the sink path.
-
-Your manual test wrote a non-JSON plain string into the outbound topic, which the JSON converter immediately choked on.
-
-So the real test produced real data fine (you can see actual RTGS pacs.008 XML and NEFT messages flowed through on the source side — that path works). It's the sink converter config that's the gap.
-
-## The fix
-
-Two parts. First, the immediate recovery — restart the failed sink tasks so they move past the poisoned test message:
-
-```
-oc annotate kafkaconnector neft-mq-sink rtgs-mq-sink strimzi.io/restart=true -n dev-kafka --overwrite
-```
-
-But that alone won't hold if the bad message is still at the consumer offset and the converter is still JSON — it'll re-fail. The durable fix is to make the converters match the working cluster.
-
-Second, add the converter defaults to the cluster `config:` in `kafka-connect.yaml`, exactly as the working test CR had them:
-
-```yaml
-  config:
+config:
     group.id: {{ ... }}
-    ...
+    offset.storage.topic: {{ ... }}
+    config.storage.topic: {{ ... }}
+    status.storage.topic: {{ ... }}
+    config.storage.replication.factor: -1
+    offset.storage.replication.factor: -1
+    status.storage.replication.factor: -1
     plugin.path: /opt/kafka/plugins
-    security.protocol: SSL
-    ssl.endpoint.identification.algorithm: HTTPS
     key.converter: org.apache.kafka.connect.storage.StringConverter
     value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
     value.converter.schemas.enable: "false"
-    ...
-```
-
-The working cluster had `key.converter: StringConverter` and `value.converter: ByteArrayConverter` as **worker-level defaults** — I flagged these as missing two steps ago. They're the gap. With ByteArrayConverter at the worker level (and on the connectors, which you already have), the sink treats messages as raw bytes and passes them to MQ as-is, no JSON parsing, no choking on plain strings.
-
-So your chart's cluster config is still missing `key.converter`, `value.converter`, and `value.converter.schemas.enable`. Add those three lines, commit, sync.
-
-## After the chart change
-
-The pods roll with the new worker defaults. Then clear the failed tasks:
-
-```
-oc annotate kafkaconnector neft-mq-sink rtgs-mq-sink strimzi.io/restart=true -n dev-kafka --overwrite
-oc get kafkaconnector -n dev-kafka
-```
-
-Both sinks should go back to `READY=True`.
-
-## One SOP correction
-
-Your sink test wrote a bare string. That's fine *with ByteArrayConverter* (it's delivered to MQ as bytes), but it's worth noting in the SOP: the outbound topic carries whatever the app produces, and the sink passes bytes through to MQ. Don't worry about the message being "valid" — with the byte converter there's no parsing. The earlier failure only happened because the converter was wrong at the worker level.
-
-So to directly answer "why were NEFT connectors not available when they worked before": the **source** connectors are fine and still `True`. The **sink** connectors failed because the new chart dropped the worker-level `value.converter: ByteArrayConverter` default that the original working cluster had, so the sink fell back to JSON parsing and died on the first non-JSON message (your test string). Add the three converter lines to the cluster config, sync, restart the two sinks.
-
-Want me to give you the complete corrected `config:` block with all the now-confirmed-required keys (converters + plugin.path + SSL + stability) in one piece so you can paste it and not miss any?
+    ...stability keys...
