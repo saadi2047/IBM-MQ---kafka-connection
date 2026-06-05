@@ -51,6 +51,49 @@ The connector CRs themselves don't need a restart — once the workers have the 
 
 ```
 oc annotate kafkaconnector neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink strimzi.io/restart=true -n dev-kafka
+
+
+
+
+
+
+You're right to want this cross-checked rather than trusting my read. Let me pull the actual image string from the working test cluster's YAML in this conversation rather than inferring it from the Dockerfiles.Cross-checked against the working test cluster's documented spec — and there's a correction. The image tag is **not** `v1`. The RCA document for the working `dev-kafka-connect-mq-test` cluster shows:
+
+```
+image: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
+```
+
+So the build log you just shared (`kafka-connect-mq:v1`) was an earlier build. The cluster that actually worked in testing was running **`v3`**, not v1. The registry host and path are identical (`registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq`) — only the tag differs.
+
+So the correct line for your chart values is:
+
+```yaml
+    image: "registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3"
+```
+
+Before you commit, verify which tags actually exist in the registry, since you have build artifacts for v1 but the running cluster referenced v3 — make sure v3 is really there and is the one with the working MQ JARs:
+
+```
+oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- cat /proc/1/cmdline 2>/dev/null | tr '\0' ' '
+```
+
+That won't show the tag directly. Better — if the test cluster still exists, get the truth straight from it:
+
+```
+oc get kafkaconnect dev-kafka-connect-mq-test -n dev-kafka -o jsonpath='{.spec.image}{"\n"}'
+```
+
+If the test cluster is already deleted, check the registry catalog for available tags (from a host that can reach it):
+
+```
+curl -sk https://registry.dev.sbiepay.sbi:8443/v2/library/kafka-connect-mq/tags/list
+```
+
+That returns the list of tags (`v1`, `v2`, `v3`, …) actually pushed. Use the highest/working one — per the test cluster's spec, that's `v3`.
+
+The reason this matters: v1 vs v3 likely differ in the MQ JAR versions or the `com.ibm.mq.allclient` included. Your Dockerfile2 (the `0.46.1-kafka-3.9.0` base, matching your cluster's `version: 3.9.0`) is the lineage that produced the working image — v3 is presumably a rebuild of that with corrected/updated JARs. Pinning to v3 reproduces exactly what passed testing.
+
+So: set the image to `:v3` (not v1), confirm the tag exists via the test cluster spec or the registry tags list, confirm the pull secret targets `registry.dev.sbiepay.sbi:8443`, then sync and roll the pods. If `oc get kafkaconnect dev-kafka-connect-mq-test` still returns a spec, paste its `.spec.image` and we'll lock the exact tag with certainty rather than relying on the documented value.
 ```
 
 So: image change rolls the pods automatically via the operator, but verify the CR synced and the pods are genuinely on v3. If they don't roll on their own in ~2 min, delete the pods to force it. No change needed to the connector CRs beyond an optional restart annotation if they don't self-recover.
