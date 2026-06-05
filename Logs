@@ -1,1 +1,56 @@
 image: "registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3"
+
+
+
+If you're on ArgoCD with auto-sync, no manual restart needed — but there's one catch with how Strimzi handles image changes that's worth knowing so you can confirm it actually rolled.
+
+What happens automatically: when the synced `KafkaConnect` CR changes its `spec.image`, the Strimzi operator detects the diff and performs a **rolling restart** of the three Connect pods on its own — one at a time, pulling the new `v3` image. You don't need to delete pods manually. The connectors then reconnect and, because the new image has the MQ plugin classes, they resolve and go Ready.
+
+The catch: Strimzi sometimes doesn't roll pods for an image-only change as promptly as you'd expect, and image-pull caching can mean a pod technically "restarts" but the node serves a stale layer if the tag was ever reused. Two things to verify rather than assume.
+
+First, confirm the CR actually has the new image after sync:
+
+```
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o jsonpath='{.spec.image}{"\n"}'
+```
+
+Should print `...kafka-connect-mq:v3`. If it still shows the old image, ArgoCD hasn't synced yet (or auto-sync is off and you need to sync the Application manually).
+
+Second, confirm the pods are actually running the new image, not just restarted:
+
+```
+oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq \
+  -o custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image,AGE:.metadata.creationTimestamp
+```
+
+All three should show `v3` and a fresh creation timestamp.
+
+If the operator hasn't rolled them within a couple of minutes of the CR updating, force it:
+
+```
+oc delete pod -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
+```
+
+That's safe — the operator recreates them immediately with the new image. (You already did exactly this for the affinity fix and it came back clean.)
+
+Then watch them come up and check the plugins loaded:
+
+```
+oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq -w
+# once Running:
+oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- find /opt/kafka/plugins -iname "*mq*" 2>/dev/null
+```
+
+You should see the IBM MQ source/sink/allclient JARs under `/opt/kafka/plugins/ibm-mq/`. Finally the connectors:
+
+```
+oc get kafkaconnector -n dev-kafka
+```
+
+The connector CRs themselves don't need a restart — once the workers have the plugin class, the operator reconciles them automatically. If any connector stays `NotReady` after the pods are confirmed on v3, nudge it:
+
+```
+oc annotate kafkaconnector neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink strimzi.io/restart=true -n dev-kafka
+```
+
+So: image change rolls the pods automatically via the operator, but verify the CR synced and the pods are genuinely on v3. If they don't roll on their own in ~2 min, delete the pods to force it. No change needed to the connector CRs beyond an optional restart annotation if they don't self-recover.
