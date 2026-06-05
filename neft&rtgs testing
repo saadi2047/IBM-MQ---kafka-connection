@@ -1,0 +1,132 @@
+Everything's green — `spec.image` now shows v3, all three pods running v3, the cluster `READY=True`, and all four connectors `READY=True`. The move to `spec.image` plus `plugin.path` fixed it.
+
+Here's a clean, ordered set of validation commands for your SOP. I've grouped them so each section has a clear purpose and an "expected result" you can document.
+
+## 1. Cluster & pod health
+
+```
+# KafkaConnect cluster Ready
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka
+# Expected: READY = True
+
+# All worker pods Running 1/1
+oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
+# Expected: 3 pods, STATUS Running, READY 1/1
+
+# Confirm pods run the correct MQ-enabled image (not the Red Hat default)
+oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq \
+  -o custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image
+# Expected: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
+
+# Confirm spec.image is set on the CR
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o jsonpath='{.spec.image}{"\n"}'
+# Expected: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
+```
+
+## 2. Plugin / connector class availability
+
+```
+# MQ connector plugins loaded by the cluster
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka \
+  -o jsonpath='{range .status.connectorPlugins[*]}{.class}{"  "}{.version}{"\n"}{end}'
+# Expected: MQSinkConnector and MQSourceConnector present (sink ~2.2.1, source ~2.6.0)
+
+# MQ JARs physically present in the image
+oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
+  find /opt/kafka/plugins -iname "*mq*" 2>/dev/null
+# Expected: kafka-connect-mq-source/sink + com.ibm.mq.allclient JARs under /opt/kafka/plugins/ibm-mq/
+```
+
+## 3. Connector & task status
+
+```
+# All connectors Ready
+oc get kafkaconnector -n dev-kafka
+# Expected: neft-mq-source, neft-mq-sink, rtgs-mq-source, rtgs-mq-sink all READY = True
+
+# Detailed connector + task state via Connect REST API (from inside a pod)
+oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
+  curl -s http://localhost:8083/connectors?expand=status | python3 -m json.tool
+# Expected: each connector "state": RUNNING and each task "state": RUNNING
+
+# Per-connector quick check (repeat for each name)
+for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
+  echo "== $c =="
+  oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
+    curl -s http://localhost:8083/connectors/$c/status
+  echo
+done
+# Expected: connector.state=RUNNING, tasks[0].state=RUNNING, no "trace"
+```
+
+## 4. MQ connectivity (network reachability from the pod)
+
+```
+# NEFT queue manager port
+oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
+  bash -c "</dev/tcp/10.176.10.213/2001 && echo NEFT-2001-OPEN || echo NEFT-2001-BLOCKED"
+
+# RTGS queue manager port
+oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
+  bash -c "</dev/tcp/10.176.10.213/2005 && echo RTGS-2005-OPEN || echo RTGS-2005-BLOCKED"
+# Expected: OPEN for both
+```
+
+## 5. End-to-end data flow (functional test)
+
+This is the real proof — MQ ↔ Kafka in both directions. Adjust the kafka bin path to your environment.
+
+```
+# --- SINK path: Kafka -> MQ ---
+# Produce a test message to the outbound topic; the sink connector delivers it to the MQ queue.
+oc exec -it -n dev-kafka dev-kafka-cluster-kafka-0 -- bash -c \
+  "echo 'SOP-TEST-RTGS-SINK' | bin/kafka-console-producer.sh \
+   --bootstrap-server localhost:9092 --topic rtgs.outbound.kafka.topic"
+# Then verify on the MQ side (RTGSOutBoundQueue) that the message arrived.
+
+oc exec -it -n dev-kafka dev-kafka-cluster-kafka-0 -- bash -c \
+  "echo 'SOP-TEST-NEFT-SINK' | bin/kafka-console-producer.sh \
+   --bootstrap-server localhost:9092 --topic neft.outbound.kafka.topic"
+
+# --- SOURCE path: MQ -> Kafka ---
+# Put a message on the MQ inbound queue (RTGSInboundQueue / NeftInboundQueue) from the MQ side,
+# then confirm it lands on the inbound Kafka topic:
+oc exec -it -n dev-kafka dev-kafka-cluster-kafka-0 -- bash -c \
+  "bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+   --topic rtgs.inbound.kafka.topic --from-beginning --timeout-ms 10000"
+
+oc exec -it -n dev-kafka dev-kafka-cluster-kafka-0 -- bash -c \
+  "bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+   --topic neft.inbound.kafka.topic --from-beginning --timeout-ms 10000"
+# Expected: messages placed on the MQ inbound queues appear here.
+```
+
+## 6. Stability check (no rebalance churn — the issue from earlier)
+
+```
+# Count rebalances/joins in the last 30 min; should be low
+oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --since=30m | grep -c "Joined group"
+# Expected: low single digit (initial join + maybe 1). High count = churn.
+
+# No coordinator-unreachable / unknown-member churn
+oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --since=30m \
+  | grep -iE "coordinator was unreachable|UNKNOWN_MEMBER_ID" | wc -l
+# Expected: 0 or very low
+
+# No task failures / MQ errors
+oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --since=30m \
+  | grep -iE "ERROR|MQRC|unrecoverable" | tail -20
+# Expected: no MQRC_* errors, no "Task is being killed"
+```
+
+A few SOP notes worth recording alongside the commands:
+
+The `2538 / MQRC_HOST_NOT_AVAILABLE` error means the pod can't reach the MQ listener — use the section-4 port checks to triage (it's network/firewall from the pod's egress IP, not the connector config).
+
+If a connector shows `NotReady` but the cluster and pods are healthy, the recovery action is `oc annotate kafkaconnector <name> strimzi.io/restart=true -n dev-kafka`.
+
+If pods run `registry.redhat.io/amq-streams/...` instead of the `kafka-connect-mq:v3` image, the `spec.image` didn't apply — check it's under `spec:` not `spec.template.pod`.
+
+Ports for the record: NEFT = `10.176.10.213(2001)` / SBI_NEFT, RTGS = `10.176.10.213(2005)` / SBI_RTGS, channel `SBIEPAY2.SVRCONN`.
+
+Want me to format all of this into a proper Word or PDF SOP document with the sections, expected outputs, and a troubleshooting table — something you can drop straight into your runbook?
