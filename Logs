@@ -1,10 +1,179 @@
-affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/worker
-                    operator: Exists
-                  - key: env
-                    operator: In
-                    values: ["dev"]
+[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq -w
+NAME                             READY   STATUS    RESTARTS   AGE
+dev-kafka-connect-mq-connect-0   0/1     Pending   0          59s
+dev-kafka-connect-mq-connect-1   0/1     Pending   0          59s
+dev-kafka-connect-mq-connect-2   0/1     Pending   0          59s
+dev-kafka-connect-mq-connect-2   0/1     Terminating   0          2m5s
+dev-kafka-connect-mq-connect-2   0/1     Terminating   0          2m5s
+dev-kafka-connect-mq-connect-2   0/1     Pending       0          0s
+dev-kafka-connect-mq-connect-2   0/1     Pending       0          0s
+dev-kafka-connect-mq-connect-2   0/1     Pending       0          0s
+dev-kafka-connect-mq-connect-2   0/1     ContainerCreating   0          0s
+dev-kafka-connect-mq-connect-2   0/1     ContainerCreating   0          1s
+dev-kafka-connect-mq-connect-2   0/1     Running             0          1s
+dev-kafka-connect-mq-connect-2   1/1     Running             0          62s
+dev-kafka-connect-mq-connect-1   0/1     Terminating         0          3m8s
+dev-kafka-connect-mq-connect-1   0/1     Terminating         0          3m8s
+dev-kafka-connect-mq-connect-1   0/1     Pending             0          0s
+dev-kafka-connect-mq-connect-1   0/1     Pending             0          0s
+dev-kafka-connect-mq-connect-1   0/1     Pending             0          0s
+dev-kafka-connect-mq-connect-1   0/1     ContainerCreating   0          0s
+dev-kafka-connect-mq-connect-1   0/1     ContainerCreating   0          0s
+dev-kafka-connect-mq-connect-1   0/1     Running             0          1s
+dev-kafka-connect-mq-connect-1   1/1     Running             0          62s
+dev-kafka-connect-mq-connect-0   0/1     Terminating         0          4m11s
+dev-kafka-connect-mq-connect-0   0/1     Terminating         0          4m11s
+dev-kafka-connect-mq-connect-0   0/1     Pending             0          0s
+dev-kafka-connect-mq-connect-0   0/1     Pending             0          0s
+dev-kafka-connect-mq-connect-0   0/1     Pending             0          0s
+dev-kafka-connect-mq-connect-0   0/1     ContainerCreating   0          0s
+dev-kafka-connect-mq-connect-0   0/1     ContainerCreating   0          0s
+dev-kafka-connect-mq-connect-0   0/1     Running             0          2s
+dev-kafka-connect-mq-connect-0   1/1     Running             0          63s
+^Z
+[1]+  Stopped                 oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq -w
+[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
+NAME                             READY   STATUS    RESTARTS   AGE
+dev-kafka-connect-mq-connect-0   1/1     Running   0          2m6s
+dev-kafka-connect-mq-connect-1   1/1     Running   0          3m9s
+dev-kafka-connect-mq-connect-2   1/1     Running   0          4m12s
+[osuser@bastion ~]$
+
+
+======================================
+
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: '10'
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+  resourceVersion: '796492979'
+  name: neft-mq-sink
+  uid: d8160f23-b0e7-4152-bef1-a902c9edd0ea
+  creationTimestamp: '2026-06-05T09:25:18Z'
+  generation: 1
+  managedFields:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:argocd.argoproj.io/sync-wave': {}
+            'f:meta.helm.sh/release-name': {}
+            'f:meta.helm.sh/release-namespace': {}
+          'f:labels':
+            .: {}
+            'f:app.kubernetes.io/component': {}
+            'f:app.kubernetes.io/instance': {}
+            'f:app.kubernetes.io/managed-by': {}
+            'f:app.kubernetes.io/name': {}
+            'f:environment': {}
+            'f:strimzi.io/cluster': {}
+        'f:spec':
+          .: {}
+          'f:class': {}
+          'f:config':
+            'f:mq.message.body.format': {}
+            'f:mq.connection.name.list': {}
+            'f:mq.channel.name': {}
+            .: {}
+            'f:value.converter': {}
+            'f:topics': {}
+            'f:mq.queue.manager': {}
+            'f:mq.queue': {}
+            'f:value.converter.schemas.enable': {}
+            'f:mq.message.builder': {}
+          'f:tasksMax': {}
+      manager: helm
+      operation: Update
+      time: '2026-06-05T09:25:18Z'
+    - apiVersion: kafka.strimzi.io/v1beta2
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          .: {}
+          'f:conditions': {}
+          'f:observedGeneration': {}
+          'f:tasksMax': {}
+      manager: strimzi-cluster-operator
+      operation: Update
+      subresource: status
+      time: '2026-06-05T09:57:17Z'
+  namespace: dev-kafka
+  labels:
+    app.kubernetes.io/component: kafka-connector
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: neft-mq-sink
+    environment: dev
+    strimzi.io/cluster: dev-kafka-connect-mq
+spec:
+  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
+  config:
+    mq.channel.name: SBIEPAY2.SVRCONN
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    topics: neft.outbound.kafka.topic
+    mq.queue.manager: SBI_NEFT
+    mq.queue: NeftOutBoundQueue
+    mq.message.builder: com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder
+    value.converter.schemas.enable: 'false'
+    mq.message.body.format: string
+    mq.connection.name.list: 10.176.10.213(2001)
+  tasksMax: 1
+status:
+  conditions:
+    - lastTransitionTime: '2026-06-05T09:57:17.779654092Z'
+      message: 'PUT /connectors/neft-mq-sink/config returned 500 (500): Failed to find any class that implements Connector and which name matches com.ibm.eventstreams.connect.mqsink.MQSinkConnector, available connectors are: PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorCheckpointConnector, name=''org.apache.kafka.connect.mirror.MirrorCheckpointConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}, PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorHeartbeatConnector, name=''org.apache.kafka.connect.mirror.MirrorHeartbeatConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}, PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorSourceConnector, name=''org.apache.kafka.connect.mirror.MirrorSourceConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}'
+      reason: ConnectRestException
+      status: 'True'
+      type: NotReady
+  observedGeneration: 1
+  tasksMax: 1
+
+---------------------------------
+neft-source
+
+status:
+  conditions:
+    - lastTransitionTime: '2026-06-05T09:57:17.779775484Z'
+      message: 'PUT /connectors/neft-mq-source/config returned 500 (500): Failed to find any class that implements Connector and which name matches com.ibm.eventstreams.connect.mqsource.MQSourceConnector, available connectors are: PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorCheckpointConnector, name=''org.apache.kafka.connect.mirror.MirrorCheckpointConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}, PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorHeartbeatConnector, name=''org.apache.kafka.connect.mirror.MirrorHeartbeatConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}, PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorSourceConnector, name=''org.apache.kafka.connect.mirror.MirrorSourceConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}'
+      reason: ConnectRestException
+      status: 'True'
+      type: NotReady
+  observedGeneration: 1
+  tasksMax: 1
+
+
+===================
+
+rtgs sink
+
+status:
+  conditions:
+    - lastTransitionTime: '2026-06-05T09:57:17.787647510Z'
+      message: 'PUT /connectors/rtgs-mq-sink/config returned 500 (500): Failed to find any class that implements Connector and which name matches com.ibm.eventstreams.connect.mqsink.MQSinkConnector, available connectors are: PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorCheckpointConnector, name=''org.apache.kafka.connect.mirror.MirrorCheckpointConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}, PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorHeartbeatConnector, name=''org.apache.kafka.connect.mirror.MirrorHeartbeatConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}, PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorSourceConnector, name=''org.apache.kafka.connect.mirror.MirrorSourceConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}'
+      reason: ConnectRestException
+      status: 'True'
+      type: NotReady
+  observedGeneration: 1
+  tasksMax: 1
+
+
+------------------------
+rtgs source
+
+status:
+  conditions:
+    - lastTransitionTime: '2026-06-05T09:57:17.787302471Z'
+      message: 'PUT /connectors/rtgs-mq-source/config returned 500 (500): Failed to find any class that implements Connector and which name matches com.ibm.eventstreams.connect.mqsource.MQSourceConnector, available connectors are: PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorCheckpointConnector, name=''org.apache.kafka.connect.mirror.MirrorCheckpointConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}, PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorHeartbeatConnector, name=''org.apache.kafka.connect.mirror.MirrorHeartbeatConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}, PluginDesc{klass=class org.apache.kafka.connect.mirror.MirrorSourceConnector, name=''org.apache.kafka.connect.mirror.MirrorSourceConnector'', version=''3.9.1.redhat-00003'', encodedVersion=3.9.1.redhat-00003, type=source, typeName=''source'', location=''classpath''}'
+      reason: ConnectRestException
+      status: 'True'
+      type: NotReady
+  observedGeneration: 1
+  tasksMax: 1
+
+
