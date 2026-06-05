@@ -1,75 +1,40 @@
-config:
-    group.id: {{ .Values.kafka.kafkaConnect.config.group.id }}
-    offset.storage.topic: {{ .Values.kafka.kafkaConnect.config.offset.storage.topic }}
-    config.storage.topic: {{ .Values.kafka.kafkaConnect.config.config.storage.topic }}
-    status.storage.topic: {{ .Values.kafka.kafkaConnect.config.status.storage.topic }}
-    # Use default replication factor per AMQ examples
-    config.storage.replication.factor: -1
-    offset.storage.replication.factor: -1
-    status.storage.replication.factor: -1
-    # Plugin path + worker-default converters (match working cluster)
-    plugin.path: /opt/kafka/plugins
-    key.converter: org.apache.kafka.connect.storage.StringConverter
-    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
-    value.converter.schemas.enable: "false"
-    {{- if .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
-    offset.flush.interval.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
-    {{- end }}
-    {{- if .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
-    offset.flush.timeout.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
-    {{- end }}
-    # Stability: prevent worker eviction on transient broker blips
-    session.timeout.ms: {{ .Values.kafka.kafkaConnect.config.session.timeout.ms | default 60000 }}
-    heartbeat.interval.ms: {{ .Values.kafka.kafkaConnect.config.heartbeat.interval.ms | default 20000 }}
-    rebalance.timeout.ms: {{ .Values.kafka.kafkaConnect.config.rebalance.timeout.ms | default 120000 }}
+Let me get the actual task-level error rather than guess — the `READY` blank just means the task failed, but the trace tells us whether it's still the JSON error or something new.
 
-
-
-In your `kafka-connect.yaml`, add three lines to the `config:` block. Insert them right after the `status.storage.replication.factor: -1` line:
-
-```yaml
-  config:
-    group.id: {{ .Values.kafka.kafkaConnect.config.group.id }}
-    offset.storage.topic: {{ .Values.kafka.kafkaConnect.config.offset.storage.topic }}
-    config.storage.topic: {{ .Values.kafka.kafkaConnect.config.config.storage.topic }}
-    status.storage.topic: {{ .Values.kafka.kafkaConnect.config.status.storage.topic }}
-    # Use default replication factor per AMQ examples
-    config.storage.replication.factor: -1
-    offset.storage.replication.factor: -1
-    status.storage.replication.factor: -1
-    # Plugin path + worker-default converters (match working cluster)
-    plugin.path: /opt/kafka/plugins
-    key.converter: org.apache.kafka.connect.storage.StringConverter
-    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
-    value.converter.schemas.enable: "false"
-    {{- if .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
-    offset.flush.interval.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
-    {{- end }}
-    {{- if .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
-    offset.flush.timeout.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
-    {{- end }}
-    # Stability: prevent worker eviction on transient broker blips
-    session.timeout.ms: {{ .Values.kafka.kafkaConnect.config.session.timeout.ms | default 60000 }}
-    heartbeat.interval.ms: {{ .Values.kafka.kafkaConnect.config.heartbeat.interval.ms | default 20000 }}
-    rebalance.timeout.ms: {{ .Values.kafka.kafkaConnect.config.rebalance.timeout.ms | default 120000 }}
-```
-
-The only addition is these four lines (`plugin.path` you may already have added — if so, just add the three converter lines):
-
-```yaml
-    plugin.path: /opt/kafka/plugins
-    key.converter: org.apache.kafka.connect.storage.StringConverter
-    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
-    value.converter.schemas.enable: "false"
-```
-
-No SSL lines — your cluster connects fine without them.
-
-After commit + sync, clear the two failed sinks:
+Run this to see the current failure:
 
 ```
-oc annotate kafkaconnector neft-mq-sink rtgs-mq-sink strimzi.io/restart=true -n dev-kafka --overwrite
-oc get kafkaconnector -n dev-kafka
+oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
+  curl -s http://localhost:8083/connectors/neft-mq-sink/status | python3 -m json.tool
 ```
 
-Both should return to `READY=True`. The source connectors were never affected.
+While you grab that, here's the most likely reason the restart didn't fix it, and how to confirm.
+
+The restart annotation alone often isn't enough here, for two reasons:
+
+First — did the new config actually reach the workers? The converter change is a *worker-level* config, which only takes effect when the **pods restart**, not when you annotate the connector. Annotating restarts the connector task, but if the pods are still running the old worker config (no `key.converter` default), the task restarts into the same broken converter and fails again. Confirm the pods rolled after your sync:
+
+```
+oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq \
+  -o custom-columns=NAME:.metadata.name,AGE:.metadata.creationTimestamp
+```
+
+If the pods are older than your config change, they didn't pick it up. Force it:
+
+```
+oc delete pod -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
+```
+
+Verify the worker default actually landed:
+
+```
+oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
+  cat /tmp/strimzi-connect.properties | grep -iE "key.converter|value.converter|plugin.path"
+```
+
+You should see `key.converter=org.apache.kafka.connect.storage.StringConverter`. If it's absent or still shows a JSON converter, the chart change didn't sync — check `oc get kafkaconnect dev-kafka-connect-mq -o jsonpath='{.spec.config.key\.converter}'`.
+
+Second — even with the right converter now, the **poisoned message is still sitting at the consumer offset**. The sink's consumer group still points at the test message (`SOP-TEST-BY-SAADI-NEFT-SINK`) that failed. On restart the task re-reads from the same offset. But here's the thing: with `key.converter: StringConverter` and `value.converter: ByteArrayConverter` now active, that plain-string message should parse fine (string key, byte value) — so a clean pod restart *should* clear it. If it still fails after the pods rolled with the new converter, the trace will show whether it's the same JSON error (config didn't land) or the message genuinely can't be consumed.
+
+So the order is: confirm pods rolled with the new config → if not, delete pods → verify the converter is in `strimzi-connect.properties` → then the task should recover on its own (or annotate once more).
+
+Paste the `neft-mq-sink/status` output and the `strimzi-connect.properties | grep converter` output. Those two tell us definitively whether it's "config didn't reach the worker" or "a specific message still failing" — and the fix differs for each.
