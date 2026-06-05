@@ -22,3 +22,54 @@ config:
     session.timeout.ms: {{ .Values.kafka.kafkaConnect.config.session.timeout.ms | default 60000 }}
     heartbeat.interval.ms: {{ .Values.kafka.kafkaConnect.config.heartbeat.interval.ms | default 20000 }}
     rebalance.timeout.ms: {{ .Values.kafka.kafkaConnect.config.rebalance.timeout.ms | default 120000 }}
+
+
+
+In your `kafka-connect.yaml`, add three lines to the `config:` block. Insert them right after the `status.storage.replication.factor: -1` line:
+
+```yaml
+  config:
+    group.id: {{ .Values.kafka.kafkaConnect.config.group.id }}
+    offset.storage.topic: {{ .Values.kafka.kafkaConnect.config.offset.storage.topic }}
+    config.storage.topic: {{ .Values.kafka.kafkaConnect.config.config.storage.topic }}
+    status.storage.topic: {{ .Values.kafka.kafkaConnect.config.status.storage.topic }}
+    # Use default replication factor per AMQ examples
+    config.storage.replication.factor: -1
+    offset.storage.replication.factor: -1
+    status.storage.replication.factor: -1
+    # Plugin path + worker-default converters (match working cluster)
+    plugin.path: /opt/kafka/plugins
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: "false"
+    {{- if .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
+    offset.flush.interval.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
+    {{- end }}
+    {{- if .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
+    offset.flush.timeout.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
+    {{- end }}
+    # Stability: prevent worker eviction on transient broker blips
+    session.timeout.ms: {{ .Values.kafka.kafkaConnect.config.session.timeout.ms | default 60000 }}
+    heartbeat.interval.ms: {{ .Values.kafka.kafkaConnect.config.heartbeat.interval.ms | default 20000 }}
+    rebalance.timeout.ms: {{ .Values.kafka.kafkaConnect.config.rebalance.timeout.ms | default 120000 }}
+```
+
+The only addition is these four lines (`plugin.path` you may already have added — if so, just add the three converter lines):
+
+```yaml
+    plugin.path: /opt/kafka/plugins
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: "false"
+```
+
+No SSL lines — your cluster connects fine without them.
+
+After commit + sync, clear the two failed sinks:
+
+```
+oc annotate kafkaconnector neft-mq-sink rtgs-mq-sink strimzi.io/restart=true -n dev-kafka --overwrite
+oc get kafkaconnector -n dev-kafka
+```
+
+Both should return to `READY=True`. The source connectors were never affected.
