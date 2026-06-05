@@ -1,6 +1,23 @@
 oc get nodes -l env=dev
 oc get nodes --show-labels | grep -v master | grep -v infra | head
 
+[osuser@bastion ~]$ oc get nodes -l env=dev
+NAME                      STATUS   ROLES    AGE    VERSION
+worker1.dev.sbiepay.sbi   Ready    worker   636d   v1.32.9
+worker2.dev.sbiepay.sbi   Ready    worker   636d   v1.32.9
+worker3.dev.sbiepay.sbi   Ready    worker   636d   v1.32.9
+[osuser@bastion ~]$ oc get nodes --show-labels | grep -v master | grep -v infra | head
+NAME                      STATUS   ROLES                  AGE    VERSION   LABELS
+worker1.dev.sbiepay.sbi   Ready    worker                 636d   v1.32.9   SBIEPAY=TEST,beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,beta.kubernetes.io/os=linux,env=dev,kubernetes.io/arch=amd64,kubernetes.io/hostname=worker1.dev.sbiepay.sbi,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,node.openshift.io/os_id=rhcos,type=worker,worker-node=sbi
+worker1.integ.epay.sbi    Ready    worker                 266d   v1.32.9   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,beta.kubernetes.io/os=linux,env=int,kubernetes.io/arch=amd64,kubernetes.io/hostname=worker1.integ.epay.sbi,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,node.openshift.io/os_id=rhcos
+worker1.sit.epay.sbi      Ready    worker                 589d   v1.32.9   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,beta.kubernetes.io/os=linux,env=sit,kubernetes.io/arch=amd64,kubernetes.io/hostname=worker1.sit.epay.sbi,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,node.openshift.io/os_id=rhcos
+worker1.uat.epay.sbi      Ready    worker                 590d   v1.32.9   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,beta.kubernetes.io/os=linux,env=uat,k8s.ovn.org/egress-assignable=,kubernetes.io/arch=amd64,kubernetes.io/hostname=worker1.uat.epay.sbi,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,node.openshift.io/os_id=rhcos
+worker2.dev.sbiepay.sbi   Ready    worker                 636d   v1.32.9   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,beta.kubernetes.io/os=linux,env=dev,kubernetes.io/arch=amd64,kubernetes.io/hostname=worker2.dev.sbiepay.sbi,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,node.openshift.io/os_id=rhcos,type=worker,worker-node=yash
+worker2.integ.epay.sbi    Ready    worker                 268d   v1.32.9   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-256gb.os-unknown,beta.kubernetes.io/os=linux,env=int,kubernetes.io/arch=amd64,kubernetes.io/hostname=worker2.integ.epay.sbi,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-256gb.os-unknown,node.openshift.io/os_id=rhcos
+worker2.sit.epay.sbi      Ready    worker                 589d   v1.32.9   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,beta.kubernetes.io/os=linux,env=sit,kubernetes.io/arch=amd64,kubernetes.io/hostname=worker2.sit.epay.sbi,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,node.openshift.io/os_id=rhcos
+worker2.uat.epay.sbi      Ready    worker                 590d   v1.32.9   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,beta.kubernetes.io/os=linux,env=uat,k8s.ovn.org/egress-assignable=,kubernetes.io/arch=amd64,kubernetes.io/hostname=worker2.uat.epay.sbi,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,node.openshift.io/os_id=rhcos
+worker3.dev.sbiepay.sbi   Ready    worker                 636d   v1.32.9   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,beta.kubernetes.io/os=linux,env=dev,kubernetes.io/arch=amd64,kubernetes.io/hostname=worker3.dev.sbiepay.sbi,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.kubernetes.io/instance-type=vsphere-vm.cpu-16.mem-64gb.os-unknown,node.openshift.io/os_id=rhcos,type=worker
+[osuser@bastion ~]$
 
 
 template:
