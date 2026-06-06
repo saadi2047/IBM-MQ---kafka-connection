@@ -1,11 +1,156 @@
-The one command that would prove the root cause is:
-
-oc get pods -A | grep strimzi-cluster-operator
-
-then
-
-oc logs <strimzi-cluster-operator-pod> -n <operator-namespace> --since=24h
-
-You tried:
-
-oc logs deployment/strimzi-cluster-operator -n <operator-namespace>
+[osuser@bastion ~]$ oc get pods -A | grep strimzi-cluster-operator
+[osuser@bastion ~]$ oc get pods -A | grep strimzi
+[osuser@bastion ~]$ oc get pods -A | grep operator
+cert-manager-operator                              cert-manager-operator-controller-manager-66c7d768fb-wjztb         2/2     Running             2 (11d ago)         36d
+dev-kafka                                          dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk                2/2     Running             1 (67d ago)         79d
+dev-spark-operator                                 spark-kubernetes-operator-7d975469d9-z7dn9                        2/2     Running             22 (6d3h ago)       134d
+int-kafka                                          int-kafka-cluster-entity-operator-79699cdd59-z47jk                2/2     Running             5 (134d ago)        134d
+openshift-apiserver-operator                       openshift-apiserver-operator-7b4b499698-mdhr5                     1/1     Running             23 (11d ago)        134d
+openshift-authentication-operator                  authentication-operator-6fb86c6d88-gfcpt                          1/1     Running             32 (11d ago)        134d
+openshift-cloud-controller-manager-operator        cluster-cloud-controller-manager-operator-c9fdd4f96-gjvrh         3/3     Running             308 (11d ago)       134d
+openshift-cloud-credential-operator                cloud-credential-operator-584bd75f8-q5nbk                         2/2     Running             2 (11d ago)         134d
+openshift-cluster-csi-drivers                      vmware-vsphere-csi-driver-operator-6d97d77575-kv74t               1/1     Running             17 (11d ago)        134d
+openshift-cluster-node-tuning-operator             cluster-node-tuning-operator-64686bcc9b-pj7tc                     1/1     Running             13 (11d ago)        134d
+openshift-cluster-node-tuning-operator             tuned-66bgd                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-6fh5d                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-6z4xs                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-7lwvr                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-8dwt5                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-bswkc                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-gkssd                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-gwsxm                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-htxbq                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-jhssk                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-kklp9                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-lth2k                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-qjcsh                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-sf9th                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-wdfzq                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-x2hcv                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-xlr2p                                                       1/1     Running             1                   134d
+openshift-cluster-node-tuning-operator             tuned-zm9kn                                                       1/1     Running             1                   134d
+openshift-cluster-observability-operator           logging-84c857cbc-7jg27                                           1/1     Running             0                   134d
+openshift-cluster-observability-operator           obo-prometheus-operator-695c46b7b6-dk2bp                          1/1     Running             0                   134d
+openshift-cluster-observability-operator           obo-prometheus-operator-admission-webhook-6c6c8d5cf4-jml2m        1/1     Running             0                   134d
+openshift-cluster-observability-operator           obo-prometheus-operator-admission-webhook-6c6c8d5cf4-rxn6x        1/1     Running             0                   134d
+openshift-cluster-observability-operator           observability-operator-687c6f7fc8-nv7lp                           1/1     Running             5 (48d ago)         134d
+openshift-cluster-observability-operator           perses-operator-789cf7d989-gnwg5                                  1/1     Running             2 (105d ago)        134d
+openshift-cluster-olm-operator                     cluster-olm-operator-555bb78d4b-hm2rs                             1/1     Running             20 (11d ago)        134d
+openshift-cluster-samples-operator                 cluster-samples-operator-59d4b4bb6f-9ptdf                         2/2     Running             0                   134d
+openshift-cluster-storage-operator                 cluster-storage-operator-fc664fc4-xcg6k                           1/1     Running             15 (11d ago)        134d
+openshift-cluster-storage-operator                 csi-snapshot-controller-66cb7ff8fb-4h4kr                          1/1     Running             22 (11d ago)        134d
+openshift-cluster-storage-operator                 csi-snapshot-controller-66cb7ff8fb-79g2q                          1/1     Running             1 (113d ago)        134d
+openshift-cluster-storage-operator                 csi-snapshot-controller-operator-6b79fd97cc-vsm8h                 1/1     Running             17 (11d ago)        134d
+openshift-cluster-storage-operator                 vsphere-problem-detector-operator-6c9c899bf4-8vx8c                1/1     Running             18 (11d ago)        134d
+openshift-cluster-version                          cluster-version-operator-57c66b4664-2bsvv                         1/1     Running             8 (11d ago)         134d
+openshift-config-operator                          openshift-config-operator-54659ff468-pjc88                        1/1     Running             39 (11d ago)        134d
+openshift-console-operator                         console-conversion-webhook-844f8b7846-cddwx                       1/1     Running             3 (65d ago)         134d
+openshift-console-operator                         console-operator-59d47f8fcd-pznds                                 1/1     Running             35 (11d ago)        134d
+openshift-controller-manager-operator              openshift-controller-manager-operator-5d8f8bbbdc-wwczr            1/1     Running             19 (11d ago)        134d
+openshift-distributed-tracing                      jaeger-operator-6b559f95bd-vr9hn                                  2/2     Running             27 (11d ago)        134d
+openshift-dns-operator                             dns-operator-b7d8457fd-cjmgw                                      2/2     Running             0                   134d
+openshift-etcd-operator                            etcd-operator-5785ffd74b-t54rw                                    1/1     Running             21 (11d ago)        134d
+openshift-gitops-operator                          openshift-gitops-operator-controller-manager-84946dd7dd-gdtv8     2/2     Running             3 (15h ago)         36d
+openshift-image-registry                           cluster-image-registry-operator-6955fb967d-979tc                  1/1     Running             4 (11d ago)         134d
+openshift-ingress-operator                         ingress-operator-57b5997f4c-bf87p                                 2/2     Running             0                   134d
+openshift-insights                                 insights-operator-6c858d4b55-5jpt4                                1/1     Running             0                   134d
+openshift-kube-apiserver-operator                  kube-apiserver-operator-7b7fb44f8d-bm6p5                          1/1     Running             153 (11d ago)       134d
+openshift-kube-controller-manager-operator         kube-controller-manager-operator-789f844f7-92bzs                  1/1     Running             149 (11d ago)       134d
+openshift-kube-scheduler-operator                  openshift-kube-scheduler-operator-6f498bc74d-vgjth                1/1     Running             156 (11d ago)       134d
+openshift-kube-storage-version-migrator-operator   kube-storage-version-migrator-operator-6794dc4757-x6wsz           1/1     Running             20 (11d ago)        134d
+openshift-logging                                  cluster-logging-operator-cb897b458-sd9j2                          1/1     Running             0                   120d
+openshift-machine-api                              cluster-autoscaler-operator-6f567d4f5b-tbsfc                      2/2     Running             4 (11d ago)         134d
+openshift-machine-api                              cluster-baremetal-operator-59985bdc48-n6fvt                       2/2     Running             19 (11d ago)        134d
+openshift-machine-api                              control-plane-machine-set-operator-57545749f4-9sclb               1/1     Running             19 (11d ago)        134d
+openshift-machine-api                              machine-api-operator-67498f9c65-hmhdw                             2/2     Running             5 (11d ago)         134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-infra1.dev.sbiepay.sbi                       1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-infra2.dev.sbiepay.sbi                       1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-infra3.dev.sbiepay.sbi                       1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-master1.dev.sbiepay.sbi                      1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-master2.dev.sbiepay.sbi                      1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-master3.dev.sbiepay.sbi                      1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker1.dev.sbiepay.sbi                      1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker1.integ.epay.sbi                       1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker1.sit.epay.sbi                         1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker1.uat.epay.sbi                         1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker2.dev.sbiepay.sbi                      1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker2.integ.epay.sbi                       1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker2.sit.epay.sbi                         1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker2.uat.epay.sbi                         1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker3.dev.sbiepay.sbi                      1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker3.integ.epay.sbi                       1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker3.sit.epay.sbi                         1/1     Running             0                   134d
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker3.uat.epay.sbi                         1/1     Running             0                   134d
+openshift-machine-config-operator                  machine-config-controller-59c9df76d-q9w6w                         2/2     Running             4 (11d ago)         134d
+openshift-machine-config-operator                  machine-config-daemon-4b66l                                       2/2     Running             2                   134d
+openshift-machine-config-operator                  machine-config-daemon-4vjmg                                       2/2     Running             2                   134d
+openshift-machine-config-operator                  machine-config-daemon-6xlcm                                       2/2     Running             4 (48d ago)         134d
+openshift-machine-config-operator                  machine-config-daemon-bsctx                                       2/2     Running             4 (65d ago)         134d
+openshift-machine-config-operator                  machine-config-daemon-c4xgx                                       2/2     Running             4 (48d ago)         134d
+openshift-machine-config-operator                  machine-config-daemon-h9v5w                                       2/2     Running             2                   134d
+openshift-machine-config-operator                  machine-config-daemon-htq7q                                       2/2     Running             2                   134d
+openshift-machine-config-operator                  machine-config-daemon-jp22w                                       2/2     Running             2                   134d
+openshift-machine-config-operator                  machine-config-daemon-m6ckp                                       2/2     Running             2                   134d
+openshift-machine-config-operator                  machine-config-daemon-pw6zk                                       2/2     Running             6 (112d ago)        134d
+openshift-machine-config-operator                  machine-config-daemon-qvzsl                                       2/2     Running             3 (48d ago)         134d
+openshift-machine-config-operator                  machine-config-daemon-s6hpj                                       2/2     Running             2                   134d
+openshift-machine-config-operator                  machine-config-daemon-v5t4v                                       2/2     Running             3 (48d ago)         134d
+openshift-machine-config-operator                  machine-config-daemon-vqwgg                                       2/2     Running             2                   134d
+openshift-machine-config-operator                  machine-config-daemon-wh6bm                                       2/2     Running             2                   134d
+openshift-machine-config-operator                  machine-config-daemon-xp4p9                                       2/2     Running             2                   134d
+openshift-machine-config-operator                  machine-config-daemon-z2j9h                                       2/2     Running             2                   134d
+openshift-machine-config-operator                  machine-config-daemon-zbn47                                       2/2     Running             3 (120d ago)        134d
+openshift-machine-config-operator                  machine-config-operator-6d65b68989-gjxl8                          2/2     Running             3 (11d ago)         134d
+openshift-machine-config-operator                  machine-config-server-ssrz6                                       1/1     Running             1                   134d
+openshift-machine-config-operator                  machine-config-server-vzcgd                                       1/1     Running             1                   134d
+openshift-machine-config-operator                  machine-config-server-w9r2m                                       1/1     Running             1                   134d
+openshift-marketplace                              cs-redhat-operator-index-4.18-2k5j8                               1/1     Running             0                   74d
+openshift-marketplace                              cs-redhat-operator-index-q6wtd                                    0/1     ImagePullBackOff    0                   17h
+openshift-marketplace                              cs-redhat-operator-index-up-4.18-lf6qm                            1/1     Running             0                   74d
+openshift-marketplace                              cs-redhat-operator-index-v416-hhmzb                               0/1     ImagePullBackOff    0                   17h
+openshift-marketplace                              marketplace-operator-7897f6c65f-p69l5                             1/1     Running             12 (11d ago)        134d
+openshift-monitoring                               cluster-monitoring-operator-694c9cdfd-44rxb                       1/1     Running             0                   134d
+openshift-monitoring                               prometheus-operator-6c4dff46df-sthmj                              2/2     Running             0                   53d
+openshift-monitoring                               prometheus-operator-admission-webhook-6d6fd65f65-ht6wz            1/1     Running             1 (48d ago)         53d
+openshift-monitoring                               prometheus-operator-admission-webhook-6d6fd65f65-knmkn            1/1     Running             0                   17h
+openshift-netobserv-operator                       netobserv-controller-manager-575494bdc7-cnm2b                     1/1     Running             48 (11d ago)        134d
+openshift-network-operator                         iptables-alerter-2scjw                                            1/1     Running             1                   134d
+openshift-network-operator                         iptables-alerter-62tpr                                            1/1     Running             1                   134d
+openshift-network-operator                         iptables-alerter-9wztc                                            1/1     Running             8 (11d ago)         134d
+openshift-network-operator                         iptables-alerter-bcss2                                            1/1     Running             10 (11d ago)        134d
+openshift-network-operator                         iptables-alerter-f4n5j                                            1/1     Running             1                   134d
+openshift-network-operator                         iptables-alerter-lbd22                                            1/1     Running             10 (11d ago)        134d
+openshift-network-operator                         iptables-alerter-ls7jl                                            1/1     Running             7 (11d ago)         134d
+openshift-network-operator                         iptables-alerter-mkph8                                            1/1     Running             3 (11d ago)         134d
+openshift-network-operator                         iptables-alerter-mqjnm                                            1/1     Running             3 (11d ago)         134d
+openshift-network-operator                         iptables-alerter-nstg6                                            1/1     Running             14 (11d ago)        134d
+openshift-network-operator                         iptables-alerter-qv878                                            1/1     Running             1                   134d
+openshift-network-operator                         iptables-alerter-rb4dh                                            1/1     Running             12 (11d ago)        134d
+openshift-network-operator                         iptables-alerter-shnb5                                            1/1     Running             217 (11d ago)       134d
+openshift-network-operator                         iptables-alerter-t9fvt                                            1/1     Running             4 (3d18h ago)       134d
+openshift-network-operator                         iptables-alerter-wxhjj                                            1/1     Running             1                   134d
+openshift-network-operator                         iptables-alerter-x8qzp                                            1/1     Running             1                   134d
+openshift-network-operator                         iptables-alerter-xlq4z                                            1/1     Running             3 (50d ago)         134d
+openshift-network-operator                         iptables-alerter-xwvfw                                            1/1     Running             9 (11d ago)         134d
+openshift-network-operator                         network-operator-694b6d4dbd-4xkqf                                 1/1     Running             186 (11d ago)       134d
+openshift-operator-controller                      operator-controller-controller-manager-595b4df8d4-2dfwv           1/1     Running             11 (11d ago)        134d
+openshift-operator-lifecycle-manager               catalog-operator-87f888c8d-t7g89                                  1/1     Running             3 (120d ago)        134d
+openshift-operator-lifecycle-manager               collect-profiles-29678715-q8q4q                                   0/1     Completed           0                   35m
+openshift-operator-lifecycle-manager               collect-profiles-29678730-hvhqc                                   0/1     Completed           0                   20m
+openshift-operator-lifecycle-manager               collect-profiles-29678745-946jj                                   0/1     Completed           0                   5m31s
+openshift-operator-lifecycle-manager               olm-operator-76d45d4f-gs6dk                                       1/1     Running             3 (120d ago)        134d
+openshift-operator-lifecycle-manager               package-server-manager-54845dd8fd-dkbgp                           2/2     Running             8 (11d ago)         134d
+openshift-operator-lifecycle-manager               packageserver-6dc8ccd75-5xl5g                                     1/1     Running             2 (120d ago)        134d
+openshift-operator-lifecycle-manager               packageserver-6dc8ccd75-zmj9z                                     1/1     Running             6 (65d ago)         134d
+openshift-operators-redhat                         loki-operator-controller-manager-7494c6f956-lcbqg                 2/2     Running             64 (15h ago)        134d
+openshift-operators                                amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn              1/1     Running             53 (11d ago)        134d
+openshift-operators                                kiali-operator-546794cd7c-2ds4h                                   1/1     Running             3 (48d ago)         134d
+openshift-operators                                servicemesh-operator3-888bb864c-dhccz                             1/1     Running             42 (11d ago)        134d
+openshift-service-ca-operator                      service-ca-operator-5566ccf4b5-4lhbj                              1/1     Running             19 (11d ago)        134d
+openshift-tempo-operator                           tempo-operator-controller-555598f6bd-l85zj                        1/1     Running             6 (15h ago)         28d
+openshift-user-workload-monitoring                 prometheus-operator-5f6d444d9d-bbrkd                              2/2     Running             0                   134d
+quay-enterprise                                    quay-operator.v3.15.2-79f7bcc95c-klb7n                            1/1     Running             0                   92d
+sit-kafka                                          sit-kafka-cluster-entity-operator-67865b654f-x8bcq                2/2     Running             0                   33d
+streams-kafka-console                              amq-streams-console-operator-v3.0.1-3-bfb7d7454-pw2lr             1/1     Running             53 (15h ago)        134d
+uat-kafka                                          uat-kafka-cluster-entity-operator-668845cdc-pzmh5                 2/2     Running             0                   134d
+[osuser@bastion ~]$
