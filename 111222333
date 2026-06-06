@@ -16,6 +16,16 @@ dev-kafka-connect-mq-connect-1                       1/1     Running   1 (15h ag
 dev-kafka-connect-mq-connect-2                       1/1     Running   11 (15h ago)    16h
 dev-kafka-mirror-maker-mirrormaker2-0                0/1     Pending   0               156d
 [osuser@bastion ~]$
+[osuser@bastion ~]$ oc get kafkaconnect -n dev-kafka
+NAME                   DESIRED REPLICAS   READY
+dev-kafka-connect-mq   3                  True
+[osuser@bastion ~]$ oc get kafkaconnector -n dev-kafka
+NAME             CLUSTER                CONNECTOR CLASS                                           MAX TASKS   READY
+neft-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1           True
+neft-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1           True
+rtgs-mq-sink     dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsink.MQSinkConnector       1           True
+rtgs-mq-source   dev-kafka-connect-mq   com.ibm.eventstreams.connect.mqsource.MQSourceConnector   1           True
+[osuser@bastion ~]$
 
 
 ====================================================================================
