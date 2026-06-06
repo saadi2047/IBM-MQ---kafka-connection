@@ -1,8 +1,7 @@
-Need:
+Run:
 
-oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn \
---since=20h | grep -E "18:3|18:4|rolling|restart|podset|certificate"
+oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=20h | grep -i "Rolling pod dev-kafka-cluster-broker"
 
-or simply:
+or
 
-oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=20h > operator.log
+oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=20h | grep -i "old revision"
