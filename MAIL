@@ -199,3 +199,36 @@ Regards,
 Saadi
 Kafka Administration Team
 
+======================================
+
+Dear Team,
+
+As discussed, the RTGS Kafka–IBM MQ integration has been successfully completed and validated from the Kafka Administration team side.
+
+The implementation has been tested end-to-end for both directions:
+
+* IBM MQ → Kafka
+* Kafka → IBM MQ
+
+The application team has also completed their validation successfully, and no issues have been observed during testing.
+
+For reference, the detailed implementation, configuration, validation, troubleshooting, and deployment SOP has been attached.
+
+With DEV validation completed, the next phase is to implement the same integration in the following environments:
+
+* SIT (sit-kafka)
+* UAT (uat-kafka)
+* INT (int-kafka)
+
+Requesting the respective teams to share the required environment-specific details, including MQ connectivity details, queue manager information, queue names, ports, channels, firewall requirements, and any necessary approvals to proceed with the implementation in the above environments.
+
+Once the required information and approvals are received, we will initiate the deployment through GitLab Helm Charts and perform the necessary validation activities.
+
+Please let us know if any additional information is required from our side.
+
+Regards,
+
+Saadi M Muzzammil
+Kafka Administration Team
+
+
