@@ -1,7 +1,8 @@
-Run:
+[osuser@bastion ~]$ oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=20h | grep -i "Rolling pod dev-kafka-cluster-broker"
+[osuser@bastion ~]$ oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=20h | grep -i "old revision"
+2026-06-05 10:33:03 INFO  KafkaConnectRoller:140 - Reconciliation #120902(watch) KafkaConnect(dev-kafka/dev-kafka-connect-mq): Rolling pod dev-kafka-connect-mq-connect-0: [Pod has old revision]
+2026-06-05 12:15:26 INFO  KafkaConnectRoller:140 - Reconciliation #121750(watch) KafkaConnect(dev-kafka/dev-kafka-connect-mq): Rolling pod dev-kafka-connect-mq-connect-0: [Pod has old revision]
+2026-06-05 12:16:34 INFO  KafkaConnectRoller:140 - Reconciliation #121750(watch) KafkaConnect(dev-kafka/dev-kafka-connect-mq): Rolling pod dev-kafka-connect-mq-connect-1: [Pod has old revision]
+2026-06-05 12:17:47 INFO  KafkaConnectRoller:140 - Reconciliation #121750(watch) KafkaConnect(dev-kafka/dev-kafka-connect-mq): Rolling pod dev-kafka-connect-mq-connect-2: [Pod has old revision]
+[osuser@bastion ~]$
 
-oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=20h | grep -i "Rolling pod dev-kafka-cluster-broker"
-
-or
-
-oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=20h | grep -i "old revision"
