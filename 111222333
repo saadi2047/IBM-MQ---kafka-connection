@@ -1,15 +1,523 @@
-For Connect:
-
-oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka
-oc describe pod dev-kafka-connect-mq-connect-2 -n dev-kafka
-
-For controllers:
-
-oc describe pod dev-kafka-cluster-controller-3 -n dev-kafka
-oc describe pod dev-kafka-cluster-controller-4 -n dev-kafka
-
-For events around the restart window:
-
-oc get events -n dev-kafka --sort-by=.lastTimestamp | tail -100
-
-Those outputs will tell us whether this was:
+[osuser@bastion ~]$ oc get events --all-namespaces --sort-by=.lastTimestamp | grep -iE "NodeNotReady|Reboot|NTP|clock|Rebooted" | tail -20
+openshift-cluster-storage-operator     57m         Warning   FailedVSphereCheckAccountPermissions             deployment/vsphere-problem-detector-operator                         specified folder not found: folder '/h03vc01.corp.ad.sbi/H03-UAT-DC/EPPG/vm/EPAY_OCP' not found
+[osuser@bastion ~]$ oc get pod -n dev-kafka -l app.kubernetes.io/name=cruise-control -o jsonpath='{.items[0].status.containerStatuses[0].restartCount}{"\n"}'
+403
+[osuser@bastion ~]$ oc logs -n dev-kafka -l app.kubernetes.io/name=cruise-control --since=20h | grep -iE "error|exception|disconnect" | tail -30
+[osuser@bastion ~]$ oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka
+Name:             dev-kafka-connect-mq-connect-0
+Namespace:        dev-kafka
+Priority:         0
+Service Account:  dev-kafka-connect-mq-connect
+Node:             worker3.dev.sbiepay.sbi/10.177.142.143
+Start Time:       Fri, 05 Jun 2026 17:45:30 +0530
+Labels:           app.kubernetes.io/instance=dev-kafka-connect-mq
+                  app.kubernetes.io/managed-by=strimzi-cluster-operator
+                  app.kubernetes.io/name=kafka-connect
+                  app.kubernetes.io/part-of=strimzi-dev-kafka-connect-mq
+                  com.company=Red_Hat
+                  environment=dev
+                  rht.comp=AMQ_Streams
+                  rht.comp_ver=3.0.1
+                  rht.prod_name=Red_Hat_Application_Foundations
+                  rht.prod_ver=2025.Q3
+                  rht.subcomp=kafka-connect
+                  rht.subcomp_t=application
+                  strimzi.io/cluster=dev-kafka-connect-mq
+                  strimzi.io/component-type=kafka-connect
+                  strimzi.io/controller=strimzipodset
+                  strimzi.io/controller-name=dev-kafka-connect-mq-connect
+                  strimzi.io/kind=KafkaConnect
+                  strimzi.io/name=dev-kafka-connect-mq-connect
+                  strimzi.io/pod-name=dev-kafka-connect-mq-connect-0
+Annotations:      k8s.ovn.org/pod-networks:
+                    {"default":{"ip_addresses":["172.16.17.223/23"],"mac_address":"0a:58:ac:10:11:df","gateway_ips":["172.16.16.1"],"routes":[{"dest":"172.16....
+                  k8s.v1.cni.cncf.io/network-status:
+                    [{
+                        "name": "ovn-kubernetes",
+                        "interface": "eth0",
+                        "ips": [
+                            "172.16.17.223"
+                        ],
+                        "mac": "0a:58:ac:10:11:df",
+                        "default": true,
+                        "dns": {}
+                    }]
+                  openshift.io/scc: restricted-v2
+                  seccomp.security.alpha.kubernetes.io/pod: runtime/default
+                  strimzi.io/auth-hash: 1711039365
+                  strimzi.io/configuration-hash: 21a783d0
+                  strimzi.io/logging-hash: 06ee78c4
+                  strimzi.io/revision: 3ba94b3d
+Status:           Running
+SeccompProfile:   RuntimeDefault
+IP:               172.16.17.223
+IPs:
+  IP:           172.16.17.223
+Controlled By:  StrimziPodSet/dev-kafka-connect-mq-connect
+Containers:
+  dev-kafka-connect-mq-connect:
+    Container ID:  cri-o://e88672c0be736360da5a6acccbccc7cdbb646e3bc2239660d265ad699432533b
+    Image:         registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
+    Image ID:      registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq@sha256:2b0378eaedef550022bdb731470969917688d091c0ecc969598ae5418acf842a
+    Port:          8083/TCP
+    Host Port:     0/TCP
+    Args:
+      /opt/kafka/kafka_connect_run.sh
+    State:          Running
+      Started:      Fri, 05 Jun 2026 18:45:08 +0530
+    Last State:     Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Fri, 05 Jun 2026 18:38:04 +0530
+      Finished:     Fri, 05 Jun 2026 18:39:59 +0530
+    Ready:          True
+    Restart Count:  11
+    Limits:
+      cpu:     4
+      memory:  8Gi
+    Requests:
+      cpu:      2
+      memory:   4Gi
+    Liveness:   http-get http://:rest-api/health delay=60s timeout=5s period=10s #success=1 #failure=3
+    Readiness:  http-get http://:rest-api/health delay=60s timeout=5s period=10s #success=1 #failure=3
+    Environment:
+      KAFKA_CONNECT_METRICS_ENABLED:    false
+      STRIMZI_KAFKA_GC_LOG_ENABLED:     false
+      STRIMZI_DYNAMIC_HEAP_PERCENTAGE:  75
+      KAFKA_CONNECT_TRUSTED_CERTS:      dev-kafka-cluster-cluster-ca-cert/*.crt
+    Mounts:
+      /opt/kafka/connect-certs/dev-kafka-cluster-cluster-ca-cert from dev-kafka-cluster-cluster-ca-cert (rw)
+      /opt/kafka/custom-config/ from kafka-connect-configurations (rw)
+      /tmp from strimzi-tmp (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-z7hbt (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       True
+  ContainersReady             True
+  PodScheduled                True
+Volumes:
+  strimzi-tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  5Mi
+  kafka-connect-configurations:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      dev-kafka-connect-mq-connect-config
+    Optional:  false
+  dev-kafka-cluster-cluster-ca-cert:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  dev-kafka-cluster-cluster-ca-cert
+    Optional:    false
+  kube-api-access-z7hbt:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+    ConfigMapName:           openshift-service-ca.crt
+    ConfigMapOptional:       <nil>
+QoS Class:                   Burstable
+Node-Selectors:              env=dev
+Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:                      <none>
+[osuser@bastion ~]$ oc describe pod dev-kafka-connect-mq-connect-2 -n dev-kafka
+Name:             dev-kafka-connect-mq-connect-2
+Namespace:        dev-kafka
+Priority:         0
+Service Account:  dev-kafka-connect-mq-connect
+Node:             worker2.dev.sbiepay.sbi/10.177.142.142
+Start Time:       Fri, 05 Jun 2026 17:47:51 +0530
+Labels:           app.kubernetes.io/instance=dev-kafka-connect-mq
+                  app.kubernetes.io/managed-by=strimzi-cluster-operator
+                  app.kubernetes.io/name=kafka-connect
+                  app.kubernetes.io/part-of=strimzi-dev-kafka-connect-mq
+                  com.company=Red_Hat
+                  environment=dev
+                  rht.comp=AMQ_Streams
+                  rht.comp_ver=3.0.1
+                  rht.prod_name=Red_Hat_Application_Foundations
+                  rht.prod_ver=2025.Q3
+                  rht.subcomp=kafka-connect
+                  rht.subcomp_t=application
+                  strimzi.io/cluster=dev-kafka-connect-mq
+                  strimzi.io/component-type=kafka-connect
+                  strimzi.io/controller=strimzipodset
+                  strimzi.io/controller-name=dev-kafka-connect-mq-connect
+                  strimzi.io/kind=KafkaConnect
+                  strimzi.io/name=dev-kafka-connect-mq-connect
+                  strimzi.io/pod-name=dev-kafka-connect-mq-connect-2
+Annotations:      k8s.ovn.org/pod-networks:
+                    {"default":{"ip_addresses":["172.16.14.64/23"],"mac_address":"0a:58:ac:10:0e:40","gateway_ips":["172.16.14.1"],"routes":[{"dest":"172.16.0...
+                  k8s.v1.cni.cncf.io/network-status:
+                    [{
+                        "name": "ovn-kubernetes",
+                        "interface": "eth0",
+                        "ips": [
+                            "172.16.14.64"
+                        ],
+                        "mac": "0a:58:ac:10:0e:40",
+                        "default": true,
+                        "dns": {}
+                    }]
+                  openshift.io/scc: restricted-v2
+                  seccomp.security.alpha.kubernetes.io/pod: runtime/default
+                  strimzi.io/auth-hash: 1711039365
+                  strimzi.io/configuration-hash: 21a783d0
+                  strimzi.io/logging-hash: 06ee78c4
+                  strimzi.io/revision: 0ba3a132
+Status:           Running
+SeccompProfile:   RuntimeDefault
+IP:               172.16.14.64
+IPs:
+  IP:           172.16.14.64
+Controlled By:  StrimziPodSet/dev-kafka-connect-mq-connect
+Containers:
+  dev-kafka-connect-mq-connect:
+    Container ID:  cri-o://75f0c4a6a2debc8904c57db34f38c76b62d51987b5f98649c12ffd9ad41a0d4f
+    Image:         registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
+    Image ID:      registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq@sha256:2b0378eaedef550022bdb731470969917688d091c0ecc969598ae5418acf842a
+    Port:          8083/TCP
+    Host Port:     0/TCP
+    Args:
+      /opt/kafka/kafka_connect_run.sh
+    State:          Running
+      Started:      Fri, 05 Jun 2026 18:39:59 +0530
+    Last State:     Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Fri, 05 Jun 2026 18:38:06 +0530
+      Finished:     Fri, 05 Jun 2026 18:39:58 +0530
+    Ready:          True
+    Restart Count:  11
+    Limits:
+      cpu:     4
+      memory:  8Gi
+    Requests:
+      cpu:      2
+      memory:   4Gi
+    Liveness:   http-get http://:rest-api/health delay=60s timeout=5s period=10s #success=1 #failure=3
+    Readiness:  http-get http://:rest-api/health delay=60s timeout=5s period=10s #success=1 #failure=3
+    Environment:
+      KAFKA_CONNECT_METRICS_ENABLED:    false
+      STRIMZI_KAFKA_GC_LOG_ENABLED:     false
+      STRIMZI_DYNAMIC_HEAP_PERCENTAGE:  75
+      KAFKA_CONNECT_TRUSTED_CERTS:      dev-kafka-cluster-cluster-ca-cert/*.crt
+    Mounts:
+      /opt/kafka/connect-certs/dev-kafka-cluster-cluster-ca-cert from dev-kafka-cluster-cluster-ca-cert (rw)
+      /opt/kafka/custom-config/ from kafka-connect-configurations (rw)
+      /tmp from strimzi-tmp (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-44qw4 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       True
+  ContainersReady             True
+  PodScheduled                True
+Volumes:
+  strimzi-tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  5Mi
+  kafka-connect-configurations:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      dev-kafka-connect-mq-connect-config
+    Optional:  false
+  dev-kafka-cluster-cluster-ca-cert:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  dev-kafka-cluster-cluster-ca-cert
+    Optional:    false
+  kube-api-access-44qw4:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+    ConfigMapName:           openshift-service-ca.crt
+    ConfigMapOptional:       <nil>
+QoS Class:                   Burstable
+Node-Selectors:              env=dev
+Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:                      <none>
+[osuser@bastion ~]$ oc describe pod dev-kafka-cluster-controller-3 -n dev-kafka
+Name:             dev-kafka-cluster-controller-3
+Namespace:        dev-kafka
+Priority:         0
+Service Account:  dev-kafka-cluster-kafka
+Node:             worker2.dev.sbiepay.sbi/10.177.142.142
+Start Time:       Fri, 05 Jun 2026 18:37:00 +0530
+Labels:           app.kubernetes.io/instance=dev-kafka-cluster
+                  app.kubernetes.io/managed-by=strimzi-cluster-operator
+                  app.kubernetes.io/name=kafka
+                  app.kubernetes.io/part-of=strimzi-dev-kafka-cluster
+                  com.company=Red_Hat
+                  environment=dev
+                  rht.comp=AMQ_Streams
+                  rht.comp_ver=3.0.1
+                  rht.prod_name=Red_Hat_Application_Foundations
+                  rht.prod_ver=2025.Q3
+                  rht.subcomp=kafka-broker
+                  rht.subcomp_t=application
+                  strimzi.io/broker-role=false
+                  strimzi.io/cluster=dev-kafka-cluster
+                  strimzi.io/component-type=kafka
+                  strimzi.io/controller=strimzipodset
+                  strimzi.io/controller-name=dev-kafka-cluster-controller
+                  strimzi.io/controller-role=true
+                  strimzi.io/kind=Kafka
+                  strimzi.io/name=dev-kafka-cluster-kafka
+                  strimzi.io/pod-name=dev-kafka-cluster-controller-3
+                  strimzi.io/pool-name=controller
+Annotations:      k8s.ovn.org/pod-networks:
+                    {"default":{"ip_addresses":["172.16.14.66/23"],"mac_address":"0a:58:ac:10:0e:42","gateway_ips":["172.16.14.1"],"routes":[{"dest":"172.16.0...
+                  k8s.v1.cni.cncf.io/network-status:
+                    [{
+                        "name": "ovn-kubernetes",
+                        "interface": "eth0",
+                        "ips": [
+                            "172.16.14.66"
+                        ],
+                        "mac": "0a:58:ac:10:0e:42",
+                        "default": true,
+                        "dns": {}
+                    }]
+                  openshift.io/scc: restricted-v2
+                  seccomp.security.alpha.kubernetes.io/pod: runtime/default
+                  strimzi.io/clients-ca-cert-generation: 0
+                  strimzi.io/cluster-ca-cert-generation: 0
+                  strimzi.io/cluster-ca-key-generation: 0
+                  strimzi.io/configuration-hash: e2acf3a6
+                  strimzi.io/kafka-version: 3.9.0
+                  strimzi.io/logging-hash: 712b3c72
+                  strimzi.io/revision: 470700eb
+                  strimzi.io/server-cert-hash: 08ad65972de7273d38f6f01f4df928247a851c41
+Status:           Running
+SeccompProfile:   RuntimeDefault
+IP:               172.16.14.66
+IPs:
+  IP:           172.16.14.66
+Controlled By:  StrimziPodSet/dev-kafka-cluster-controller
+Containers:
+  kafka:
+    Container ID:  cri-o://1f82f33d7bf072927774582b39905a99c5cdfef20dee0fda608cf78f54c83c8c
+    Image:         registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa
+    Image ID:      registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa
+    Ports:         8443/TCP, 9090/TCP, 9404/TCP
+    Host Ports:    0/TCP, 0/TCP, 0/TCP
+    Args:
+      /opt/kafka/kafka_run.sh
+    State:          Running
+      Started:      Fri, 05 Jun 2026 18:37:06 +0530
+    Ready:          True
+    Restart Count:  0
+    Liveness:       exec [/opt/kafka/kafka_liveness.sh] delay=15s timeout=5s period=10s #success=1 #failure=3
+    Readiness:      exec [/opt/kafka/kafka_readiness.sh] delay=15s timeout=5s period=10s #success=1 #failure=3
+    Environment:
+      KAFKA_METRICS_ENABLED:         true
+      STRIMZI_KAFKA_GC_LOG_ENABLED:  false
+      KAFKA_HEAP_OPTS:               -Xms128M
+    Mounts:
+      /opt/kafka/broker-certs from broker-certs (rw)
+      /opt/kafka/client-ca-certs from client-ca-cert (rw)
+      /opt/kafka/cluster-ca-certs from cluster-ca (rw)
+      /opt/kafka/custom-config/ from kafka-metrics-and-logging (rw)
+      /tmp from strimzi-tmp (rw)
+      /var/lib/kafka/data-0 from data-0 (rw)
+      /var/opt/kafka from ready-files (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-zmnk6 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       True
+  ContainersReady             True
+  PodScheduled                True
+Volumes:
+  data-0:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  data-0-dev-kafka-cluster-controller-3
+    ReadOnly:   false
+  strimzi-tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  5Mi
+  cluster-ca:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  dev-kafka-cluster-cluster-ca-cert
+    Optional:    false
+  broker-certs:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  dev-kafka-cluster-controller-3
+    Optional:    false
+  client-ca-cert:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  dev-kafka-cluster-clients-ca-cert
+    Optional:    false
+  kafka-metrics-and-logging:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      dev-kafka-cluster-controller-3
+    Optional:  false
+  ready-files:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  1Ki
+  kube-api-access-zmnk6:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+    ConfigMapName:           openshift-service-ca.crt
+    ConfigMapOptional:       <nil>
+QoS Class:                   BestEffort
+Node-Selectors:              env=dev
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:                      <none>
+[osuser@bastion ~]$ oc describe pod dev-kafka-cluster-controller-4 -n dev-kafka
+Name:             dev-kafka-cluster-controller-4
+Namespace:        dev-kafka
+Priority:         0
+Service Account:  dev-kafka-cluster-kafka
+Node:             worker1.dev.sbiepay.sbi/10.177.142.141
+Start Time:       Fri, 05 Jun 2026 18:36:53 +0530
+Labels:           app.kubernetes.io/instance=dev-kafka-cluster
+                  app.kubernetes.io/managed-by=strimzi-cluster-operator
+                  app.kubernetes.io/name=kafka
+                  app.kubernetes.io/part-of=strimzi-dev-kafka-cluster
+                  com.company=Red_Hat
+                  environment=dev
+                  rht.comp=AMQ_Streams
+                  rht.comp_ver=3.0.1
+                  rht.prod_name=Red_Hat_Application_Foundations
+                  rht.prod_ver=2025.Q3
+                  rht.subcomp=kafka-broker
+                  rht.subcomp_t=application
+                  strimzi.io/broker-role=false
+                  strimzi.io/cluster=dev-kafka-cluster
+                  strimzi.io/component-type=kafka
+                  strimzi.io/controller=strimzipodset
+                  strimzi.io/controller-name=dev-kafka-cluster-controller
+                  strimzi.io/controller-role=true
+                  strimzi.io/kind=Kafka
+                  strimzi.io/name=dev-kafka-cluster-kafka
+                  strimzi.io/pod-name=dev-kafka-cluster-controller-4
+                  strimzi.io/pool-name=controller
+Annotations:      k8s.ovn.org/pod-networks:
+                    {"default":{"ip_addresses":["172.16.9.228/23"],"mac_address":"0a:58:ac:10:09:e4","gateway_ips":["172.16.8.1"],"routes":[{"dest":"172.16.0....
+                  k8s.v1.cni.cncf.io/network-status:
+                    [{
+                        "name": "ovn-kubernetes",
+                        "interface": "eth0",
+                        "ips": [
+                            "172.16.9.228"
+                        ],
+                        "mac": "0a:58:ac:10:09:e4",
+                        "default": true,
+                        "dns": {}
+                    }]
+                  openshift.io/scc: restricted-v2
+                  seccomp.security.alpha.kubernetes.io/pod: runtime/default
+                  strimzi.io/clients-ca-cert-generation: 0
+                  strimzi.io/cluster-ca-cert-generation: 0
+                  strimzi.io/cluster-ca-key-generation: 0
+                  strimzi.io/configuration-hash: 59c622f6
+                  strimzi.io/kafka-version: 3.9.0
+                  strimzi.io/logging-hash: 712b3c72
+                  strimzi.io/revision: e5176779
+                  strimzi.io/server-cert-hash: 6c54c373796a3308f88f6fd72f66a8b80023fa49
+Status:           Running
+SeccompProfile:   RuntimeDefault
+IP:               172.16.9.228
+IPs:
+  IP:           172.16.9.228
+Controlled By:  StrimziPodSet/dev-kafka-cluster-controller
+Containers:
+  kafka:
+    Container ID:  cri-o://9462df3c551b2640b40dd0c08707888e301fd1978bbf64df6ad15fef94f02937
+    Image:         registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa
+    Image ID:      registry.redhat.io/amq-streams/kafka-39-rhel9@sha256:6014828970f83e9546f2e670a9a97d916dd063ff4f9b13910f91eee0068f96fa
+    Ports:         8443/TCP, 9090/TCP, 9404/TCP
+    Host Ports:    0/TCP, 0/TCP, 0/TCP
+    Args:
+      /opt/kafka/kafka_run.sh
+    State:          Running
+      Started:      Fri, 05 Jun 2026 18:37:04 +0530
+    Ready:          True
+    Restart Count:  0
+    Liveness:       exec [/opt/kafka/kafka_liveness.sh] delay=15s timeout=5s period=10s #success=1 #failure=3
+    Readiness:      exec [/opt/kafka/kafka_readiness.sh] delay=15s timeout=5s period=10s #success=1 #failure=3
+    Environment:
+      KAFKA_METRICS_ENABLED:         true
+      STRIMZI_KAFKA_GC_LOG_ENABLED:  false
+      KAFKA_HEAP_OPTS:               -Xms128M
+    Mounts:
+      /opt/kafka/broker-certs from broker-certs (rw)
+      /opt/kafka/client-ca-certs from client-ca-cert (rw)
+      /opt/kafka/cluster-ca-certs from cluster-ca (rw)
+      /opt/kafka/custom-config/ from kafka-metrics-and-logging (rw)
+      /tmp from strimzi-tmp (rw)
+      /var/lib/kafka/data-0 from data-0 (rw)
+      /var/opt/kafka from ready-files (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-4mhzs (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       True
+  ContainersReady             True
+  PodScheduled                True
+Volumes:
+  data-0:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  data-0-dev-kafka-cluster-controller-4
+    ReadOnly:   false
+  strimzi-tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  5Mi
+  cluster-ca:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  dev-kafka-cluster-cluster-ca-cert
+    Optional:    false
+  broker-certs:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  dev-kafka-cluster-controller-4
+    Optional:    false
+  client-ca-cert:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  dev-kafka-cluster-clients-ca-cert
+    Optional:    false
+  kafka-metrics-and-logging:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      dev-kafka-cluster-controller-4
+    Optional:  false
+  ready-files:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     Memory
+    SizeLimit:  1Ki
+  kube-api-access-4mhzs:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+    ConfigMapName:           openshift-service-ca.crt
+    ConfigMapOptional:       <nil>
+QoS Class:                   BestEffort
+Node-Selectors:              env=dev
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:                      <none>
+[osuser@bastion ~]$ oc get events -n dev-kafka --sort-by=.lastTimestamp | tail -100
+LAST SEEN   TYPE      REASON             OBJECT                                                  MESSAGE
+29m         Warning   Unhealthy          pod/dev-kafka-cluster-cruise-control-7678c88585-67rjz   Liveness probe failed: command timed out
+8m46s       Warning   Unhealthy          pod/dev-kafka-cluster-cruise-control-7678c88585-67rjz   Readiness probe failed: command timed out
+96s         Warning   FailedScheduling   pod/dev-kafka-mirror-maker-mirrormaker2-0               0/18 nodes are available: 12 node(s) didn't match Pod's node affinity/selector, 3 node(s) had untolerated taint {node-role.kubernetes.io/infra: reserved}, 3 node(s) had untolerated taint {node-role.kubernetes.io/master: }. preemption: 0/18 nodes are available: 18 Preemption is not helpful for scheduling.
+[osuser@bastion ~]$
