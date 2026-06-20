@@ -28,3 +28,19 @@ OPEN
     "type": "source"
 }
 [osuser@bastion ~]$
+[osuser@bastion ~]$ oc get pods -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS       AGE
+dev-console-console-deployment-577c797ccf-bpcbl      2/2     Running   0              14d
+dev-kafka-cluster-broker-0                           1/1     Running   0              2d5h
+dev-kafka-cluster-broker-1                           1/1     Running   0              2d5h
+dev-kafka-cluster-broker-2                           1/1     Running   0              2d5h
+dev-kafka-cluster-controller-3                       1/1     Running   0              14d
+dev-kafka-cluster-controller-4                       1/1     Running   0              2d5h
+dev-kafka-cluster-controller-5                       1/1     Running   0              58d
+dev-kafka-cluster-cruise-control-d949867dd-hc9cs     1/1     Running   23 (37h ago)   8d
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (81d ago)    93d
+dev-kafka-connect-mq-connect-0                       1/1     Running   51 (37h ago)   14d
+dev-kafka-connect-mq-connect-1                       1/1     Running   8 (37h ago)    2d5h
+dev-kafka-connect-mq-connect-2                       1/1     Running   49 (37h ago)   14d
+[osuser@bastion ~]$
+
