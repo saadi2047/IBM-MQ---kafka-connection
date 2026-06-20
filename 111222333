@@ -1,46 +1,12 @@
-[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- bash -c \
->   "timeout 5 bash -c '</dev/tcp/10.176.10.213/2001' && echo OPEN || echo FAIL"
-OPEN
-[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-2 -n dev-kafka -- bash -c \
->   "timeout 5 bash -c '</dev/tcp/10.176.10.213/2001' && echo OPEN || echo FAIL"
-OPEN
-[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
->   curl -s -X POST http://localhost:8083/connectors/neft-mq-source/tasks/0/restart
-[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
->   curl -s -X POST http://localhost:8083/connectors/rtgs-mq-sink/tasks/0/restart
-[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
->   curl -s -X POST http://localhost:8083/connectors/rtgs-mq-source/tasks/0/restart
-[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
->   curl -s http://localhost:8083/connectors/rtgs-mq-source/status | python3 -m json.tool
-{
-    "name": "rtgs-mq-source",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "source"
-}
-[osuser@bastion ~]$
-[osuser@bastion ~]$ oc get pods -n dev-kafka
-NAME                                                 READY   STATUS    RESTARTS       AGE
-dev-console-console-deployment-577c797ccf-bpcbl      2/2     Running   0              14d
-dev-kafka-cluster-broker-0                           1/1     Running   0              2d5h
-dev-kafka-cluster-broker-1                           1/1     Running   0              2d5h
-dev-kafka-cluster-broker-2                           1/1     Running   0              2d5h
-dev-kafka-cluster-controller-3                       1/1     Running   0              14d
-dev-kafka-cluster-controller-4                       1/1     Running   0              2d5h
-dev-kafka-cluster-controller-5                       1/1     Running   0              58d
-dev-kafka-cluster-cruise-control-d949867dd-hc9cs     1/1     Running   23 (37h ago)   8d
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (81d ago)    93d
-dev-kafka-connect-mq-connect-0                       1/1     Running   51 (37h ago)   14d
-dev-kafka-connect-mq-connect-1                       1/1     Running   8 (37h ago)    2d5h
-dev-kafka-connect-mq-connect-2                       1/1     Running   49 (37h ago)   14d
-[osuser@bastion ~]$
+# Check connect-0 previous crash reason
+oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka | grep -A5 "Last State"
 
+# Check if OOMKilled or other reason
+oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka | grep -A10 "State\|Last State\|Exit Code\|Reason"
+
+# Check events around that time
+oc get events -n dev-kafka --sort-by='.lastTimestamp' | tail -30
+
+
+# Watch restart counts over time
+oc get pods -n dev-kafka -w | grep connect
