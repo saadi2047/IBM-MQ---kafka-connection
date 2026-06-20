@@ -1,14 +1,39 @@
-# Check connect-0 previous crash reason
-oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka | grep -A5 "Last State"
-
-# Check if OOMKilled or other reason
-oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka | grep -A10 "State\|Last State\|Exit Code\|Reason"
-
-# Check events around that time
-oc get events -n dev-kafka --sort-by='.lastTimestamp' | tail -30
-
-
-# Watch restart counts over time
-oc get pods -n dev-kafka -w | grep connect
 
 #
+[osuser@bastion ~]$ oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka | grep -A5 "Last State"
+    Last State:     Terminated
+      Reason:       Error
+      Exit Code:    137
+      Started:      Thu, 18 Jun 2026 22:36:36 +0530
+      Finished:     Thu, 18 Jun 2026 22:38:30 +0530
+    Ready:          True
+[osuser@bastion ~]$ oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka | grep -A10 "State\|Last State\|Exit Code\|Reason"
+    State:          Running
+      Started:      Thu, 18 Jun 2026 22:43:39 +0530
+    Last State:     Terminated
+      Reason:       Error
+      Exit Code:    137
+      Started:      Thu, 18 Jun 2026 22:36:36 +0530
+      Finished:     Thu, 18 Jun 2026 22:38:30 +0530
+    Ready:          True
+    Restart Count:  51
+    Limits:
+      cpu:     4
+      memory:  8Gi
+    Requests:
+      cpu:      2
+      memory:   4Gi
+--
+  Type     Reason     Age                 From     Message
+  ----     ------     ----                ----     -------
+  Warning  Unhealthy  35m (x49 over 14d)  kubelet  Liveness probe failed: Get "http://172.16.17.223:8083/health": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+  Warning  Unhealthy  35m (x66 over 14d)  kubelet  Readiness probe failed: Get "http://172.16.17.223:8083/health": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+[osuser@bastion ~]$ oc get events -n dev-kafka --sort-by='.lastTimestamp' | tail -30
+LAST SEEN   TYPE      REASON      OBJECT                               MESSAGE
+35m         Warning   Unhealthy   pod/dev-kafka-connect-mq-connect-0   Liveness probe failed: Get "http://172.16.17.223:8083/health": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+35m         Warning   Unhealthy   pod/dev-kafka-connect-mq-connect-0   Readiness probe failed: Get "http://172.16.17.223:8083/health": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+[osuser@bastion ~]$ oc get pods -n dev-kafka -w | grep connect
+dev-kafka-connect-mq-connect-0                       1/1     Running   51 (37h ago)   14d
+dev-kafka-connect-mq-connect-1                       1/1     Running   8 (37h ago)    2d5h
+dev-kafka-connect-mq-connect-2                       1/1     Running   49 (37h ago)   14d
+
