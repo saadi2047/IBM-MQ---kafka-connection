@@ -1,161 +1,37 @@
-{{- if and .Values.kafka.enabled .Values.kafka.kafkaConnect.enabled }}
-# Kafka Connect Cluster for Database/MQ Integration
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaConnect
-metadata:
-  name: {{ .Values.kafka.kafkaConnect.name }}
-  namespace: {{ .Values.kafka.namespace }}
-  labels:
-    app.kubernetes.io/name: {{ .Values.kafka.kafkaConnect.name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: kafka-connect
-    environment: {{ .Values.global.environment }}
-  annotations:
-    # Enable use of KafkaConnector resources
-    strimzi.io/use-connector-resources: "true"
-    argocd.argoproj.io/sync-wave: "9"
-spec:
-  version: {{ .Values.kafka.cluster.version }}
-  replicas: {{ .Values.kafka.kafkaConnect.replicas }}
-  bootstrapServers: {{ .Values.kafka.kafkaConnect.bootstrapServers }}
-  {{- if .Values.kafka.kafkaConnect.image }}
-  image: {{ .Values.kafka.kafkaConnect.image }}
-  {{- end }}
+Since Strimzi/ArgoCD is managing this, the changes flow like this after merge:
 
-  {{- if .Values.kafka.kafkaConnect.autoRestart }}
-  autoRestart:
-    enabled: {{ .Values.kafka.kafkaConnect.autoRestart.enabled | default true }}
-    maxRestarts: {{ .Values.kafka.kafkaConnect.autoRestart.maxRestarts | default 10 }}
-  {{- end }}
+**1. Check ArgoCD sync status first** — ArgoCD will detect the Helm chart change and sync the updated KafkaConnect CR to the cluster:
+```bash
+# Check if ArgoCD has picked up and applied the change
+# (replace 'epay-common' with your actual ArgoCD app name if different)
+oc get application -n argocd | grep -i kafka
+oc get application -n argocd | grep -i epay-common
+```
 
-  # TLS configuration for secure connection (per AMQ examples)
-  tls:
-    trustedCertificates:
-      - secretName: {{ .Values.kafka.cluster.name }}-cluster-ca-cert
-        pattern: "*.crt"
-  
-  # Resource specifications
-  resources:
-    {{- if .Values.kafka.kafkaConnect.resources.requests }}
-    requests:
-      {{- if .Values.kafka.kafkaConnect.resources.requests.memory }}
-      memory: {{ .Values.kafka.kafkaConnect.resources.requests.memory }}
-      {{- end }}
-      {{- if .Values.kafka.kafkaConnect.resources.requests.cpu }}
-      cpu: {{ .Values.kafka.kafkaConnect.resources.requests.cpu }}
-      {{- end }}
-    {{- end }}
-    {{- if .Values.kafka.kafkaConnect.resources.limits }}
-    limits:
-      {{- if .Values.kafka.kafkaConnect.resources.limits.memory }}
-      memory: {{ .Values.kafka.kafkaConnect.resources.limits.memory }}
-      {{- end }}
-      {{- if .Values.kafka.kafkaConnect.resources.limits.cpu }}
-      cpu: {{ .Values.kafka.kafkaConnect.resources.limits.cpu }}
-      {{- end }}
-    {{- end }}
-  
-  # Kafka Connect configuration (per AMQ examples)
-  config:
-    group.id: {{ .Values.kafka.kafkaConnect.config.group.id }}
-    offset.storage.topic: {{ .Values.kafka.kafkaConnect.config.offset.storage.topic }}
-    config.storage.topic: {{ .Values.kafka.kafkaConnect.config.config.storage.topic }}
-    status.storage.topic: {{ .Values.kafka.kafkaConnect.config.status.storage.topic }}
-    # Use default replication factor per AMQ examples
-    config.storage.replication.factor: -1
-    offset.storage.replication.factor: -1
-    status.storage.replication.factor: -1
-    # Plugin path + worker-default converters (match working cluster)
-    plugin.path: /opt/kafka/plugins
-    key.converter: org.apache.kafka.connect.storage.StringConverter
-    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
-    value.converter.schemas.enable: "false"
-    {{- if .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
-    offset.flush.interval.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
-    {{- end }}
-    {{- if .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
-    offset.flush.timeout.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
-    {{- end }}
-    # Stability: prevent worker eviction on transient broker blips
-    session.timeout.ms: {{ .Values.kafka.kafkaConnect.config.session.timeout.ms | default 60000 }}
-    heartbeat.interval.ms: {{ .Values.kafka.kafkaConnect.config.heartbeat.interval.ms | default 20000 }}
-    rebalance.timeout.ms: {{ .Values.kafka.kafkaConnect.config.rebalance.timeout.ms | default 120000 }}  
-  # # Build configuration for Debezium Oracle connector
-  # build:
-  #   output:
-  #     type: docker
-  #     image: registry.preprod.epay.sbi:8443/kafka-connect-debezium:latest
-  #   plugins:
-  #     - name: debezium-oracle-connector
-  #       artifacts:
-  #         - type: zip
-  #           url: https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/2.5.0.Final/debezium-connector-oracle-2.5.0.Final-plugin.zip
-  #         - type: zip
-  #           url: https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/21.9.0.0/ojdbc8-21.9.0.0.jar
-  #     - name: confluent-jdbc-connector
-  #       artifacts:
-  #         - type: zip
-  #           url: https://d1i4a15mxbxib1.cloudfront.net/api/plugins/confluentinc/kafka-connect-jdbc/versions/10.7.4/confluentinc-kafka-connect-jdbc-10.7.4.zip
+**2. Check if the KafkaConnect CR was updated:**
+```bash
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A20 "livenessProbe\|autoRestart"
+```
 
-  # Pod template with affinity and tolerations
-  template:
-    connectContainer:
-      livenessProbe:
-        initialDelaySeconds: {{ .Values.kafka.kafkaConnect.livenessProbe.initialDelaySeconds | default 60 }}
-        timeoutSeconds: {{ .Values.kafka.kafkaConnect.livenessProbe.timeoutSeconds | default 30 }}
-        periodSeconds: {{ .Values.kafka.kafkaConnect.livenessProbe.periodSeconds | default 30 }}
-        failureThreshold: {{ .Values.kafka.kafkaConnect.livenessProbe.failureThreshold | default 5 }}
-      readinessProbe:
-        initialDelaySeconds: {{ .Values.kafka.kafkaConnect.readinessProbe.initialDelaySeconds | default 60 }}
-        timeoutSeconds: {{ .Values.kafka.kafkaConnect.readinessProbe.timeoutSeconds | default 30 }}
-        periodSeconds: {{ .Values.kafka.kafkaConnect.readinessProbe.periodSeconds | default 30 }}
-        failureThreshold: {{ .Values.kafka.kafkaConnect.readinessProbe.failureThreshold | default 5 }}
-    pod:
+**3. Watch Strimzi roll the connect pods** — once the CR changes, Strimzi will do a rolling restart of connect-0, connect-1, connect-2 one by one:
+```bash
+oc get pods -n dev-kafka -w | grep connect-mq-connect
+```
 
-      {{- if .Values.kafka.kafkaConnect.imagePullSecrets }}
-      imagePullSecrets:
-        {{- range .Values.kafka.kafkaConnect.imagePullSecrets }}
-        - name: {{ . }}
-        {{- end }}
-      {{- end }}
+You'll see each pod terminate and restart in sequence. The restart count will increment by 1 for each pod — that's expected and is the last intentional restart.
 
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: node-role.kubernetes.io/worker
-                operator: Exists
-              - key: env
-                operator: In
-                values: ["dev"]
+**4. After rollout completes, verify probes are applied on the running pod:**
+```bash
+oc get pod dev-kafka-connect-mq-connect-0 -n dev-kafka -o yaml | grep -A10 "livenessProbe\|readinessProbe"
+```
 
+**5. Verify all connectors are healthy after the rollout:**
+```bash
+for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
+  echo "=== $c ==="
+  oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+    curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
+done
+```
 
-
-{{- if .Values.kafka.kafkaConnect.connectors }}
-{{- range .Values.kafka.kafkaConnect.connectors }}
----
-# Kafka Connector: {{ .name }}
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaConnector
-metadata:
-  name: {{ .name }}
-  namespace: {{ $.Values.kafka.namespace }}
-  labels:
-    strimzi.io/cluster: {{ $.Values.kafka.kafkaConnect.name }}
-    app.kubernetes.io/name: {{ .name }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
-    app.kubernetes.io/component: kafka-connector
-    environment: {{ $.Values.global.environment }}
-  annotations:
-    argocd.argoproj.io/sync-wave: "10"
-spec:
-  class: {{ .class }}
-  tasksMax: {{ .tasksMax | default 1 }}
-  config:
-    {{- range $key, $value := .config }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
+All four should show `"state": "RUNNING"` for both connector and task. That confirms the fix is live and the connectors survived the Strimzi-initiated rolling restart cleanly.
