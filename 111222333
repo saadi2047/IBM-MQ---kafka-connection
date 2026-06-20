@@ -1,37 +1,105 @@
-Since Strimzi/ArgoCD is managing this, the changes flow like this after merge:
-
-**1. Check ArgoCD sync status first** — ArgoCD will detect the Helm chart change and sync the updated KafkaConnect CR to the cluster:
-```bash
-# Check if ArgoCD has picked up and applied the change
-# (replace 'epay-common' with your actual ArgoCD app name if different)
-oc get application -n argocd | grep -i kafka
-oc get application -n argocd | grep -i epay-common
-```
-
-**2. Check if the KafkaConnect CR was updated:**
-```bash
-oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A20 "livenessProbe\|autoRestart"
-```
-
-**3. Watch Strimzi roll the connect pods** — once the CR changes, Strimzi will do a rolling restart of connect-0, connect-1, connect-2 one by one:
-```bash
-oc get pods -n dev-kafka -w | grep connect-mq-connect
-```
-
-You'll see each pod terminate and restart in sequence. The restart count will increment by 1 for each pod — that's expected and is the last intentional restart.
-
-**4. After rollout completes, verify probes are applied on the running pod:**
-```bash
-oc get pod dev-kafka-connect-mq-connect-0 -n dev-kafka -o yaml | grep -A10 "livenessProbe\|readinessProbe"
-```
-
-**5. Verify all connectors are healthy after the rollout:**
-```bash
-for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
-  echo "=== $c ==="
-  oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
-    curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
-done
-```
-
-All four should show `"state": "RUNNING"` for both connector and task. That confirms the fix is live and the connectors survived the Strimzi-initiated rolling restart cleanly.
+[osuser@bastion ~]$ oc logs -f merchantfe-merchant-frontend-65d84489c7-gwblx
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/nginx.conf:57
+^Z
+[2]+  Stopped                 oc logs -f merchantfe-merchant-frontend-65d84489c7-gwblx
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A20 "livenessProbe\|autoRestart"
+[osuser@bastion ~]$ oc get pods -n dev-kafka -w | grep connect-mq-connect
+dev-kafka-connect-mq-connect-0                       1/1     Running   51 (41h ago)   14d
+dev-kafka-connect-mq-connect-1                       1/1     Running   8 (41h ago)    2d10h
+dev-kafka-connect-mq-connect-2                       1/1     Running   49 (41h ago)   14d
+^Z
+[3]+  Stopped                 oc get pods -n dev-kafka -w | grep --color=auto connect-mq-connect
+[osuser@bastion ~]$ oc get pod dev-kafka-connect-mq-connect-0 -n dev-kafka -o yaml | grep -A10 "livenessProbe\|readinessProbe"
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /health
+        port: rest-api
+        scheme: HTTP
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    name: dev-kafka-connect-mq-connect
+--
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /health
+        port: rest-api
+        scheme: HTTP
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    resources:
+[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
+>   echo "=== $c ==="
+>   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+>     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
+> done
+=== neft-mq-source ===
+{
+    "name": "neft-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+=== neft-mq-sink ===
+{
+    "name": "neft-mq-sink",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "sink"
+}
+=== rtgs-mq-source ===
+{
+    "name": "rtgs-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+=== rtgs-mq-sink ===
+{
+    "name": "rtgs-mq-sink",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "sink"
+}
+[osuser@bastion ~]$
