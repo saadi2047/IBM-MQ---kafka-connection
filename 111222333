@@ -1,13 +1,32 @@
-First — confirm MQ reachability from inside a Connect pod (this is the source failure):
-oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- bash -c "timeout 5 bash -c '</dev/tcp/10.176.10.213/2001' && echo NEFT-2001-OPEN || echo NEFT-2001-FAIL"
-oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- bash -c "timeout 5 bash -c '</dev/tcp/10.176.10.213/2005' && echo RTGS-2005-OPEN || echo RTGS-2005-FAIL"
-If these FAIL, the connectors can't recover no matter what you do — it's MQ-side or the egress firewall/route from the dev nodes to 10.176.10.213. Check whether the MQ listener is up and whether anything changed on the firewall path overnight.
-Second — confirm the broker admin path. CC and Connect both time out creating topics against node 1 and node 2. Check broker health and whether a broker is wedged:
-oc get pods -n dev-kafka -o wide -l strimzi.io/cluster=dev-kafka-cluster
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 2>&1 | head
-oc logs dev-kafka-cluster-broker-1 -n dev-kafka --tail=80 | grep -iE "error|isr|shrink|timeout|not enough"
-oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.status.conditions}{"\n"}'
-Brokers all recreated Jun 18, 6:08–6:10 AM (~11h ago) — so something rolled them this morning. Check the operator:
-oc logs -n dev-kafka -l name=strimzi-cluster-operator --since=14h | grep -iE "roll|broker|reconcil|error" | tail -40
-Once MQ is reachable again, the source connectors recover on their own (the task retries). If they don't auto-recover after MQ is back, restart them:
-oc annotate kafkaconnector neft-mq-source rtgs-mq-source rtgs-mq-sink strimzi.io/restart=true -n dev-kafka --overwrite
+[osuser@bastion ~]$ oc project dev-kafka
+Now using project "dev-kafka" on server "https://api.dev.sbiepay.sbi:6443".
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- bash -c "timeout 5 bash -c '</dev/tcp/10.176.10.213/2001' && echo NEFT-2001-OPEN || echo NEFT-2001-FAIL"
+NEFT-2001-OPEN
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- bash -c "timeout 5 bash -c '</dev/tcp/10.176.10.213/2005' && echo RTGS-2005-OPEN || echo RTGS-2005-FAIL"
+RTGS-2005-OPEN
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 2>&1 | head
+dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9092 (id: 2 rack: null) -> (
+        Produce(0): 0 to 11 [usable: 11],
+        Fetch(1): 0 to 17 [usable: 17],
+        ListOffsets(2): 0 to 9 [usable: 9],
+        Metadata(3): 0 to 12 [usable: 12],
+        LeaderAndIsr(4): UNSUPPORTED,
+        StopReplica(5): UNSUPPORTED,
+        UpdateMetadata(6): UNSUPPORTED,
+        ControlledShutdown(7): UNSUPPORTED,
+        OffsetCommit(8): 0 to 9 [usable: 9],
+[osuser@bastion ~]$ oc logs dev-kafka-cluster-broker-1 -n dev-kafka --tail=80 | grep -iE "error|isr|shrink|timeout|not enough"
+2026-06-20 05:56:11,572 INFO [RaftManager id=1] Completed transition to Unattached(epoch=1319693, votedKey=null, voters=[3, 4, 5], electionTimeoutMs=9223372036854775807, highWatermark=Optional[LogOffsetMetadata(offset=44764571, metadata=Optional.empty)]) from FollowerState(fetchTimeoutMs=2000, epoch=1319692, leader=4, leaderEndpoints=Endpoints(endpoints={ListenerName(CONTROLPLANE-9090)=dev-kafka-cluster-controller-4.dev-kafka-cluster-kafka-brokers.dev-kafka.svc/<unresolved>:9090}), voters=[3, 4, 5], highWatermark=Optional[LogOffsetMetadata(offset=44764571, metadata=Optional.empty)], fetchingSnapshot=Optional.empty) (org.apache.kafka.raft.QuorumState) [kafka-1-raft-io-thread]
+2026-06-20 05:56:13,610 INFO [RaftManager id=1] Disconnecting from node 5 due to request timeout. (org.apache.kafka.clients.NetworkClient) [kafka-1-raft-outbound-request-thread]
+2026-06-20 05:56:13,610 INFO [RaftManager id=1] Cancelled in-flight FETCH request with correlation id 440251 due to node 5 being disconnected (elapsed time since creation: 2014ms, elapsed time since send: 2001ms, throttle time: 0ms, request timeout: 2000ms) (org.apache.kafka.clients.NetworkClient) [kafka-1-raft-outbound-request-thread]
+2026-06-20 05:56:13,612 INFO [RaftManager id=1] Attempting durable transition to FollowerState(fetchTimeoutMs=2000, epoch=1319695, leader=4, leaderEndpoints=Endpoints(endpoints={ListenerName(CONTROLPLANE-9090)=dev-kafka-cluster-controller-4.dev-kafka-cluster-kafka-brokers.dev-kafka.svc/<unresolved>:9090}), voters=[3, 4, 5], highWatermark=Optional[LogOffsetMetadata(offset=44764571, metadata=Optional.empty)], fetchingSnapshot=Optional.empty) from Unattached(epoch=1319693, votedKey=null, voters=[3, 4, 5], electionTimeoutMs=9223372036854775807, highWatermark=Optional[LogOffsetMetadata(offset=44764571, metadata=Optional.empty)]) (org.apache.kafka.raft.QuorumState) [kafka-1-raft-io-thread]
+2026-06-20 05:56:13,616 INFO [RaftManager id=1] Completed transition to FollowerState(fetchTimeoutMs=2000, epoch=1319695, leader=4, leaderEndpoints=Endpoints(endpoints={ListenerName(CONTROLPLANE-9090)=dev-kafka-cluster-controller-4.dev-kafka-cluster-kafka-brokers.dev-kafka.svc/<unresolved>:9090}), voters=[3, 4, 5], highWatermark=Optional[LogOffsetMetadata(offset=44764571, metadata=Optional.empty)], fetchingSnapshot=Optional.empty) from Unattached(epoch=1319693, votedKey=null, voters=[3, 4, 5], electionTimeoutMs=9223372036854775807, highWatermark=Optional[LogOffsetMetadata(offset=44764571, metadata=Optional.empty)]) (org.apache.kafka.raft.QuorumState) [kafka-1-raft-io-thread]
+Jun 20, 2026 6:00:25 AM io.prometheus.metrics.exporter.httpserver.HttpExchangeAdapter sendErrorResponseWithStackTrace
+[osuser@bastion ~]$ oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.status.conditions}{"\n"}'
+[{"lastTransitionTime":"2026-06-11T17:20:17.150042636Z","status":"True","type":"Ready"}]
+[osuser@bastion ~]$ oc logs -n dev-kafka -l name=strimzi-cluster-operator --since=14h | grep -iE "roll|broker|reconcil|error" | tail -40
+No resources found in dev-kafka namespace.
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- bash -c "timeout 5 bash -c '</dev/tcp/10.176.10.213/2001' && echo NEFT-2001-OPEN || echo NEFT-2001-FAIL"
+NEFT-2001-OPEN
+[osuser@bastion ~]$
+
