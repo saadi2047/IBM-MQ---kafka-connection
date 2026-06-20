@@ -10,3 +10,5 @@ oc get events -n dev-kafka --sort-by='.lastTimestamp' | tail -30
 
 # Watch restart counts over time
 oc get pods -n dev-kafka -w | grep connect
+
+#
