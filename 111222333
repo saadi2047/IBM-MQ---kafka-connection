@@ -1,90 +1,30 @@
-## Analysis of the Kafka Connector Issues
-
-Here's a summary of what's happening across your connectors:
-
-**Connector Status Overview:**
-
-| Connector | Status | Issue |
-|---|---|---|
-| neft-mq-sink | Ready / RUNNING | ✅ Healthy |
-| neft-mq-source | NotReady / FAILED | ❌ MQ connection failure |
-| rtgs-mq-sink | NotReady | ❓ Needs investigation |
-| rtgs-mq-source | NotReady | ❓ Needs investigation |
-
----
-
-### Root Cause: neft-mq-source FAILED
-
-The error chain is clear:
-
-```
-MQRC_HOST_NOT_AVAILABLE (reason code 2538)
-→ Connection timed out to 10.176.10.213:2001
-```
-
-**But here's the contradiction:** your connectivity test from `connect-1` shows the port IS reachable:
-
-```
-NEFT-2001-OPEN
-RTGS-2005-OPEN
-```
-
-The key detail is **which pod the connector task ran on**. The failed task ran on `connect-0`:
-```
-worker_id: dev-kafka-connect-mq-connect-0...
-```
-
-But your connectivity test was run from `connect-1`. The problem is likely **intermittent** or specific to `connect-0` or `connect-2`.
-
----
-
-### Likely Causes
-
-**1. Pod-specific networking issue** — `connect-0` and `connect-2` have very high restart counts (51 and 49 respectively), while `connect-1` only has 8. Those two pods may be landing on nodes with different network policy or routing.
-
-**2. The connector task failed previously** (at a time when MQ was actually unreachable) and is now stuck in FAILED state — it won't auto-recover without a restart.
-
-**3. RTGS connectors** are both NotReady but you haven't shared their error traces — likely the same pattern.
-
----
-
-### Immediate Actions
-
-**1. Verify connectivity specifically from connect-0 and connect-2:**
-```bash
-oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- bash -c \
-  "timeout 5 bash -c '</dev/tcp/10.176.10.213/2001' && echo OPEN || echo FAIL"
-
-oc exec dev-kafka-connect-mq-connect-2 -n dev-kafka -- bash -c \
-  "timeout 5 bash -c '</dev/tcp/10.176.10.213/2001' && echo OPEN || echo FAIL"
-```
-
-**2. Restart the failed connector tasks via the Connect REST API** (from inside any connect pod):
-```bash
-oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
-  curl -s -X POST http://localhost:8083/connectors/neft-mq-source/tasks/0/restart
-
-oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
-  curl -s -X POST http://localhost:8083/connectors/rtgs-mq-sink/tasks/0/restart
-
-oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
-  curl -s -X POST http://localhost:8083/connectors/rtgs-mq-source/tasks/0/restart
-```
-
-**3. Check RTGS connector error details:**
-```bash
-oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
-  curl -s http://localhost:8083/connectors/rtgs-mq-source/status | python3 -m json.tool
-```
-
----
-
-### Secondary Issue: Kafka Connect Pod Restarts
-
-The extremely high restart counts on `connect-0` (51) and `connect-2` (49) are a separate concern. From the logs you shared, an earlier crash was caused by:
-
-```
-TimeoutException: Timeout expired while trying to create topic(s)
-```
-
-This suggests the Kafka cluster was briefly unavailable or under load when those pods started. The Kafka cluster itself now shows Ready, so this may have been transient around the broker rolling restart on June 18. Worth monitoring whether the restart count continues to climb.
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- bash -c \
+>   "timeout 5 bash -c '</dev/tcp/10.176.10.213/2001' && echo OPEN || echo FAIL"
+OPEN
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-2 -n dev-kafka -- bash -c \
+>   "timeout 5 bash -c '</dev/tcp/10.176.10.213/2001' && echo OPEN || echo FAIL"
+OPEN
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+>   curl -s -X POST http://localhost:8083/connectors/neft-mq-source/tasks/0/restart
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+>   curl -s -X POST http://localhost:8083/connectors/rtgs-mq-sink/tasks/0/restart
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+>   curl -s -X POST http://localhost:8083/connectors/rtgs-mq-source/tasks/0/restart
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+>   curl -s http://localhost:8083/connectors/rtgs-mq-source/status | python3 -m json.tool
+{
+    "name": "rtgs-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+[osuser@bastion ~]$
