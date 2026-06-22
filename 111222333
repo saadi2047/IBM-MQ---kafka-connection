@@ -559,195 +559,119 @@ kafka:
       network.outbound.balance.threshold: "1.1"
 
   # PDF Recommendation: Kafka Connect for database integration
-  
-  # kafkaConnect:
   kafkaConnect:
-      enabled: true
-      name: "dev-kafka-connect-mq"
-      replicas: 3
-      bootstrapServers: "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093"
-      image: "registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3"
-      imagePullSecrets:
-        - microservices-dev-pull-secret
-      resources:
-        requests:
-          memory: "4Gi"
-          cpu: "2"
-        limits:
-          memory: "8Gi"
-          cpu: "4"
-      config:
-        group:
-          id: "dev-kafka-connect-mq-cluster"
-        offset:
-          storage:
-            topic: "dev-kafka-connect-mq-offsets"
-          flush:
-            interval:
-              ms: 10000
-            timeout:
-              ms: 5000
-        config:
-          storage:
-            topic: "dev-kafka-connect-mq-configs"
-        status:
-          storage:
-            topic: "dev-kafka-connect-mq-status"
-        session:
-          timeout:
-            ms: 60000
-        heartbeat:
+    enabled: true
+    name: "dev-kafka-connect-mq"
+    replicas: 3
+    bootstrapServers: "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093"
+    image: "registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3"
+    imagePullSecrets:
+      - microservices-dev-pull-secret
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "8Gi"
+        cpu: "4"
+    config:
+      group:
+        id: "dev-kafka-connect-mq-cluster"
+      offset:
+        storage:
+          topic: "dev-kafka-connect-mq-offsets"
+        flush:
           interval:
-            ms: 20000
-        rebalance:
+            ms: 10000
           timeout:
-            ms: 120000
-      # Liveness probe tuning — prevents ocp from killing Connect pods
-      # during broker rolling restarts or GC pauses 
-      livenessProbe:
-        initialDelaySeconds: 60
-        timeoutSeconds: 30
-        periodSeconds: 30
-        failureThreshold: 5
+            ms: 5000
+      config:
+        storage:
+          topic: "dev-kafka-connect-mq-configs"
+      status:
+        storage:
+          topic: "dev-kafka-connect-mq-status"
+      session:
+        timeout:
+          ms: 60000
+      heartbeat:
+        interval:
+          ms: 20000
+      rebalance:
+        timeout:
+          ms: 120000
+    # Liveness probe tuning - prevents kubelet from killing Connect pods
+    # during broker rolling restarts or GC pauses (root cause of exit 137 restarts)
+    livenessProbe:
+      initialDelaySeconds: 60
+      timeoutSeconds: 30
+      periodSeconds: 30
+      failureThreshold: 5
+    readinessProbe:
+      initialDelaySeconds: 60
+      timeoutSeconds: 30
+      periodSeconds: 30
+      failureThreshold: 5
+    # Auto-restart failed connector tasks - eliminates manual task restart
+    # after pod recovers from a broker outage
+    autoRestart:
+      enabled: true
+      maxRestarts: 10
+    connectors:
+      - name: "neft-mq-source"
+        class: "com.ibm.eventstreams.connect.mqsource.MQSourceConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_NEFT"
+          mq.connection.name.list: "10.176.10.213(2001)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "NeftInboundQueue"
+          mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
+          mq.message.body.format: "string"
+          topic: "neft.inbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
+      - name: "neft-mq-sink"
+        class: "com.ibm.eventstreams.connect.mqsink.MQSinkConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_NEFT"
+          mq.connection.name.list: "10.176.10.213(2001)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "NeftOutBoundQueue"
+          mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
+          mq.message.body.format: "string"
+          topics: "neft.outbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
+      - name: "rtgs-mq-source"
+        class: "com.ibm.eventstreams.connect.mqsource.MQSourceConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_RTGS"
+          mq.connection.name.list: "10.176.10.213(2005)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "RTGSInboundQueue"
+          mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
+          mq.message.body.format: "string"
+          topic: "rtgs.inbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
+      - name: "rtgs-mq-sink"
+        class: "com.ibm.eventstreams.connect.mqsink.MQSinkConnector"
+        tasksMax: 1
+        config:
+          mq.queue.manager: "SBI_RTGS"
+          mq.connection.name.list: "10.176.10.213(2005)"
+          mq.channel.name: "SBIEPAY2.SVRCONN"
+          mq.queue: "RTGSOutBoundQueue"
+          mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
+          mq.message.body.format: "string"
+          topics: "rtgs.outbound.kafka.topic"
+          value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+          value.converter.schemas.enable: "false"
 
-      readinessProbe:
-        initialDelaySeconds: 60
-        timeoutSeconds: 30
-        periodSeconds: 30
-        failureThreshold: 5
-
-      # Auto-restart failed connector tasks — eliminates manual task restart
-      # after pod recovers from a broker outage
-      autoRestart:
-        enabled: true
-        maxRestarts: 10  
-      connectors:
-        - name: "neft-mq-source"
-          class: "com.ibm.eventstreams.connect.mqsource.MQSourceConnector"
-          tasksMax: 1
-          config:
-            mq.queue.manager: "SBI_NEFT"
-            mq.connection.name.list: "10.176.10.213(2001)"
-            mq.channel.name: "SBIEPAY2.SVRCONN"
-            mq.queue: "NeftInboundQueue"
-            mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
-            mq.message.body.format: "string"
-            topic: "neft.inbound.kafka.topic"
-            value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
-            value.converter.schemas.enable: "false"
-  
-        - name: "neft-mq-sink"
-          class: "com.ibm.eventstreams.connect.mqsink.MQSinkConnector"
-          tasksMax: 1
-          config:
-            mq.queue.manager: "SBI_NEFT"
-            mq.connection.name.list: "10.176.10.213(2001)"
-            mq.channel.name: "SBIEPAY2.SVRCONN"
-            mq.queue: "NeftOutBoundQueue"
-            mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
-            mq.message.body.format: "string"
-            topics: "neft.outbound.kafka.topic"
-            value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
-            value.converter.schemas.enable: "false"
-  
-        - name: "rtgs-mq-source"
-          class: "com.ibm.eventstreams.connect.mqsource.MQSourceConnector"
-          tasksMax: 1
-          config:
-            mq.queue.manager: "SBI_RTGS"
-            mq.connection.name.list: "10.176.10.213(2005)"
-            mq.channel.name: "SBIEPAY2.SVRCONN"
-            mq.queue: "RTGSInboundQueue"
-            mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
-            mq.message.body.format: "string"
-            topic: "rtgs.inbound.kafka.topic"
-            value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
-            value.converter.schemas.enable: "false"
-  
-        - name: "rtgs-mq-sink"
-          class: "com.ibm.eventstreams.connect.mqsink.MQSinkConnector"
-          tasksMax: 1
-          config:
-            mq.queue.manager: "SBI_RTGS"
-            mq.connection.name.list: "10.176.10.213(2005)"
-            mq.channel.name: "SBIEPAY2.SVRCONN"
-            mq.queue: "RTGSOutBoundQueue"
-            mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
-            mq.message.body.format: "string"
-            topics: "rtgs.outbound.kafka.topic"
-            value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
-            value.converter.schemas.enable: "false"
-  #   enabled: false
-
-    # name: "dev-kafka-connect"
-    # replicas: 3
-    # bootstrapServers: "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093"
-    # image: "epaynonprod-registry-quay-quay-enterprise.apps.dev.epay.sbi/redhatdefultimage/debeziumconnect:01"
-    # imagePullSecrets: 
-    #    - microservices-dev-pull-secret
-    # resources:
-    #   requests:
-    #     memory: "4Gi"
-    #     cpu: "2"
-    #   limits:
-    #     memory: "8Gi"
-    #     cpu: "4"
-    # config:
-    #   group:
-    #     id: "dev-connect-cluster"
-    #   offset:
-    #     storage:
-    #       topic: "dev-connect-cluster-offsets"
-    #     flush:
-    #       interval:
-    #         ms: 10000
-    #       timeout:
-    #         ms: 5000
-    #   config:
-    #     storage:
-    #       topic: "dev-connect-cluster-configs"
-    #   status:
-    #     storage:
-    #       topic: "dev-connect-cluster-status"
-    # # Connectors configuration
-
-    # connectors:
-    #   - name: "epay-oracle-source"
-    #     config:
-    #       connector:
-    #         class: "io.debezium.connector.oracle.OracleConnector"
-    #       table:
-    #         include:
-    #           list: "PAYAGGADMIN.BANKBRANCHES,PAYAGGADMIN.AGGMERCHGTWFEESTRUCTURE,PAYAGGADMIN.SERVICETAXSTRUCTURE,PAYAGGADMIN.AGGMERCHANTSERVICETAXMAPPING,PAYAGGADMIN.AGGMERCHANTHYBRIDFEESTRUCTURE"
-    #       database:
-    #         hostname: "EPAYDNSDEVNEW.sbiepay.sbi"
-    #         port: "1524"
-    #         user: "PAYAGGADMIN"
-    #         password: "April_2025"
-    #         dbname: "epaydbpp"
-    #         server:
-    #           name: "epay-dev-db"
-    #       decimal.handling.mode: string
-    #       schema.history.internal.skip.unparseable.ddl: "false"
-    #       schema.history.internal.kafka.topic: schema-changes.inventory
-    #       topic:
-    #          prefix: cdc-oracle-gemfire     
-    #       datetime:
-    #         handling.mode: string      
-    #       schema:
-    #         include:
-    #           list: PAYAGGADMIN
-    #         history:
-    #           internal:
-    #             kafka:
-    #               bootstrap:
-    #                 servers: "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093"  
-    #             topic: "epay-db-history"
-    #       include:
-    #         schema:
-    #           changes: true
-
-  # PDF Recommendation: MirrorMaker 2 for disaster recovery
+    # PDF Recommendation: MirrorMaker 2 for disaster recovery
   mirrorMaker2:
     enabled: false
     name: "dev-kafka-mirror-maker"
