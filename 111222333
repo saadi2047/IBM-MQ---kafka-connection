@@ -1,166 +1,51 @@
-[osuser@bastion ~]$ helm get manifest epay-common -n dev-epay-common | grep -A30 "kind: KafkaConnect"
-WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
-kind: KafkaConnect
-metadata:
-  name: dev-kafka-connect-mq
-  namespace: dev-kafka
-  labels:
-    app.kubernetes.io/name: dev-kafka-connect-mq
-    app.kubernetes.io/instance: epay-common
-    app.kubernetes.io/component: kafka-connect
-    environment: dev
-  annotations:
-    # Enable use of KafkaConnector resources
-    strimzi.io/use-connector-resources: "true"
-    argocd.argoproj.io/sync-wave: "9"
-spec:
-  version: 3.9.0
-  replicas: 3
-  bootstrapServers: dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093
-  image: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
-
-  # TLS configuration for secure connection (per AMQ examples)
-  tls:
-    trustedCertificates:
-      - secretName: dev-kafka-cluster-cluster-ca-cert
-        pattern: "*.crt"
-
-  # Resource specifications
-  resources:
-    requests:
-      memory: 4Gi
-      cpu: 2
-    limits:
---
-kind: KafkaConnector
-metadata:
-  name: neft-mq-source
-  namespace: dev-kafka
-  labels:
-    strimzi.io/cluster: dev-kafka-connect-mq
-    app.kubernetes.io/name: neft-mq-source
-    app.kubernetes.io/instance: epay-common
-    app.kubernetes.io/component: kafka-connector
-    environment: dev
-  annotations:
-    argocd.argoproj.io/sync-wave: "10"
-spec:
-  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
-  tasksMax: 1
-  config:
-    mq.channel.name: "SBIEPAY2.SVRCONN"
-    mq.connection.name.list: "10.176.10.213(2001)"
-    mq.message.body.format: "string"
-    mq.queue: "NeftInboundQueue"
-    mq.queue.manager: "SBI_NEFT"
-    mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
-    topic: "neft.inbound.kafka.topic"
-    value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
-    value.converter.schemas.enable: "false"
----
-# Source: epay_common/templates/kafka/kafka-connect.yaml
-# Kafka Connector: neft-mq-sink
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaConnector
-metadata:
-  name: neft-mq-sink
-  namespace: dev-kafka
-  labels:
-    strimzi.io/cluster: dev-kafka-connect-mq
-    app.kubernetes.io/name: neft-mq-sink
-    app.kubernetes.io/instance: epay-common
-    app.kubernetes.io/component: kafka-connector
-    environment: dev
-  annotations:
-    argocd.argoproj.io/sync-wave: "10"
-spec:
-  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
-  tasksMax: 1
-  config:
-    mq.channel.name: "SBIEPAY2.SVRCONN"
-    mq.connection.name.list: "10.176.10.213(2001)"
-    mq.message.body.format: "string"
-    mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
-    mq.queue: "NeftOutBoundQueue"
-    mq.queue.manager: "SBI_NEFT"
-    topics: "neft.outbound.kafka.topic"
-    value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
-    value.converter.schemas.enable: "false"
----
-# Source: epay_common/templates/kafka/kafka-connect.yaml
-# Kafka Connector: rtgs-mq-source
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaConnector
-metadata:
-  name: rtgs-mq-source
-  namespace: dev-kafka
-  labels:
-    strimzi.io/cluster: dev-kafka-connect-mq
-    app.kubernetes.io/name: rtgs-mq-source
-    app.kubernetes.io/instance: epay-common
-    app.kubernetes.io/component: kafka-connector
-    environment: dev
-  annotations:
-    argocd.argoproj.io/sync-wave: "10"
-spec:
-  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
-  tasksMax: 1
-  config:
-    mq.channel.name: "SBIEPAY2.SVRCONN"
-    mq.connection.name.list: "10.176.10.213(2005)"
-    mq.message.body.format: "string"
-    mq.queue: "RTGSInboundQueue"
-    mq.queue.manager: "SBI_RTGS"
-    mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
-    topic: "rtgs.inbound.kafka.topic"
-    value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
-    value.converter.schemas.enable: "false"
----
-# Source: epay_common/templates/kafka/kafka-connect.yaml
-# Kafka Connector: rtgs-mq-sink
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaConnector
-metadata:
-  name: rtgs-mq-sink
-  namespace: dev-kafka
-  labels:
-    strimzi.io/cluster: dev-kafka-connect-mq
-    app.kubernetes.io/name: rtgs-mq-sink
-    app.kubernetes.io/instance: epay-common
-    app.kubernetes.io/component: kafka-connector
-    environment: dev
-  annotations:
-    argocd.argoproj.io/sync-wave: "10"
-spec:
-  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
-  tasksMax: 1
-  config:
-    mq.channel.name: "SBIEPAY2.SVRCONN"
-    mq.connection.name.list: "10.176.10.213(2005)"
-    mq.message.body.format: "string"
-    mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
-    mq.queue: "RTGSOutBoundQueue"
-    mq.queue.manager: "SBI_RTGS"
-    topics: "rtgs.outbound.kafka.topic"
-    value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
-    value.converter.schemas.enable: "false"
----
-# Source: epay_common/templates/kafka/kafka-cluster.yaml
-# Kafka Controller Node Pool (KRaft)
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaNodePool
-metadata:
-[osuser@bastion ~]$ helm history epay-common -n dev-epay-common
-WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
-REVISION        UPDATED                         STATUS          CHART                   APP VERSION     DESCRIPTION
-59              Sat May  2 07:18:21 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-60              Sat May  2 07:38:35 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-61              Fri Jun  5 09:25:11 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-62              Fri Jun  5 09:49:40 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-63              Fri Jun  5 10:10:38 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-64              Fri Jun  5 10:32:56 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-65              Fri Jun  5 12:15:17 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-66              Sat Jun  6 07:57:34 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-67              Sat Jun  6 10:44:24 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-68              Sat Jun  6 10:49:32 2026        deployed        epay_common-0.1.0       1.0.0           Upgrade complete
-[osuser@bastion ~]$
+Running with gitlab-runner 17.9.2 (14c5775c)
+  on dc_runner_55 Wz1c0kGRX, system ID: s_300da9d7588c
+Resolving secrets
+Preparing the "docker" executor
+00:02
+Using Docker executor with image artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 ...
+Using helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.9.2 )
+Authenticating with credentials from $DOCKER_AUTH_CONFIG
+Pulling docker image artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 ...
+Using docker image sha256:4511164d4b592f8cb69c7ffe5cb2df5d1909c1e7924081721495a61e4b03f657 for artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper@sha256:47dfd72820e9c3b93c84dcdc2e689ba1236880b4c01de59bbf0a26f9e72b2a35 ...
+Using helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.9.2 )
+Using docker image sha256:4511164d4b592f8cb69c7ffe5cb2df5d1909c1e7924081721495a61e4b03f657 for artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper@sha256:47dfd72820e9c3b93c84dcdc2e689ba1236880b4c01de59bbf0a26f9e72b2a35 ...
+Authenticating with credentials from $DOCKER_AUTH_CONFIG
+Pulling docker image artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 ...
+Using docker image sha256:db06a3e48eaa4339a92d53be57a37a699ba188fed41652c6c3c6c07bb86cb6f0 for artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 with digest artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm@sha256:65605f26e63ed7624e4711cdd933caf6577f9d309f240d48a295f1d2c790c4d9 ...
+Preparing environment
+00:00
+Using helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.9.2 )
+Using docker image sha256:4511164d4b592f8cb69c7ffe5cb2df5d1909c1e7924081721495a61e4b03f657 for artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper@sha256:47dfd72820e9c3b93c84dcdc2e689ba1236880b4c01de59bbf0a26f9e72b2a35 ...
+Running on runner-wz1c0kgrx-project-2838-concurrent-0 via PE3DSOPGrunners4...
+Getting source from Git repository
+00:27
+Fetching changes...
+Initialized empty Git repository in /builds/itepaypg-sbiepay2/infra/devops/deployment/.git/
+Created fresh repository.
+Checking out 19f1f95a as detached HEAD (ref is main)...
+Skipping Git submodules setup
+Executing "step_script" stage of the job script
+00:05
+Using docker image sha256:db06a3e48eaa4339a92d53be57a37a699ba188fed41652c6c3c6c07bb86cb6f0 for artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 with digest artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm@sha256:65605f26e63ed7624e4711cdd933caf6577f9d309f240d48a295f1d2c790c4d9 ...
+$ set -eo pipefail # collapsed multi-line command
+Detected SERVICE_NAME=epay_common
+Detected ENV=dev
+RAW NAMESPACE=dev-epay-common
+FINAL VALUES:
+SERVICE_NAME=epay_common
+ENV=dev
+RELEASE_NAME=epay-common
+NAMESPACE=dev-epay-common
+Synced dev/charts/epay_common/values.yaml to origin/main
+==> Linting dev/charts/epay_common/
+[INFO] Chart.yaml: icon is recommended
+1 chart(s) linted, 0 chart(s) failed
+Uploading artifacts for failed job
+00:03
+Uploading artifacts...
+build.env: found 1 matching artifact files and directories 
+Uploading artifacts as "dotenv" to coordinator... 201 Created  id=1143000 responseStatus=201 Created token=eyJraWQiO
+Cleaning up project directory and file based variables
+00:02
+ERROR: Job failed: exit code 1
