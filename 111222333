@@ -1,51 +1,159 @@
-Running with gitlab-runner 17.9.2 (14c5775c)
-  on dc_runner_55 Wz1c0kGRX, system ID: s_300da9d7588c
-Resolving secrets
-Preparing the "docker" executor
-00:02
-Using Docker executor with image artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 ...
-Using helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.9.2 )
-Authenticating with credentials from $DOCKER_AUTH_CONFIG
-Pulling docker image artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 ...
-Using docker image sha256:4511164d4b592f8cb69c7ffe5cb2df5d1909c1e7924081721495a61e4b03f657 for artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper@sha256:47dfd72820e9c3b93c84dcdc2e689ba1236880b4c01de59bbf0a26f9e72b2a35 ...
-Using helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.9.2 )
-Using docker image sha256:4511164d4b592f8cb69c7ffe5cb2df5d1909c1e7924081721495a61e4b03f657 for artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper@sha256:47dfd72820e9c3b93c84dcdc2e689ba1236880b4c01de59bbf0a26f9e72b2a35 ...
-Authenticating with credentials from $DOCKER_AUTH_CONFIG
-Pulling docker image artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 ...
-Using docker image sha256:db06a3e48eaa4339a92d53be57a37a699ba188fed41652c6c3c6c07bb86cb6f0 for artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 with digest artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm@sha256:65605f26e63ed7624e4711cdd933caf6577f9d309f240d48a295f1d2c790c4d9 ...
-Preparing environment
-00:00
-Using helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.9.2 )
-Using docker image sha256:4511164d4b592f8cb69c7ffe5cb2df5d1909c1e7924081721495a61e4b03f657 for artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper@sha256:47dfd72820e9c3b93c84dcdc2e689ba1236880b4c01de59bbf0a26f9e72b2a35 ...
-Running on runner-wz1c0kgrx-project-2838-concurrent-0 via PE3DSOPGrunners4...
-Getting source from Git repository
-00:27
-Fetching changes...
-Initialized empty Git repository in /builds/itepaypg-sbiepay2/infra/devops/deployment/.git/
-Created fresh repository.
-Checking out 19f1f95a as detached HEAD (ref is main)...
-Skipping Git submodules setup
-Executing "step_script" stage of the job script
-00:05
-Using docker image sha256:db06a3e48eaa4339a92d53be57a37a699ba188fed41652c6c3c6c07bb86cb6f0 for artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 with digest artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm@sha256:65605f26e63ed7624e4711cdd933caf6577f9d309f240d48a295f1d2c790c4d9 ...
-$ set -eo pipefail # collapsed multi-line command
-Detected SERVICE_NAME=epay_common
-Detected ENV=dev
-RAW NAMESPACE=dev-epay-common
-FINAL VALUES:
-SERVICE_NAME=epay_common
-ENV=dev
-RELEASE_NAME=epay-common
-NAMESPACE=dev-epay-common
-Synced dev/charts/epay_common/values.yaml to origin/main
-==> Linting dev/charts/epay_common/
-[INFO] Chart.yaml: icon is recommended
-1 chart(s) linted, 0 chart(s) failed
-Uploading artifacts for failed job
-00:03
-Uploading artifacts...
-build.env: found 1 matching artifact files and directories 
-Uploading artifacts as "dotenv" to coordinator... 201 Created  id=1143000 responseStatus=201 Created token=eyJraWQiO
-Cleaning up project directory and file based variables
-00:02
-ERROR: Job failed: exit code 1
+{{- if and .Values.kafka.enabled .Values.kafka.kafkaConnect.enabled }}
+## Kafka Connect Cluster for Database/MQ Integration
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: {{ .Values.kafka.kafkaConnect.name }}
+  namespace: {{ .Values.kafka.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.kafka.kafkaConnect.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: kafka-connect
+    environment: {{ .Values.global.environment }}
+  annotations:
+    # Enable use of KafkaConnector resources
+    strimzi.io/use-connector-resources: "true"
+    argocd.argoproj.io/sync-wave: "9"
+spec:
+  version: {{ .Values.kafka.cluster.version }}
+  replicas: {{ .Values.kafka.kafkaConnect.replicas }}
+  bootstrapServers: {{ .Values.kafka.kafkaConnect.bootstrapServers }}
+  {{- if .Values.kafka.kafkaConnect.image }}
+  image: {{ .Values.kafka.kafkaConnect.image }}
+  {{- end }}
+  {{- if .Values.kafka.kafkaConnect.autoRestart }}
+  autoRestart:
+    enabled: {{ .Values.kafka.kafkaConnect.autoRestart.enabled | default true }}
+    maxRestarts: {{ .Values.kafka.kafkaConnect.autoRestart.maxRestarts | default 10 }}
+  {{- end }}
+  #added new line
+  # TLS configuration for secure connection (per AMQ examples)
+  tls:
+    trustedCertificates:
+      - secretName: {{ .Values.kafka.cluster.name }}-cluster-ca-cert
+        pattern: "*.crt"
+  
+  # Resource specifications
+  resources:
+    {{- if .Values.kafka.kafkaConnect.resources.requests }}
+    requests:
+      {{- if .Values.kafka.kafkaConnect.resources.requests.memory }}
+      memory: {{ .Values.kafka.kafkaConnect.resources.requests.memory }}
+      {{- end }}
+      {{- if .Values.kafka.kafkaConnect.resources.requests.cpu }}
+      cpu: {{ .Values.kafka.kafkaConnect.resources.requests.cpu }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.kafka.kafkaConnect.resources.limits }}
+    limits:
+      {{- if .Values.kafka.kafkaConnect.resources.limits.memory }}
+      memory: {{ .Values.kafka.kafkaConnect.resources.limits.memory }}
+      {{- end }}
+      {{- if .Values.kafka.kafkaConnect.resources.limits.cpu }}
+      cpu: {{ .Values.kafka.kafkaConnect.resources.limits.cpu }}
+      {{- end }}
+    {{- end }}
+  
+  # Kafka Connect configuration (per AMQ examples)
+  config:
+    group.id: {{ .Values.kafka.kafkaConnect.config.group.id }}
+    offset.storage.topic: {{ .Values.kafka.kafkaConnect.config.offset.storage.topic }}
+    config.storage.topic: {{ .Values.kafka.kafkaConnect.config.config.storage.topic }}
+    status.storage.topic: {{ .Values.kafka.kafkaConnect.config.status.storage.topic }}
+    # Use default replication factor per AMQ examples
+    config.storage.replication.factor: -1
+    offset.storage.replication.factor: -1
+    status.storage.replication.factor: -1
+    # Plugin path + worker-default converters (match working cluster)
+    plugin.path: /opt/kafka/plugins
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter.schemas.enable: "false"
+    {{- if .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
+    offset.flush.interval.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.interval.ms }}
+    {{- end }}
+    {{- if .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
+    offset.flush.timeout.ms: {{ .Values.kafka.kafkaConnect.config.offset.flush.timeout.ms }}
+    {{- end }}
+    # Stability: prevent worker eviction on transient broker blips
+    session.timeout.ms: {{ .Values.kafka.kafkaConnect.config.session.timeout.ms | default 60000 }}
+    heartbeat.interval.ms: {{ .Values.kafka.kafkaConnect.config.heartbeat.interval.ms | default 20000 }}
+    rebalance.timeout.ms: {{ .Values.kafka.kafkaConnect.config.rebalance.timeout.ms | default 120000 }}  
+  # # Build configuration for Debezium Oracle connector
+  # build:
+  #   output:
+  #     type: docker
+  #     image: registry.preprod.epay.sbi:8443/kafka-connect-debezium:latest
+  #   plugins:
+  #     - name: debezium-oracle-connector
+  #       artifacts:
+  #         - type: zip
+  #           url: https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/2.5.0.Final/debezium-connector-oracle-2.5.0.Final-plugin.zip
+  #         - type: zip
+  #           url: https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/21.9.0.0/ojdbc8-21.9.0.0.jar
+  #     - name: confluent-jdbc-connector
+  #       artifacts:
+  #         - type: zip
+  #           url: https://d1i4a15mxbxib1.cloudfront.net/api/plugins/confluentinc/kafka-connect-jdbc/versions/10.7.4/confluentinc-kafka-connect-jdbc-10.7.4.zip
+
+  # Pod template with affinity and tolerations
+  template:
+    connectContainer:
+      livenessProbe:
+        initialDelaySeconds: {{ .Values.kafka.kafkaConnect.livenessProbe.initialDelaySeconds | default 60 }}
+        timeoutSeconds: {{ .Values.kafka.kafkaConnect.livenessProbe.timeoutSeconds | default 30 }}
+        periodSeconds: {{ .Values.kafka.kafkaConnect.livenessProbe.periodSeconds | default 30 }}
+        failureThreshold: {{ .Values.kafka.kafkaConnect.livenessProbe.failureThreshold | default 5 }}
+      readinessProbe:
+        initialDelaySeconds: {{ .Values.kafka.kafkaConnect.readinessProbe.initialDelaySeconds | default 60 }}
+        timeoutSeconds: {{ .Values.kafka.kafkaConnect.readinessProbe.timeoutSeconds | default 30 }}
+        periodSeconds: {{ .Values.kafka.kafkaConnect.readinessProbe.periodSeconds | default 30 }}
+        failureThreshold: {{ .Values.kafka.kafkaConnect.readinessProbe.failureThreshold | default 5 }}
+    pod:
+      {{- if .Values.kafka.kafkaConnect.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.kafka.kafkaConnect.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/worker
+                operator: Exists
+              - key: env
+                operator: In
+                values: ["dev"]
+
+
+
+{{- if .Values.kafka.kafkaConnect.connectors }}
+{{- range .Values.kafka.kafkaConnect.connectors }}
+---
+# Kafka Connector: {{ .name }}
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.kafka.namespace }}
+  labels:
+    strimzi.io/cluster: {{ $.Values.kafka.kafkaConnect.name }}
+    app.kubernetes.io/name: {{ .name }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: kafka-connector
+    environment: {{ $.Values.global.environment }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  class: {{ .class }}
+  tasksMax: {{ .tasksMax | default 1 }}
+  config:
+    {{- range $key, $value := .config }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
