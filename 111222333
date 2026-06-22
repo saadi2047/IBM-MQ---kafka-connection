@@ -22,3 +22,12 @@ oc patch kafkaconnect dev-kafka-connect-mq -n dev-kafka --type=merge -p '{
     }
   }
 }'
+
+
+
+
+
+
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A15 "livenessProbe\|autoRestart"
+
+oc get pods -n dev-kafka -w | grep connect-mq-connect
