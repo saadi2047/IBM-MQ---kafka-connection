@@ -1,8 +1,20 @@
-oc patch kafkaconnect dev-kafka-connect-mq -n dev-kafka --type=json -p '[
-  {"op": "add", "path": "/spec/livenessProbe", "value": {"initialDelaySeconds": 60, "timeoutSeconds": 30, "periodSeconds": 30, "failureThreshold": 5}},
-  {"op": "add", "path": "/spec/readinessProbe", "value": {"initialDelaySeconds": 60, "timeoutSeconds": 30, "periodSeconds": 30, "failureThreshold": 5}}
-]'
-
-
-
-oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A6 "livenessProbe\|readinessProbe"
+[osuser@bastion ~]$ oc patch kafkaconnect dev-kafka-connect-mq -n dev-kafka --type=json -p '[
+>   {"op": "add", "path": "/spec/livenessProbe", "value": {"initialDelaySeconds": 60, "timeoutSeconds": 30, "periodSeconds": 30, "failureThreshold": 5}},
+>   {"op": "add", "path": "/spec/readinessProbe", "value": {"initialDelaySeconds": 60, "timeoutSeconds": 30, "periodSeconds": 30, "failureThreshold": 5}}
+> ]'
+kafkaconnect.kafka.strimzi.io/dev-kafka-connect-mq patched
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A6 "livenessProbe\|readinessProbe"
+  livenessProbe:
+    failureThreshold: 5
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 30
+  readinessProbe:
+    failureThreshold: 5
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 30
+  replicas: 3
+  resources:
+[osuser@bastion ~]$
