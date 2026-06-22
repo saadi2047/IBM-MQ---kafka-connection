@@ -1,0 +1,212 @@
+================================================================================
+ROOT CAUSE ANALYSIS (RCA)
+NEFT/RTGS Kafka Connector Failure — DEV Environment
+================================================================================
+
+Date         : June 2026
+Environment  : DEV (dev-kafka namespace, OpenShift / Strimzi)
+Prepared by  : Infrastructure / DevOps Team
+Affected     : neft-mq-source, neft-mq-sink, rtgs-mq-source, rtgs-mq-sink
+
+--------------------------------------------------------------------------------
+1. INCIDENT SUMMARY
+--------------------------------------------------------------------------------
+
+NEFT and RTGS Kafka connector tasks repeatedly went to FAILED state, stopping
+message flow between IBM MQ and Kafka. The connectors required manual restart
+via the Kafka Connect REST API every time the issue occurred.
+
+This happened 51 times on connect-0 and 49 times on connect-2 over 14 days,
+with connect-1 also affected (8 restarts over 4 days).
+
+--------------------------------------------------------------------------------
+2. TIMELINE
+--------------------------------------------------------------------------------
+
+Jun 05, 2026             - KafkaConnect cluster deployed (Helm revision 61)
+Jun 05 - Jun 18, 2026   - connect-0 and connect-2 accumulating restarts silently
+Jun 18, 2026 17:06 IST  - Kafka broker rolling restart triggered
+Jun 18, 2026 17:07 IST  - connect-0 killed by kubelet (exit 137), connectors FAILED
+Jun 18, 2026 17:08 IST  - NEFT/RTGS message flow stopped
+Jun 22, 2026             - Incident investigated, root cause identified and fixed
+Jun 22, 2026 12:10 IST  - Fix deployed via GitLab CI/CD pipeline (Helm revision 71)
+Jun 22, 2026 12:35 IST  - All connectors confirmed RUNNING, pod restarts reset to 0
+
+--------------------------------------------------------------------------------
+3. ROOT CAUSE
+--------------------------------------------------------------------------------
+
+Strimzi's default liveness probe timeout (5 seconds) was too tight for
+JVM-based Kafka Connect workloads during broker rolling restarts.
+
+During a Kafka broker rolling restart, the Kafka Connect worker enters an
+internal rebalancing phase. During this phase:
+
+  1. The JVM experiences GC (Garbage Collection) pressure due to heavy
+     internal rebalancing activity.
+
+  2. The REST API thread serving the /health endpoint gets blocked and
+     cannot respond within the 5-second timeout window.
+
+  3. Kubelet marks the liveness probe as FAILED.
+
+  4. After 3 consecutive failures (~15 seconds total), kubelet sends
+     SIGKILL to the pod.
+
+  5. The pod exits with code 137 (SIGKILL).
+
+  6. On restart, all connector tasks running on that pod go to FAILED state.
+
+  7. FAILED tasks do not auto-recover — they require manual intervention.
+
+Default probe configuration that caused the issue:
+
+  livenessProbe:
+    timeoutSeconds   : 5    (too tight for JVM under GC pressure)
+    periodSeconds    : 10
+    failureThreshold : 3
+    Effective kill window = 3 x 10s = ~30s (kubelet kills pod after ~30s)
+
+--------------------------------------------------------------------------------
+4. EVIDENCE CONFIRMING ROOT CAUSE
+--------------------------------------------------------------------------------
+
+  - Exit code 137 on every pod crash
+    (SIGKILL from kubelet, not an application error)
+
+  - Pod events showing:
+    "Liveness probe failed: context deadline exceeded
+     (Client.Timeout exceeded while awaiting headers)"
+    49 occurrences over 14 days on connect-0 alone
+
+  - All 3 connect pods restarted simultaneously on June 18 —
+    matching the broker rolling restart timestamp exactly
+
+  - MQ connectivity confirmed healthy from all 3 connect pods:
+      10.176.10.213:2001 (NEFT) — OPEN
+      10.176.10.213:2005 (RTGS) — OPEN
+    This ruled out network or MQ host as root cause
+
+  - MQRC_HOST_NOT_AVAILABLE in connector trace was a CONSEQUENCE
+    of the pod crash, not the root cause
+
+--------------------------------------------------------------------------------
+5. WHAT WAS NOT THE CAUSE
+--------------------------------------------------------------------------------
+
+  - IBM MQ host unavailability
+    (ports 2001 and 2005 were reachable throughout the incident)
+
+  - Network policy issues
+    (connectivity verified independently from all connect pods)
+
+  - Kafka broker instability
+    (brokers were healthy; rolling restart was controlled maintenance)
+
+  - Application or connector misconfiguration
+    (connector config was correct and unchanged)
+
+--------------------------------------------------------------------------------
+6. FIX APPLIED
+--------------------------------------------------------------------------------
+
+Two probe settings were changed in the KafkaConnect CR
+(spec.livenessProbe and spec.readinessProbe):
+
+  Setting              Before (Default)    After
+  -------              ----------------    -----
+  timeoutSeconds       5s                  30s
+  periodSeconds        10s                 30s
+  failureThreshold     3                   5
+  Effective kill window ~15 seconds        150 seconds
+
+The 30-second timeout gives the JVM sufficient time to respond even under
+GC pressure or broker rebalancing.
+
+The 150-second kill window means a broker disturbance must last continuously
+for 2.5 minutes before kubelet considers the pod unhealthy — which does not
+occur during normal rolling restarts.
+
+Files changed:
+  - dev/charts/epay_common/templates/kafka/kafka-connect.yaml
+      livenessProbe and readinessProbe moved to spec level (correct CRD path)
+
+  - dev/charts/epay_common/values.yaml
+      livenessProbe and readinessProbe values added under kafkaConnect section
+      Indentation corrected (was causing Helm pipeline failures)
+      Dangling commented debezium block removed (was breaking YAML parsing)
+
+Delivery:
+  - Merged to main via GitLab MR
+  - Deployed via GitLab CI/CD pipeline
+  - Helm revision 71, Mon Jun 22 12:10:58 2026
+  - Strimzi applied changes via clean rolling restart of all 3 connect pods
+
+--------------------------------------------------------------------------------
+7. WHAT WAS NOT DONE
+--------------------------------------------------------------------------------
+
+  - No node restarts
+  - No manual pod deletions
+  - No MQ configuration changes
+  - No network changes
+  - No application changes
+  - No connector configuration changes
+
+--------------------------------------------------------------------------------
+8. POST-FIX VERIFICATION
+--------------------------------------------------------------------------------
+
+Pod status after fix:
+
+  Pod                          Status    Restarts
+  ---                          ------    --------
+  dev-kafka-connect-mq-connect-0   Running   0
+  dev-kafka-connect-mq-connect-1   Running   0
+  dev-kafka-connect-mq-connect-2   Running   0
+
+Connector status after fix:
+
+  Connector        State     Worker
+  ---------        -----     ------
+  neft-mq-source   RUNNING   connect-0
+  neft-mq-sink     RUNNING   connect-2
+  rtgs-mq-source   RUNNING   connect-1
+  rtgs-mq-sink     RUNNING   connect-0
+
+KafkaConnect CR probe verification:
+
+  livenessProbe:
+    failureThreshold   : 5
+    initialDelaySeconds: 60
+    periodSeconds      : 30
+    timeoutSeconds     : 30
+
+  readinessProbe:
+    failureThreshold   : 5
+    initialDelaySeconds: 60
+    periodSeconds      : 30
+    timeoutSeconds     : 30
+
+--------------------------------------------------------------------------------
+9. PREVENTIVE MEASURES
+--------------------------------------------------------------------------------
+
+IMPLEMENTED:
+  - Liveness and readiness probe timeouts tuned to tolerate JVM GC pauses
+    and broker rebalancing events
+  - Fix committed to Helm chart — will persist across all future pipeline
+    deployments and will not be overwritten
+
+RECOMMENDED (separate action item):
+  - DEV Kafka broker placement: all 3 brokers are currently scheduled on
+    worker1.dev (single node). A single node failure takes down the entire
+    DEV Kafka cluster.
+  - Pod anti-affinity should be added to the broker node pool to spread
+    brokers one per node — matching the INT and UAT topology which are
+    correctly configured (one broker per worker node).
+  - This is a risk mitigation item and should be tracked as a separate MR.
+
+================================================================================
+END OF RCA
+================================================================================
