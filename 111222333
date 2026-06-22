@@ -1,60 +1,20 @@
-[0KRunning with gitlab-runner 17.9.2 (14c5775c)[0;m
-[0K  on dc_runner_55 Wz1c0kGRX, system ID: s_300da9d7588c[0;m
-[0K[36;1mResolving secrets[0;m[0;m
-section_start:1782114456:prepare_executor
-[0K[0K[36;1mPreparing the "docker" executor[0;m[0;m
-[0KUsing Docker executor with image artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 ...[0;m
-[0KUsing helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.9.2 )[0;m
-[0KAuthenticating with credentials from $DOCKER_AUTH_CONFIG[0;m
-[0KPulling docker image artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 ...[0;m
-[0KUsing docker image sha256:4511164d4b592f8cb69c7ffe5cb2df5d1909c1e7924081721495a61e4b03f657 for artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper@sha256:47dfd72820e9c3b93c84dcdc2e689ba1236880b4c01de59bbf0a26f9e72b2a35 ...[0;m
-[0KUsing helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.9.2 )[0;m
-[0KUsing docker image sha256:4511164d4b592f8cb69c7ffe5cb2df5d1909c1e7924081721495a61e4b03f657 for artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper@sha256:47dfd72820e9c3b93c84dcdc2e689ba1236880b4c01de59bbf0a26f9e72b2a35 ...[0;m
-[0KAuthenticating with credentials from $DOCKER_AUTH_CONFIG[0;m
-[0KPulling docker image artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 ...[0;m
-[0KUsing docker image sha256:db06a3e48eaa4339a92d53be57a37a699ba188fed41652c6c3c6c07bb86cb6f0 for artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 with digest artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm@sha256:65605f26e63ed7624e4711cdd933caf6577f9d309f240d48a295f1d2c790c4d9 ...[0;m
-section_end:1782114458:prepare_executor
-[0Ksection_start:1782114458:prepare_script
-[0K[0K[36;1mPreparing environment[0;m[0;m
-[0KUsing helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.9.2 )[0;m
-[0KUsing docker image sha256:4511164d4b592f8cb69c7ffe5cb2df5d1909c1e7924081721495a61e4b03f657 for artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper:x86_64-v17.9.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab-runner-helper/gitlab-runner-helper@sha256:47dfd72820e9c3b93c84dcdc2e689ba1236880b4c01de59bbf0a26f9e72b2a35 ...[0;m
-Running on runner-wz1c0kgrx-project-2838-concurrent-0 via PE3DSOPGrunners4...
-section_end:1782114458:prepare_script
-[0Ksection_start:1782114458:get_sources
-[0K[0K[36;1mGetting source from Git repository[0;m[0;m
-[32;1mFetching changes...[0;m
-Initialized empty Git repository in /builds/itepaypg-sbiepay2/infra/devops/deployment/.git/
-[32;1mCreated fresh repository.[0;m
-[32;1mChecking out e5d8f993 as detached HEAD (ref is main)...[0;m
+include:
+  # ── Use Case 1: App service deployment ──────────────────────────────────────
+  # Default path — active whenever DRILL_TIER is NOT set.
+  # Stages defined inside this template: publish · validate · deploy
+  - project: 'itepaypg-sbiepay2/infra/devops/cicd-templates'
+    ref: main
+    file: 'templates/cd/deploy.single.yml'
+    rules:
+      - if: '$DRILL_TIER == null || $DRILL_TIER == ""'
 
-[32;1mSkipping Git submodules setup[0;m
-section_end:1782114474:get_sources
-[0Ksection_start:1782114474:step_script
-[0K[0K[36;1mExecuting "step_script" stage of the job script[0;m[0;m
-[0KUsing docker image sha256:db06a3e48eaa4339a92d53be57a37a699ba188fed41652c6c3c6c07bb86cb6f0 for artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 with digest artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm@sha256:65605f26e63ed7624e4711cdd933caf6577f9d309f240d48a295f1d2c790c4d9 ...[0;m
-[32;1m$ set -eo pipefail # collapsed multi-line command[0;m
-Detected SERVICE_NAME=epay_common
-Detected ENV=dev
-RAW NAMESPACE=dev-epay-common
-FINAL VALUES:
-SERVICE_NAME=epay_common
-ENV=dev
-RELEASE_NAME=epay-common
-NAMESPACE=dev-epay-common
-Synced dev/charts/epay_common/values.yaml to origin/main
-==> Linting dev/charts/epay_common/
-[INFO] Chart.yaml: icon is recommended
-
-1 chart(s) linted, 0 chart(s) failed
-section_end:1782114477:step_script
-[0Ksection_start:1782114477:upload_artifacts_on_failure
-[0K[0K[36;1mUploading artifacts for failed job[0;m[0;m
-[32;1mUploading artifacts...[0;m
-build.env: found 1 matching artifact files and directories[0;m 
-Uploading artifacts as "dotenv" to coordinator... 201 Created[0;m  id[0;m=1143562 responseStatus[0;m=201 Created token[0;m=eyJraWQiO
-section_end:1782114479:upload_artifacts_on_failure
-[0Ksection_start:1782114479:cleanup_file_variables
-[0K[0K[36;1mCleaning up project directory and file based variables[0;m[0;m
-section_end:1782114480:cleanup_file_variables
-[0K[31;1mERROR: Job failed: exit code 1
-[0;m
+  # ── Use Case 2: DC/DR Drill ─────────────────────────────────────────────────
+  # Active ONLY when operator sets DRILL_TIER in "Run pipeline" dialog.
+  # Stages defined inside this template: Maintenance_Page · DC_Application_Services
+  #                                       DR_Application_Services · MirrorMaker2
+  # DRILL_TIER is NEVER set by any CI trigger — safe discriminator.
+  - project: 'itepaypg-sbiepay2/infra/devops/cicd-templates'
+    ref: main
+    file: 'templates/cd/deploy.drill.yml'
+    rules:
+      - if: '$DRILL_TIER != null && $DRILL_TIER != ""'
