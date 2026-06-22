@@ -1,16 +1,105 @@
-oc get pods -n dev-kafka -w | grep connect-mq-connect
-
-
-oc get pod dev-kafka-connect-mq-connect-0 -n dev-kafka -o yaml | grep -A6 "livenessProbe"
-
-
-
-for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
-  echo "=== $c ==="
-  oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
-    curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
-done
-
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A6 "livenessProbe\|readinessProbe"
+  livenessProbe:
+    failureThreshold: 5
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 30
+  readinessProbe:
+    failureThreshold: 5
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 30
+  replicas: 3
+  resources:
+[osuser@bastion ~]$ oc get pods -n dev-kafka -w | grep connect-mq-connect
+dev-kafka-connect-mq-connect-0                       1/1     Running   0                88s
+dev-kafka-connect-mq-connect-1                       0/1     Running   0                21s
+dev-kafka-connect-mq-connect-2                       1/1     Running   49 (3d18h ago)   16d
+dev-kafka-connect-mq-connect-1                       1/1     Running   0                63s
+dev-kafka-connect-mq-connect-2                       1/1     Terminating   49 (3d18h ago)   16d
+dev-kafka-connect-mq-connect-2                       1/1     Terminating   49 (3d18h ago)   16d
+dev-kafka-connect-mq-connect-2                       0/1     Completed     49 (3d18h ago)   16d
+dev-kafka-connect-mq-connect-2                       0/1     Completed     49 (3d18h ago)   16d
+dev-kafka-connect-mq-connect-2                       0/1     Completed     49 (3d18h ago)   16d
+dev-kafka-connect-mq-connect-2                       0/1     Pending       0                0s
+dev-kafka-connect-mq-connect-2                       0/1     Pending       0                0s
+dev-kafka-connect-mq-connect-2                       0/1     Pending       0                0s
+dev-kafka-connect-mq-connect-2                       0/1     ContainerCreating   0                0s
+dev-kafka-connect-mq-connect-2                       0/1     ContainerCreating   0                1s
+dev-kafka-connect-mq-connect-2                       0/1     Running             0                2s
+dev-kafka-connect-mq-connect-2                       1/1     Running             0                63s
+^Z
+[2]+  Stopped                 oc get pods -n dev-kafka -w | grep --color=auto connect-mq-connect
+[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
+>   echo "=== $c ==="
+>   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+>     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
+> done
+=== neft-mq-source ===
+{
+    "name": "neft-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+=== neft-mq-sink ===
+{
+    "name": "neft-mq-sink",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "sink"
+}
+=== rtgs-mq-source ===
+{
+    "name": "rtgs-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+=== rtgs-mq-sink ===
+{
+    "name": "rtgs-mq-sink",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "sink"
+}
+[osuser@bastion ~]$
 
 
 
