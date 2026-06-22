@@ -1,3 +1,166 @@
-helm get manifest epay-common -n dev-epay-common | grep -A30 "kind: KafkaConnect"
+[osuser@bastion ~]$ helm get manifest epay-common -n dev-epay-common | grep -A30 "kind: KafkaConnect"
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
+kind: KafkaConnect
+metadata:
+  name: dev-kafka-connect-mq
+  namespace: dev-kafka
+  labels:
+    app.kubernetes.io/name: dev-kafka-connect-mq
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/component: kafka-connect
+    environment: dev
+  annotations:
+    # Enable use of KafkaConnector resources
+    strimzi.io/use-connector-resources: "true"
+    argocd.argoproj.io/sync-wave: "9"
+spec:
+  version: 3.9.0
+  replicas: 3
+  bootstrapServers: dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093
+  image: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
 
-helm history epay-common -n dev-epay-common
+  # TLS configuration for secure connection (per AMQ examples)
+  tls:
+    trustedCertificates:
+      - secretName: dev-kafka-cluster-cluster-ca-cert
+        pattern: "*.crt"
+
+  # Resource specifications
+  resources:
+    requests:
+      memory: 4Gi
+      cpu: 2
+    limits:
+--
+kind: KafkaConnector
+metadata:
+  name: neft-mq-source
+  namespace: dev-kafka
+  labels:
+    strimzi.io/cluster: dev-kafka-connect-mq
+    app.kubernetes.io/name: neft-mq-source
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/component: kafka-connector
+    environment: dev
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
+  tasksMax: 1
+  config:
+    mq.channel.name: "SBIEPAY2.SVRCONN"
+    mq.connection.name.list: "10.176.10.213(2001)"
+    mq.message.body.format: "string"
+    mq.queue: "NeftInboundQueue"
+    mq.queue.manager: "SBI_NEFT"
+    mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
+    topic: "neft.inbound.kafka.topic"
+    value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+    value.converter.schemas.enable: "false"
+---
+# Source: epay_common/templates/kafka/kafka-connect.yaml
+# Kafka Connector: neft-mq-sink
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: neft-mq-sink
+  namespace: dev-kafka
+  labels:
+    strimzi.io/cluster: dev-kafka-connect-mq
+    app.kubernetes.io/name: neft-mq-sink
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/component: kafka-connector
+    environment: dev
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
+  tasksMax: 1
+  config:
+    mq.channel.name: "SBIEPAY2.SVRCONN"
+    mq.connection.name.list: "10.176.10.213(2001)"
+    mq.message.body.format: "string"
+    mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
+    mq.queue: "NeftOutBoundQueue"
+    mq.queue.manager: "SBI_NEFT"
+    topics: "neft.outbound.kafka.topic"
+    value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+    value.converter.schemas.enable: "false"
+---
+# Source: epay_common/templates/kafka/kafka-connect.yaml
+# Kafka Connector: rtgs-mq-source
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: rtgs-mq-source
+  namespace: dev-kafka
+  labels:
+    strimzi.io/cluster: dev-kafka-connect-mq
+    app.kubernetes.io/name: rtgs-mq-source
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/component: kafka-connector
+    environment: dev
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  class: com.ibm.eventstreams.connect.mqsource.MQSourceConnector
+  tasksMax: 1
+  config:
+    mq.channel.name: "SBIEPAY2.SVRCONN"
+    mq.connection.name.list: "10.176.10.213(2005)"
+    mq.message.body.format: "string"
+    mq.queue: "RTGSInboundQueue"
+    mq.queue.manager: "SBI_RTGS"
+    mq.record.builder: "com.ibm.eventstreams.connect.mqsource.builders.DefaultRecordBuilder"
+    topic: "rtgs.inbound.kafka.topic"
+    value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+    value.converter.schemas.enable: "false"
+---
+# Source: epay_common/templates/kafka/kafka-connect.yaml
+# Kafka Connector: rtgs-mq-sink
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: rtgs-mq-sink
+  namespace: dev-kafka
+  labels:
+    strimzi.io/cluster: dev-kafka-connect-mq
+    app.kubernetes.io/name: rtgs-mq-sink
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/component: kafka-connector
+    environment: dev
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  class: com.ibm.eventstreams.connect.mqsink.MQSinkConnector
+  tasksMax: 1
+  config:
+    mq.channel.name: "SBIEPAY2.SVRCONN"
+    mq.connection.name.list: "10.176.10.213(2005)"
+    mq.message.body.format: "string"
+    mq.message.builder: "com.ibm.eventstreams.connect.mqsink.builders.DefaultMessageBuilder"
+    mq.queue: "RTGSOutBoundQueue"
+    mq.queue.manager: "SBI_RTGS"
+    topics: "rtgs.outbound.kafka.topic"
+    value.converter: "org.apache.kafka.connect.converters.ByteArrayConverter"
+    value.converter.schemas.enable: "false"
+---
+# Source: epay_common/templates/kafka/kafka-cluster.yaml
+# Kafka Controller Node Pool (KRaft)
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+[osuser@bastion ~]$ helm history epay-common -n dev-epay-common
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
+REVISION        UPDATED                         STATUS          CHART                   APP VERSION     DESCRIPTION
+59              Sat May  2 07:18:21 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+60              Sat May  2 07:38:35 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+61              Fri Jun  5 09:25:11 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+62              Fri Jun  5 09:49:40 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+63              Fri Jun  5 10:10:38 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+64              Fri Jun  5 10:32:56 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+65              Fri Jun  5 12:15:17 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+66              Sat Jun  6 07:57:34 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+67              Sat Jun  6 10:44:24 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+68              Sat Jun  6 10:49:32 2026        deployed        epay_common-0.1.0       1.0.0           Upgrade complete
+[osuser@bastion ~]$
