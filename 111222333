@@ -1,1 +1,34 @@
-helm history epay-common -n dev-epay-common | tail -5
+[osuser@bastion ~]$ helm history epay-common -n dev-epay-common
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
+REVISION        UPDATED                         STATUS          CHART                   APP VERSION     DESCRIPTION
+59              Sat May  2 07:18:21 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+60              Sat May  2 07:38:35 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+61              Fri Jun  5 09:25:11 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+62              Fri Jun  5 09:49:40 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+63              Fri Jun  5 10:10:38 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+64              Fri Jun  5 10:32:56 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+65              Fri Jun  5 12:15:17 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+66              Sat Jun  6 07:57:34 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+67              Sat Jun  6 10:44:24 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+68              Sat Jun  6 10:49:32 2026        deployed        epay_common-0.1.0       1.0.0           Upgrade complete
+[osuser@bastion ~]$ helm history epay-common -n dev-epay-common | tail -5
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
+64              Fri Jun  5 10:32:56 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+65              Fri Jun  5 12:15:17 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+66              Sat Jun  6 07:57:34 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+67              Sat Jun  6 10:44:24 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+68              Sat Jun  6 10:49:32 2026        deployed        epay_common-0.1.0       1.0.0           Upgrade complete
+[osuser@bastion ~]$ helm history epay-common -n dev-epay-common
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
+REVISION        UPDATED                         STATUS          CHART                   APP VERSION     DESCRIPTION
+59              Sat May  2 07:18:21 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+60              Sat May  2 07:38:35 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+61              Fri Jun  5 09:25:11 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+62              Fri Jun  5 09:49:40 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+63              Fri Jun  5 10:10:38 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+64              Fri Jun  5 10:32:56 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+65              Fri Jun  5 12:15:17 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+66              Sat Jun  6 07:57:34 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+67              Sat Jun  6 10:44:24 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
+68              Sat Jun  6 10:49:32 2026        deployed        epay_common-0.1.0       1.0.0           Upgrade complete
+[osuser@bastion ~]$
