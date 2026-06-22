@@ -1,11 +1,461 @@
-oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A5 "ownerReferences\|operator"
-
-# Check which operator is watching dev-kafka namespace
-oc get subscription -A | grep amq
-oc get csv -A | grep amq
-
-# Check the actual CRD stored version
-oc get crd kafkaconnects.kafka.strimzi.io -o jsonpath='{.spec.versions[*].name}'
-
-# Most importantly - see what livenessProbe path actually is in the CRD
-oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -B10 "livenessProbe:" | head -40
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A5 "ownerReferences\|operator"
+                operator: Exists
+              - key: env
+                operator: In
+                values:
+                - dev
+      imagePullSecrets:
+      - name: microservices-dev-pull-secret
+  tls:
+[osuser@bastion ~]$ oc get subscription -A | grep amq
+openshift-operators                        amq-streams                       amq-streams                       cs-redhat-operator-index-4.18      stable
+streams-kafka-console                      amq-streams-console               amq-streams-console               cs-redhat-operator-index-4.18      alpha
+[osuser@bastion ~]$ oc get csv -A | grep amq
+bookinfo                                           amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+bookinfo                                           amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+cert-manager-operator                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+cert-manager-operator                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+cert-manager                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+cert-manager                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+deepak                                             amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+deepak                                             amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+default                                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+default                                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-admin                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-admin                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-bridge                                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-bridge                                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-cache                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-cache                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-cdc-redhat                                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-cdc-redhat                                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-cdc                                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-cdc                                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-communication                                  amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-communication                                  amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-epay-admin-service                             amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-epay-admin-service                             amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-epay-common                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-epay-common                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-epaybridge                                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-epaybridge                                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-frontend                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-frontend                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-gemfire                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-gemfire                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-integration                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-integration                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-istio-system                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-istio-system                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-kafka                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-kafka                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-kms                                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-kms                                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-merchant-simulator                             amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-merchant-simulator                             amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-merchant                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-merchant                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-notification                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-notification                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-offline-jobs                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-offline-jobs                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-rns                                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-rns                                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-sbiepay                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-sbiepay                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-secrets                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-secrets                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-simulators                                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-simulators                                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-spark-operator                                 amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-spark-operator                                 amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-spark                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-spark                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dev-transaction                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dev-transaction                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+devops-admin                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+devops-admin                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+discovery                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+discovery                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+dynatrace                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+dynatrace                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-admin                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-admin                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-bridge                                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-bridge                                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-epay-common                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-epay-common                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-frontend                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-frontend                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-gemfire                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-gemfire                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-istio-system                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-istio-system                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-kafka                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-kafka                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-kms                                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-kms                                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-merchant                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-merchant                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-notification                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-notification                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-rns                                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-rns                                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-secrets                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-secrets                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-simulators                                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-simulators                                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+int-transaction                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+int-transaction                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+istio-cni                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+istio-cni                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+istio-system                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+istio-system                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+kiali                                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+kiali                                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+knative-eventing                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+knative-eventing                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+knative-serving                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+knative-serving                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+kube-node-lease                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+kube-node-lease                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+kube-public                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+kube-public                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+kube-system                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+kube-system                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+lb-service                                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+lb-service                                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+ldap-sync                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+ldap-sync                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+logging-test                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+logging-test                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+my-app                                             amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+my-app                                             amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+nginx-apps                                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+nginx-apps                                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-apiserver-operator                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-apiserver-operator                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-apiserver                                amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-apiserver                                amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-authentication-operator                  amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-authentication-operator                  amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-authentication                           amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-authentication                           amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-catalogd                                 amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-catalogd                                 amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cloud-controller-manager-operator        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cloud-controller-manager-operator        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cloud-controller-manager                 amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cloud-controller-manager                 amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cloud-credential-operator                amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cloud-credential-operator                amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cloud-network-config-controller          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cloud-network-config-controller          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cloud-platform-infra                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cloud-platform-infra                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cluster-csi-drivers                      amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cluster-csi-drivers                      amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cluster-machine-approver                 amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cluster-machine-approver                 amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cluster-node-tuning-operator             amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cluster-node-tuning-operator             amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cluster-observability-operator           amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cluster-observability-operator           amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cluster-olm-operator                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cluster-olm-operator                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cluster-samples-operator                 amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cluster-samples-operator                 amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cluster-storage-operator                 amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cluster-storage-operator                 amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-cluster-version                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-cluster-version                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-config-managed                           amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-config-managed                           amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-config-operator                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-config-operator                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-config                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-config                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-console-operator                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-console-operator                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-console-user-settings                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-console-user-settings                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-console                                  amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-console                                  amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-controller-manager-operator              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-controller-manager-operator              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-controller-manager                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-controller-manager                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-2qms9                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-2qms9                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-2wt78                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-2wt78                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-4m5d8                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-4m5d8                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-8jclj                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-8jclj                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-9ghn9                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-9ghn9                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-bnfp2                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-bnfp2                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-fts95                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-fts95                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-g8d5x                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-g8d5x                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-gpp72                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-gpp72                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-jmrpl                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-jmrpl                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-kq4lj                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-kq4lj                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-ng95f                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-ng95f                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-rr2r2                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-rr2r2                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-sxvt6                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-sxvt6                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-t8q42                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-t8q42                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-wrkww                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-wrkww                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-x64qg                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-x64qg                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-debug-zsljt                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-debug-zsljt                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-distributed-tracing                      amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-distributed-tracing                      amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-dns-operator                             amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-dns-operator                             amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-dns                                      amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-dns                                      amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-etcd-operator                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-etcd-operator                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-etcd                                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-etcd                                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-gitops-operator                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-gitops-operator                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-gitops                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-gitops                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-host-network                             amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-host-network                             amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-image-registry                           amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-image-registry                           amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-infra                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-infra                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-ingress-canary                           amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-ingress-canary                           amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-ingress-operator                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-ingress-operator                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-ingress                                  amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-ingress                                  amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-insights                                 amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-insights                                 amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-kni-infra                                amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-kni-infra                                amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-kube-apiserver-operator                  amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-kube-apiserver-operator                  amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-kube-apiserver                           amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-kube-apiserver                           amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-kube-controller-manager-operator         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-kube-controller-manager-operator         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-kube-controller-manager                  amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-kube-controller-manager                  amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-kube-scheduler-operator                  amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-kube-scheduler-operator                  amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-kube-scheduler                           amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-kube-scheduler                           amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-kube-storage-version-migrator-operator   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-kube-storage-version-migrator-operator   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-kube-storage-version-migrator            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-kube-storage-version-migrator            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-logging                                  amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-logging                                  amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-machine-api                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-machine-api                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-machine-config-operator                  amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-machine-config-operator                  amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-marketplace                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-marketplace                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-monitoring                               amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-monitoring                               amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-multus                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-multus                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-must-gather-28xw6                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-must-gather-28xw6                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-must-gather-6wwv2                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-must-gather-6wwv2                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-must-gather-76m2d                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-must-gather-76m2d                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-must-gather-ctn2d                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-must-gather-ctn2d                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-must-gather-cz6zg                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-must-gather-cz6zg                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-must-gather-nq4xw                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-must-gather-nq4xw                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-must-gather-r9b47                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-must-gather-r9b47                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-netobserv-operator                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-netobserv-operator                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-network-console                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-network-console                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-network-diagnostics                      amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-network-diagnostics                      amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-network-node-identity                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-network-node-identity                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-network-operator                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-network-operator                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-node                                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-node                                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-nutanix-infra                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-nutanix-infra                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-oauth-apiserver                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-oauth-apiserver                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-openstack-infra                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-openstack-infra                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-operator-controller                      amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-operator-controller                      amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-operator-lifecycle-manager               amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-operator-lifecycle-manager               amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-operators-redhat                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-operators-redhat                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-operators                                amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-operators                                amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-ovirt-infra                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-ovirt-infra                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-ovn-kubernetes                           amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-ovn-kubernetes                           amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-route-controller-manager                 amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-route-controller-manager                 amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-serverless                               amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-serverless                               amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-service-ca-operator                      amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-service-ca-operator                      amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-service-ca                               amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-service-ca                               amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-tempo-operator                           amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-tempo-operator                           amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-user-workload-monitoring                 amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-user-workload-monitoring                 amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift-vsphere-infra                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift-vsphere-infra                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+openshift                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+openshift                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+perf-admin                                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+perf-admin                                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+perf-kms                                           amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+perf-kms                                           amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+perf-merchant                                      amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+perf-merchant                                      amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+perf-simulators                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+perf-simulators                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+perf-transaction                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+perf-transaction                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+pre-prod-kafka                                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+pre-prod-kafka                                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+preprod-transaction                                amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+preprod-transaction                                amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+quay-enterprise                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+quay-enterprise                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-admin                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-admin                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-bridge                                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-bridge                                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-communication                                  amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-communication                                  amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-epay-common                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-epay-common                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-frontend                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-frontend                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-gemfire                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-gemfire                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-integration                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-integration                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-istio-system                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-istio-system                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-kafka                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-kafka                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-kms                                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-kms                                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-merchant                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-merchant                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-notification                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-notification                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-offline-jobs                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-offline-jobs                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-rns                                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-rns                                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-sbiepay                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-sbiepay                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-secrets                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-secrets                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-simulators                                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-simulators                                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+sit-transaction                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+sit-transaction                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+spark-operator                                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+spark-operator                                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+stoarges3                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+stoarges3                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+streams-kafka-console                              amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+streams-kafka-console                              amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+telnet                                             amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+telnet                                             amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+tracing-system                                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+tracing-system                                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+trident-pvc                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+trident-pvc                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+trident                                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+trident                                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-admin                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-admin                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-bridge                                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-bridge                                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-common                                         amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-common                                         amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-communication                                  amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-communication                                  amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-epay-common                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-epay-common                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-frontend                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-frontend                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-gemfire                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-gemfire                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-integration                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-integration                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-istio-system                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-istio-system                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-kafka                                          amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-kafka                                          amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-kms                                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-kms                                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-merchant                                       amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-merchant                                       amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-notification                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-notification                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-offline-jobs                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-offline-jobs                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-rns                                            amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-rns                                            amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-sbiepay-test                                   amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-sbiepay-test                                   amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-sbiepay                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-sbiepay                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-secrets                                        amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-secrets                                        amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-simulators                                     amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-simulators                                     amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+uat-transaction                                    amq-streams-console.v3.0.1-3            Streams for Apache Kafka Console                 3.0.1-3          amq-streams-console.v2.9.0-5            Succeeded
+uat-transaction                                    amqstreams.v3.0.1-2                     Streams for Apache Kafka                         3.0.1-2          amqstreams.v2.9.0-1                     Succeeded
+[osuser@bastion ~]$ oc get crd kafkaconnects.kafka.strimzi.io -o jsonpath='{.spec.versions[*].name}'
+v1beta2[osuser@bastion ~]$ oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -B10 "livenessProbe:" | head -40
+                      properties:
+                        name:
+                          description: The system property name.
+                          type: string
+                        value:
+                          description: The system property value.
+                          type: string
+                      type: object
+                    type: array
+                type: object
+              livenessProbe:
+[osuser@bastion ~]$
