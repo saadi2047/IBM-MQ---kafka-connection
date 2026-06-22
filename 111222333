@@ -1,12 +1,25 @@
-oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -E "^\s+livenessProbe:|^\s+readinessProbe:|^\s+autoRestart:" | head -10
-
-# Check what's at spec level directly
-oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -A5 "spec:" | head -20
-
-# Most importantly - find livenessProbe full path
-oc get crd kafkaconnects.kafka.strimzi.io -o yaml | python3 -c "
-import sys, yaml
-data = yaml.safe_load(sys.stdin)
-schema = data['spec']['versions'][0]['schema']['openAPIV3Schema']['properties']['spec']['properties']
-print('Top level spec fields:', list(schema.keys()))
-"
+[osuser@bastion ~]$ oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -E "^\s+livenessProbe:|^\s+readinessProbe:|^\s+autoRestart:" | head -10
+              livenessProbe:
+              readinessProbe:
+[osuser@bastion ~]$ oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -A5 "spec:" | head -20
+spec:
+  conversion:
+    strategy: None
+  group: kafka.strimzi.io
+  names:
+    categories:
+--
+          spec:
+            description: The specification of the Kafka Connect cluster.
+            properties:
+              authentication:
+                description: Authentication configuration for Kafka Connect.
+                properties:
+[osuser@bastion ~]$ oc get crd kafkaconnects.kafka.strimzi.io -o yaml | python3 -c "
+> import sys, yaml
+> data = yaml.safe_load(sys.stdin)
+> schema = data['spec']['versions'][0]['schema']['openAPIV3Schema']['properties']['spec']['properties']
+> print('Top level spec fields:', list(schema.keys()))
+> "
+Top level spec fields: ['authentication', 'bootstrapServers', 'build', 'clientRackInitImage', 'config', 'externalConfiguration', 'image', 'jmxOptions', 'jvmOptions', 'livenessProbe', 'logging', 'metricsConfig', 'rack', 'readinessProbe', 'replicas', 'resources', 'template', 'tls', 'tracing', 'version']
+[osuser@bastion ~]$
