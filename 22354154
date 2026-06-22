@@ -1,2 +1,12 @@
 Dear Sir,
-As discussed @UJWALA LAXMAN KABADI not able to login in jfrog, she has logged in very first time with AD iD and Password and never registerd for Authenticator, but still Jfrog login process required the One Time Code from Authenticator, please help her for the same.
+
+As discussed, Ms. Ujwala Laxman Kabadi is unable to log in to JFrog.
+
+She is attempting to log in for the first time using her AD ID and password. However, she has never registered or configured any Authenticator application for MFA. Despite this, the JFrog login process is prompting her to enter a One-Time Code from an Authenticator app, preventing her from accessing the portal.
+
+Kindly assist in resolving this issue or resetting the MFA configuration so that she can complete the login process successfully.
+
+Your support in this regard would be greatly appreciated.
+
+Thanks & Regards,
+[Your Name]
