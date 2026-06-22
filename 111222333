@@ -1,18 +1,2 @@
-[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A15 "livenessProbe\|autoRestart"
-[osuser@bastion ~]$ oc get pod dev-kafka-connect-mq-connect-0 -n dev-kafka -o yaml | grep -A5 "livenessProbe"
-    livenessProbe:
-      failureThreshold: 3
-      httpGet:
-        path: /health
-        port: rest-api
-        scheme: HTTP
-[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A15 "autoRestart"
-[osuser@bastion ~]$ helm get manifest epay-common -n dev-kafka | grep -A20 "kind: KafkaConnect"
-WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
-Error: release: not found
-[osuser@bastion ~]$ oc annotate kafkaconnect dev-kafka-connect-mq -n dev-kafka \
->   strimzi.io/force-replace="$(date +%s)" --overwrite
-kafkaconnect.kafka.strimzi.io/dev-kafka-connect-mq annotated
-[osuser@bastion ~]$
-
-
+# Check if the KafkaConnect CR was last modified before or after your MR merge
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -E "resourceVersion|generation|creationTimestamp"
