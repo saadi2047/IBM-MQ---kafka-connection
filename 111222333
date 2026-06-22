@@ -1,33 +1,34 @@
-oc patch kafkaconnect dev-kafka-connect-mq -n dev-kafka --type=merge -p '{
-  "spec": {
-    "template": {
-      "connectContainer": {
-        "livenessProbe": {
-          "initialDelaySeconds": 60,
-          "timeoutSeconds": 30,
-          "periodSeconds": 30,
-          "failureThreshold": 5
-        },
-        "readinessProbe": {
-          "initialDelaySeconds": 60,
-          "timeoutSeconds": 30,
-          "periodSeconds": 30,
-          "failureThreshold": 5
-        }
-      }
-    },
-    "autoRestart": {
-      "enabled": true,
-      "maxRestarts": 10
-    }
-  }
-}'
+[osuser@bastion ~]$ oc patch kafkaconnect dev-kafka-connect-mq -n dev-kafka --type=merge -p '{
+>   "spec": {
+>     "template": {
+>       "connectContainer": {
+>         "livenessProbe": {
+>           "initialDelaySeconds": 60,
+>           "timeoutSeconds": 30,
+>           "periodSeconds": 30,
+>           "failureThreshold": 5
+>         },
+>         "readinessProbe": {
+>           "initialDelaySeconds": 60,
+>           "timeoutSeconds": 30,
+>           "periodSeconds": 30,
+>           "failureThreshold": 5
+>         }
+>       }
+>     },
+>     "autoRestart": {
+>       "enabled": true,
+>       "maxRestarts": 10
+>     }
+>   }
+> }'
+Warning: unknown field "spec.autoRestart"
+Warning: unknown field "spec.template.connectContainer.livenessProbe"
+Warning: unknown field "spec.template.connectContainer.readinessProbe"
+kafkaconnect.kafka.strimzi.io/dev-kafka-connect-mq patched (no change)
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A15 "livenessProbe\|autoRestart"
+[osuser@bastion ~]$ oc get pods -n dev-kafka -w | grep connect-mq-connect
+dev-kafka-connect-mq-connect-0                       1/1     Running   51 (3d18h ago)   16d
+dev-kafka-connect-mq-connect-1                       1/1     Running   8 (3d18h ago)    4d10h
+dev-kafka-connect-mq-connect-2                       1/1     Running   49 (3d18h ago)   16d
 
-
-
-
-
-
-oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A15 "livenessProbe\|autoRestart"
-
-oc get pods -n dev-kafka -w | grep connect-mq-connect
