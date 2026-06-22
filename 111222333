@@ -1,1 +1,3 @@
 oc get pod dev-kafka-connect-mq-connect-0 -n dev-kafka -o yaml | grep -A5 "livenessProbe"
+
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A15 "livenessProbe\|autoRestart"
