@@ -1,26 +1,11 @@
-[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A10 "autoRestart\|livenessProbe"
-[osuser@bastion ~]$ oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -A5 "autoRestart\|connectContainer\|livenessProbe" | head -30
-              livenessProbe:
-                description: Pod liveness checking.
-                properties:
-                  failureThreshold:
-                    description: Minimum consecutive failures for the probe to be
-                      considered failed after having succeeded. Defaults to 3. Minimum
---
-                  connectContainer:
-                    description: Template for the Kafka Connect container.
-                    properties:
-                      env:
-                        description: Environment variables which should be applied
-                          to the container.
-[osuser@bastion ~]$ oc get crd kafkaconnects.kafka.strimzi.io -o jsonpath='{.metadata.annotations}' | python3 -m json.tool
-{
-    "operatorframework.io/installed-alongside-59884cdfb63f3e1b": "openshift-operators/amqstreams.v3.0.1-2",
-    "operatorframework.io/installed-alongside-f797d854f32c7bc1": "openshift-operators/amqstreams.v2.9.0-1"
-}
-[osuser@bastion ~]$ oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -A3 "template:" | head -20
-              template:
-                description: Template for Kafka Connect and Kafka MirrorMaker 2 resources.
-                  The template allows users to specify how the `Pods`, `Service`,
-                  and other services are generated.
-[osuser@bastion ~]$
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A5 "ownerReferences\|operator"
+
+# Check which operator is watching dev-kafka namespace
+oc get subscription -A | grep amq
+oc get csv -A | grep amq
+
+# Check the actual CRD stored version
+oc get crd kafkaconnects.kafka.strimzi.io -o jsonpath='{.spec.versions[*].name}'
+
+# Most importantly - see what livenessProbe path actually is in the CRD
+oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -B10 "livenessProbe:" | head -40
