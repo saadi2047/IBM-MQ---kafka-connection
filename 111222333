@@ -1,6 +1,54 @@
-# Find exact parent path of livenessProbe in the CRD
-oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -B20 "livenessProbe:" | grep -E "^\s+\w+:|livenessProbe" | head -20
-
-# Also check what's directly under connectContainer
-oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -A30 "connectContainer:" | head -35
+[osuser@bastion ~]$ oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -B20 "livenessProbe:" | grep -E "^\s+\w+:|livenessProbe" | head -20
+                    pattern: ^[0-9]+[mMgG]?$
+                    type: string
+                  gcLoggingEnabled:
+                    description: Specifies whether the Garbage Collection logging
+                    type: boolean
+                  javaSystemProperties:
+                    description: A map of additional system properties which will
+                    items:
+                      properties:
+                        name:
+                          description: The system property name.
+                          type: string
+                        value:
+                          description: The system property value.
+                          type: string
+                      type: object
+                    type: array
+                type: object
+              livenessProbe:
+[osuser@bastion ~]$ oc get crd kafkaconnects.kafka.strimzi.io -o yaml | grep -A30 "connectContainer:" | head -35
+                  connectContainer:
+                    description: Template for the Kafka Connect container.
+                    properties:
+                      env:
+                        description: Environment variables which should be applied
+                          to the container.
+                        items:
+                          oneOf:
+                          - properties:
+                              value: {}
+                            required:
+                            - value
+                          - properties:
+                              valueFrom: {}
+                            required:
+                            - valueFrom
+                          properties:
+                            name:
+                              description: The environment variable key.
+                              type: string
+                            value:
+                              description: The environment variable value.
+                              type: string
+                            valueFrom:
+                              description: Reference to the secret or config map property
+                                to which the environment variable is set.
+                              oneOf:
+                              - properties:
+                                  secretKeyRef: {}
+                                required:
+                                - secretKeyRef
+[osuser@bastion ~]$
 
