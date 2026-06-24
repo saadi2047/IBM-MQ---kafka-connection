@@ -1,98 +1,14 @@
-[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
->   echo "=== $c ==="
->   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
->     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
-> done
-=== neft-mq-source ===
-{
-    "name": "neft-mq-source",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "source"
-}
-=== neft-mq-sink ===
-{
-    "name": "neft-mq-sink",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "sink"
-}
-=== rtgs-mq-source ===
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-topics.sh \
+  --bootstrap-server localhost:9092 \
+  --describe --topic neft.inbound.kafka.topic
 
-{
-    "name": "rtgs-mq-source",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "source"
-}
-=== rtgs-mq-sink ===
-{
-    "name": "rtgs-mq-sink",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "sink"
-}
-[osuser@bastion ~]$
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
->   bin/kafka-consumer-groups.sh \
->   --bootstrap-server localhost:9092 \
->   --describe --all-groups 2>/dev/null | grep neft.inbound
-payment-consumers neft.inbound.kafka.topic                   1          37              37              0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
-payment-consumers neft.inbound.kafka.topic                   2          0               0               0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
-payment-consumers neft.inbound.kafka.topic                   0          16              16              0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
-payment-consumers neft.inbound.kafka.topic                   3          1               1               0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
-simple-kafka-test-consumer neft.inbound.kafka.topic                   1          23              37              14              -               -               -
-simple-kafka-test-consumer neft.inbound.kafka.topic                   2          0               0               0               -               -               -
-simple-kafka-test-consumer neft.inbound.kafka.topic                   0          16              16              0               -               -               -
-simple-kafka-test-consumer neft.inbound.kafka.topic                   3          0               1               1               -               -               -
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
->   bin/kafka-topics.sh \
->   --bootstrap-server localhost:9092 \
->   --describe --topic neft.inbound.kafka.topi
-Error while executing topic command : Topic 'Optional[neft.inbound.kafka.topi]' does not exist as expected
-[2026-06-24 09:55:59,384] ERROR java.lang.IllegalArgumentException: Topic 'Optional[neft.inbound.kafka.topi]' does not exist as expected
-        at org.apache.kafka.tools.TopicCommand.ensureTopicExists(TopicCommand.java:218)
-        at org.apache.kafka.tools.TopicCommand.access$700(TopicCommand.java:81)
-        at org.apache.kafka.tools.TopicCommand$TopicService.describeTopic(TopicCommand.java:578)
-        at org.apache.kafka.tools.TopicCommand.execute(TopicCommand.java:111)
-        at org.apache.kafka.tools.TopicCommand.mainNoExit(TopicCommand.java:90)
-        at org.apache.kafka.tools.TopicCommand.main(TopicCommand.java:85)
- (org.apache.kafka.tools.TopicCommand)
-command terminated with exit code 1
-[osuser@bastion ~]$
+
+
+
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.inbound.kafka.topic \
+  --from-beginning \
+  --max-messages 5
