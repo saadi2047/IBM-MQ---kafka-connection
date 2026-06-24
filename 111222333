@@ -1,5 +1,47 @@
-# Check external route for Kafka bootstrap
-oc get route -n dev-kafka | grep kafka
-
-# Check the external service/route for port 9094 (external listener)
-oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.status.listeners}' | python3 -m json.tool
+[osuser@bastion ~]$ oc get route -n dev-kafka | grep kafka
+dev-console-console-ingress-4p2mw   dev-kafkaconsole.apps.dev.sbiepay.sbi                                     dev-console-console-service                  <all>     edge/Redirect   None
+dev-kafka-cluster-broker-0          dev-kafka-cluster-broker-0-dev-kafka.apps.dev.sbiepay.sbi                 dev-kafka-cluster-broker-0                   9094      passthrough     None
+dev-kafka-cluster-broker-1          dev-kafka-cluster-broker-1-dev-kafka.apps.dev.sbiepay.sbi                 dev-kafka-cluster-broker-1                   9094      passthrough     None
+dev-kafka-cluster-broker-2          dev-kafka-cluster-broker-2-dev-kafka.apps.dev.sbiepay.sbi                 dev-kafka-cluster-broker-2                   9094      passthrough     None
+dev-kafka-cluster-kafka-bootstrap   dev-kafka-cluster-kafka-bootstrap-dev-kafka.apps.dev.sbiepay.sbi          dev-kafka-cluster-kafka-external-bootstrap   9094      passthrough     None
+grafana-route                       grafana-route-dev-kafka.apps.dev.sbiepay.sbi                              grafana                                      grafana   edge            None
+[osuser@bastion ~]$ oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.status.listeners}' | python3 -m json.tool
+[
+    {
+        "addresses": [
+            {
+                "host": "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc",
+                "port": 9092
+            }
+        ],
+        "bootstrapServers": "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc:9092",
+        "name": "plain"
+    },
+    {
+        "addresses": [
+            {
+                "host": "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc",
+                "port": 9093
+            }
+        ],
+        "bootstrapServers": "dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc:9093",
+        "certificates": [
+            "-----BEGIN CERTIFICATE-----\nMIIFLTCCAxWgAwIBAgIUG/AQnGREOYtMXPTZdJsxW/rBRQswDQYJKoZIhvcNAQEN\nBQAwLTETMBEGA1UECgwKaW8uc3RyaW16aTEWMBQGA1UEAwwNY2x1c3Rlci1jYSB2\nMDAeFw0yNTExMTEwOTU4MzZaFw0yNjExMTEwOTU4MzZaMC0xEzARBgNVBAoMCmlv\nLnN0cmltemkxFjAUBgNVBAMMDWNsdXN0ZXItY2EgdjAwggIiMA0GCSqGSIb3DQEB\nAQUAA4ICDwAwggIKAoICAQCp/39LAZj7GtVfxHQu6lyL/8A8pVytcCL1tRVm3o0P\nTtoD70soqNrIvGThplkG4RESeLqxySMls1rr9qNOdPnUAoX3WJbdm9r3dOu5vN2t\nQuny3oWu9I0/ckGMknI+PNu5NyDQs5CEi13LpouPCBwUx1YBWtdOUqv8xGHhc9vU\nVWQdNUetQLOk3pzKqzjQHQdD6LOjHIdFqOYbSUx2evLjlIhTyLI/LRzRkKoccFDV\nZEI0zGbxEmw4a7AfBN4tRYlHwPXVSzorGg3mji/CYD7hB2J7gbLEnc7wKnQYi53t\nahWgCEdjPQInFR2KoQktgZAOYIQ+VGkWQmUsOhamSXCax4vOehTYhQ22W79LLEnd\nXVOMEU5fNsfESSQs6UIZ+N/FAtD16N+do/ukZut1LGDGg/w8gLs4Ie6jRdjzQJ/e\nG7+gxfgspaPsXjUn8rHvei6+j2CLCbrhjrRwFuOAmLDFu+pPnnAxFLU520AcH01G\nF2Htm1ZzsmKasr0NAtBhZqpkXdDB/8k1lQ3R1OJndq25lMuUxEwB+XJGRbglEqSD\njEFTseHfUOO6Vyloc8xoIuHLiZB63CPZgNkuODjakgf4aA7p6z3PxMIC6VxQQjOw\nSx4lJzt4yM06wuuIGDRsaR8d9To26MOuGsfCbO5GDF8kPkLNpFKh/9ykHAVPU2sk\nIwIDAQABo0UwQzAdBgNVHQ4EFgQUjd7W/ml3sXBLueGcgGf6r/8E5R4wEgYDVR0T\nAQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8EBAMCAQYwDQYJKoZIhvcNAQENBQADggIB\nAEIYzq2sMMpGZIdM/VIhgyhipR+fJ2cS7xIYHUYs4DEoG8YKO6/Sc6eIKlIv8aqd\ndCBxKaoud1IxpgDhPlsU1SPTciSBhxCrBt2scXcpwblneYWs4MQ6JXScLfhPU2Ru\ne7Ik2YHlKt/5QrAZSNoEbL09oEmTvMLu+vcLoPra0I9OWMgdYUUKI14k+ZPi3Lp1\nNeq0fyJELBWcwPoKuEG7oVlWDeyGjkSARTs0ogthDaB1UYcX8JQmuqruCYrKDbLL\nIAJ+j3uE4xfYPCShoUGOoUdscH4vDyRiRLoQxPn31UKDVu0lyHCSdHLQESi0Zb1b\nAfUH8nUmHjz4OlSTtnSYKb18VWgv9I0l+Waazg7GGPYjxIw/nNWwlRg9zxr5sssx\nIKG5SPqaTbzXVa/PKW518847lvYPN97oY6GFCsC861X15YNNBcn7v7cqYe6JspwI\nVS5ZqQiace+dXmsKQhkNqMJ+XLYLkkyL69M991LHgWMNb9nFel2KVeyKpslU01Bu\ndApZ+ANNXkc0nAEKlZP35fnrXaGvSltD/rYsIbeE4cz84SQ+SGs3aFG4Y4dqzAdU\nxhjpgarOwU/24IlF5YHWj5FfUkFTUXi0zAQRskQVCv1IPJL/Bp+Ts+g2FBWeaNXj\n82VhvcCYJPYt8kx8wxrc1d3ENdwUyYVLajVTcncVvFk2\n-----END CERTIFICATE-----\n"
+        ],
+        "name": "tls"
+    },
+    {
+        "addresses": [
+            {
+                "host": "dev-kafka-cluster-kafka-bootstrap-dev-kafka.apps.dev.sbiepay.sbi",
+                "port": 443
+            }
+        ],
+        "bootstrapServers": "dev-kafka-cluster-kafka-bootstrap-dev-kafka.apps.dev.sbiepay.sbi:443",
+        "certificates": [
+            "-----BEGIN CERTIFICATE-----\nMIIFLTCCAxWgAwIBAgIUG/AQnGREOYtMXPTZdJsxW/rBRQswDQYJKoZIhvcNAQEN\nBQAwLTETMBEGA1UECgwKaW8uc3RyaW16aTEWMBQGA1UEAwwNY2x1c3Rlci1jYSB2\nMDAeFw0yNTExMTEwOTU4MzZaFw0yNjExMTEwOTU4MzZaMC0xEzARBgNVBAoMCmlv\nLnN0cmltemkxFjAUBgNVBAMMDWNsdXN0ZXItY2EgdjAwggIiMA0GCSqGSIb3DQEB\nAQUAA4ICDwAwggIKAoICAQCp/39LAZj7GtVfxHQu6lyL/8A8pVytcCL1tRVm3o0P\nTtoD70soqNrIvGThplkG4RESeLqxySMls1rr9qNOdPnUAoX3WJbdm9r3dOu5vN2t\nQuny3oWu9I0/ckGMknI+PNu5NyDQs5CEi13LpouPCBwUx1YBWtdOUqv8xGHhc9vU\nVWQdNUetQLOk3pzKqzjQHQdD6LOjHIdFqOYbSUx2evLjlIhTyLI/LRzRkKoccFDV\nZEI0zGbxEmw4a7AfBN4tRYlHwPXVSzorGg3mji/CYD7hB2J7gbLEnc7wKnQYi53t\nahWgCEdjPQInFR2KoQktgZAOYIQ+VGkWQmUsOhamSXCax4vOehTYhQ22W79LLEnd\nXVOMEU5fNsfESSQs6UIZ+N/FAtD16N+do/ukZut1LGDGg/w8gLs4Ie6jRdjzQJ/e\nG7+gxfgspaPsXjUn8rHvei6+j2CLCbrhjrRwFuOAmLDFu+pPnnAxFLU520AcH01G\nF2Htm1ZzsmKasr0NAtBhZqpkXdDB/8k1lQ3R1OJndq25lMuUxEwB+XJGRbglEqSD\njEFTseHfUOO6Vyloc8xoIuHLiZB63CPZgNkuODjakgf4aA7p6z3PxMIC6VxQQjOw\nSx4lJzt4yM06wuuIGDRsaR8d9To26MOuGsfCbO5GDF8kPkLNpFKh/9ykHAVPU2sk\nIwIDAQABo0UwQzAdBgNVHQ4EFgQUjd7W/ml3sXBLueGcgGf6r/8E5R4wEgYDVR0T\nAQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8EBAMCAQYwDQYJKoZIhvcNAQENBQADggIB\nAEIYzq2sMMpGZIdM/VIhgyhipR+fJ2cS7xIYHUYs4DEoG8YKO6/Sc6eIKlIv8aqd\ndCBxKaoud1IxpgDhPlsU1SPTciSBhxCrBt2scXcpwblneYWs4MQ6JXScLfhPU2Ru\ne7Ik2YHlKt/5QrAZSNoEbL09oEmTvMLu+vcLoPra0I9OWMgdYUUKI14k+ZPi3Lp1\nNeq0fyJELBWcwPoKuEG7oVlWDeyGjkSARTs0ogthDaB1UYcX8JQmuqruCYrKDbLL\nIAJ+j3uE4xfYPCShoUGOoUdscH4vDyRiRLoQxPn31UKDVu0lyHCSdHLQESi0Zb1b\nAfUH8nUmHjz4OlSTtnSYKb18VWgv9I0l+Waazg7GGPYjxIw/nNWwlRg9zxr5sssx\nIKG5SPqaTbzXVa/PKW518847lvYPN97oY6GFCsC861X15YNNBcn7v7cqYe6JspwI\nVS5ZqQiace+dXmsKQhkNqMJ+XLYLkkyL69M991LHgWMNb9nFel2KVeyKpslU01Bu\ndApZ+ANNXkc0nAEKlZP35fnrXaGvSltD/rYsIbeE4cz84SQ+SGs3aFG4Y4dqzAdU\nxhjpgarOwU/24IlF5YHWj5FfUkFTUXi0zAQRskQVCv1IPJL/Bp+Ts+g2FBWeaNXj\n82VhvcCYJPYt8kx8wxrc1d3ENdwUyYVLajVTcncVvFk2\n-----END CERTIFICATE-----\n"
+        ],
+        "name": "external"
+    }
+]
+[osuser@bastion ~]$
