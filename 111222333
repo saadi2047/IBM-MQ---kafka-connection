@@ -1,2 +1,20 @@
-java.lang.RuntimeException: org.apache.kafka.common.config.ConfigException: Invalid value  for configuration security.protocol: String must be one of (case insensitive): SASL_SSL, PLAINTEXT, SSL, SASL_PLAINTEXT
- 
+for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
+  echo "=== $c ==="
+  oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+    curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
+done
+
+
+
+
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-consumer-groups.sh \
+  --bootstrap-server localhost:9092 \
+  --describe --all-groups 2>/dev/null | grep neft.inbound
+
+
+
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-topics.sh \
+  --bootstrap-server localhost:9092 \
+  --describe --topic neft.inbound.kafka.topic
