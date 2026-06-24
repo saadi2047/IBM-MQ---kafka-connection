@@ -1,18 +1,150 @@
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-consumer-groups.sh \
-  --bootstrap-server localhost:9092 \
-  --describe --all-groups 2>/dev/null | grep neft.inbound
-
-# Check neft-mq-source connector logs
-oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --tail=50 | grep -iE "neft|message|error|poll|fetch"
-
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-console-consumer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic neft.inbound.kafka.topic \
-  --from-beginning \
-  --max-messages 60
-
-
-oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- bash -c \
-  "timeout 5 bash -c '</dev/tcp/10.176.10.213/2001' && echo OPEN || echo FAIL"
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-consumer-groups.sh \
+>   --bootstrap-server localhost:9092 \
+>   --describe --all-groups 2>/dev/null | grep neft.inbound
+payment-consumers neft.inbound.kafka.topic                   1          37              37              0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
+payment-consumers neft.inbound.kafka.topic                   2          0               0               0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
+payment-consumers neft.inbound.kafka.topic                   0          16              16              0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
+payment-consumers neft.inbound.kafka.topic                   3          1               1               0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
+simple-kafka-test-consumer neft.inbound.kafka.topic                   1          23              37              14              -               -               -
+simple-kafka-test-consumer neft.inbound.kafka.topic                   2          0               0               0               -               -               -
+simple-kafka-test-consumer neft.inbound.kafka.topic                   0          16              16              0               -               -               -
+simple-kafka-test-consumer neft.inbound.kafka.topic                   3          0               1               1               -               -               -
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-topics.sh \
+>   --bootstrap-server localhost:9092 \
+>   --describe --topic neft.inbound.kafka.topi
+Error while executing topic command : Topic 'Optional[neft.inbound.kafka.topi]' does not exist as expected
+[2026-06-24 09:55:59,384] ERROR java.lang.IllegalArgumentException: Topic 'Optional[neft.inbound.kafka.topi]' does not exist as expected
+        at org.apache.kafka.tools.TopicCommand.ensureTopicExists(TopicCommand.java:218)
+        at org.apache.kafka.tools.TopicCommand.access$700(TopicCommand.java:81)
+        at org.apache.kafka.tools.TopicCommand$TopicService.describeTopic(TopicCommand.java:578)
+        at org.apache.kafka.tools.TopicCommand.execute(TopicCommand.java:111)
+        at org.apache.kafka.tools.TopicCommand.mainNoExit(TopicCommand.java:90)
+        at org.apache.kafka.tools.TopicCommand.main(TopicCommand.java:85)
+ (org.apache.kafka.tools.TopicCommand)
+command terminated with exit code 1
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-topics.sh \
+>   --bootstrap-server localhost:9092 \
+>   --describe --topic neft.inbound.kafka.topic
+Topic: neft.inbound.kafka.topic TopicId: 6F5wOWs2QIiNt_iYKcE4Ew PartitionCount: 4       ReplicationFactor: 3    Configs: compression.type=producer,min.insync.replicas=2,cleanup.policy=delete,segment.bytes=1073741824
+        Topic: neft.inbound.kafka.topic Partition: 0    Leader: 1       Replicas: 1,2,0 Isr: 0,2,1      Elr:    LastKnownElr:
+        Topic: neft.inbound.kafka.topic Partition: 1    Leader: 1       Replicas: 1,2,0 Isr: 0,2,1      Elr:    LastKnownElr:
+        Topic: neft.inbound.kafka.topic Partition: 2    Leader: 2       Replicas: 2,0,1 Isr: 0,2,1      Elr:    LastKnownElr:
+        Topic: neft.inbound.kafka.topic Partition: 3    Leader: 0       Replicas: 0,1,2 Isr: 0,2,1      Elr:    LastKnownElr:
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 5
+AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFC0009142|HDFC0009142|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFC0009142|HDFC0009143|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+^Z
+[1]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.inbound.kafka.topic --from-beginning --max-messages 5
+[osuser@bastion ~]$ c exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --offset latest \
+>   --partition 0
+bash: c: command not found...
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --offset latest \
+>   --partition 0
+^Z
+[2]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.inbound.kafka.topic --offset latest --partition 0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 60
+AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFC0009142|HDFC0009142|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFC0009142|HDFC0009143|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+^Z
+[3]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.inbound.kafka.topic --from-beginning --max-messages 60
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --offset latest \
+>   --partition 0
+^Z
+[4]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.inbound.kafka.topic --offset latest --partition 0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka --   bin/kafka-console-consumer.sh   --bootstrap-server localhost:9092   --topic neft.outbound.kafka.topic   --offset latest   --partition 0
+^Z
+[5]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.outbound.kafka.topic --offset latest --partition 0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka --   bin/kafka-console-consumer.sh   --bootstrap-server localhost:9092   --topic neft.inbound.kafka.topic   --offset latest   --partition 0
+^Z
+[6]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.inbound.kafka.topic --offset latest --partition 0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka --   bin/kafka-console-consumer.sh   --bootstrap-server localhost:9092   --topic neft.outbound.kafka.topic   --offset latest   --partition 0
+^Z
+[7]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.outbound.kafka.topic --offset latest --partition 0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-consumer-groups.sh \
+>   --bootstrap-server localhost:9092 \
+>   --describe --all-groups 2>/dev/null | grep neft.inbound
+console-consumer-69501 neft.inbound.kafka.topic 1          -               44              -               console-consumer-4314e8c8-8e21-4857-a86a-dc3814fc64d1 /172.16.9.214   console-consumer
+console-consumer-69501 neft.inbound.kafka.topic 2          -               0               -               console-consumer-4314e8c8-8e21-4857-a86a-dc3814fc64d1 /172.16.9.214   console-consumer
+console-consumer-69501 neft.inbound.kafka.topic 0          -               16              -               console-consumer-4314e8c8-8e21-4857-a86a-dc3814fc64d1 /172.16.9.214   console-consumer
+console-consumer-69501 neft.inbound.kafka.topic 3          -               1               -               console-consumer-4314e8c8-8e21-4857-a86a-dc3814fc64d1 /172.16.9.214   console-consumer
+payment-consumers neft.inbound.kafka.topic                   1          44              44              0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
+payment-consumers neft.inbound.kafka.topic                   2          0               0               0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
+payment-consumers neft.inbound.kafka.topic                   0          16              16              0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
+payment-consumers neft.inbound.kafka.topic                   3          1               1               0               consumer-payment-consumers-6-beab4327-9c2e-42f9-b2f8-cf6cc6827f7a /172.16.16.48   consumer-payment-consumers-6
+simple-kafka-test-consumer neft.inbound.kafka.topic                   1          23              44              21              -               -               -
+simple-kafka-test-consumer neft.inbound.kafka.topic                   2          0               0               0               -               -               -
+simple-kafka-test-consumer neft.inbound.kafka.topic                   0          16              16              0               -               -               -
+simple-kafka-test-consumer neft.inbound.kafka.topic                   3          0               1               1               -               -               -
+[osuser@bastion ~]$ oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --tail=50 | grep -iE "neft|message|error|poll|fetch"
+2026-06-24 10:13:52,724 INFO 172.16.16.3 - - [24/Jun/2026:10:13:52 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 292 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-181]
+2026-06-24 10:13:52,726 INFO 172.16.16.3 - - [24/Jun/2026:10:13:52 +0000] "GET /connectors/neft-mq-source/status HTTP/1.1" 200 296 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-184]
+2026-06-24 10:13:52,727 INFO 172.16.16.3 - - [24/Jun/2026:10:13:52 +0000] "GET /connectors/neft-mq-source/topics HTTP/1.1" 200 58 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-181]
+2026-06-24 10:15:52,817 INFO 172.16.16.3 - - [24/Jun/2026:10:15:52 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 292 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-181]
+2026-06-24 10:15:52,819 INFO 172.16.16.3 - - [24/Jun/2026:10:15:52 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 292 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-179]
+2026-06-24 10:15:52,822 INFO 172.16.16.3 - - [24/Jun/2026:10:15:52 +0000] "GET /connectors/neft-mq-sink/topics HTTP/1.1" 200 57 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-181]
+2026-06-24 10:15:52,824 INFO 172.16.16.3 - - [24/Jun/2026:10:15:52 +0000] "GET /connectors/neft-mq-source/topics HTTP/1.1" 200 58 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-179]
+2026-06-24 10:17:02,792 INFO [neft-mq-source|task-0|offsets] WorkerSourceTask{id=neft-mq-source-0} Committing offsets for 1 acknowledged messages (org.apache.kafka.connect.runtime.WorkerSourceTask) [SourceTaskOffsetCommitter-1]
+2026-06-24 10:17:12,882 INFO [neft-mq-source|task-0|offsets] WorkerSourceTask{id=neft-mq-source-0} Committing offsets for 2 acknowledged messages (org.apache.kafka.connect.runtime.WorkerSourceTask) [SourceTaskOffsetCommitter-1]
+2026-06-24 10:17:22,890 INFO [neft-mq-source|task-0|offsets] WorkerSourceTask{id=neft-mq-source-0} Committing offsets for 2 acknowledged messages (org.apache.kafka.connect.runtime.WorkerSourceTask) [SourceTaskOffsetCommitter-1]
+2026-06-24 10:17:52,619 INFO 172.16.16.3 - - [24/Jun/2026:10:17:52 +0000] "GET /connectors/neft-mq-sink/config HTTP/1.1" 200 534 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-184]
+2026-06-24 10:17:52,621 INFO 172.16.16.3 - - [24/Jun/2026:10:17:52 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 292 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-179]
+2026-06-24 10:17:52,623 INFO 172.16.16.3 - - [24/Jun/2026:10:17:52 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 292 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-184]
+2026-06-24 10:17:52,625 INFO 172.16.16.3 - - [24/Jun/2026:10:17:52 +0000] "GET /connectors/neft-mq-sink/topics HTTP/1.1" 200 57 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-179]
+2026-06-24 10:19:02,901 INFO [neft-mq-source|task-0|offsets] WorkerSourceTask{id=neft-mq-source-0} Committing offsets for 1 acknowledged messages (org.apache.kafka.connect.runtime.WorkerSourceTask) [SourceTaskOffsetCommitter-1]
+2026-06-24 10:19:12,910 INFO [neft-mq-source|task-0|offsets] WorkerSourceTask{id=neft-mq-source-0} Committing offsets for 1 acknowledged messages (org.apache.kafka.connect.runtime.WorkerSourceTask) [SourceTaskOffsetCommitter-1]
+2026-06-24 10:19:52,797 INFO 172.16.16.3 - - [24/Jun/2026:10:19:52 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 292 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-182]
+2026-06-24 10:19:52,800 INFO 172.16.16.3 - - [24/Jun/2026:10:19:52 +0000] "GET /connectors/neft-mq-sink/topics HTTP/1.1" 200 57 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-177]
+2026-06-24 10:19:52,806 INFO 172.16.16.3 - - [24/Jun/2026:10:19:52 +0000] "GET /connectors/neft-mq-source/topics HTTP/1.1" 200 58 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp547669629-177]
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 60
+AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFC0009142|HDFC0009142|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFC0009142|HDFC0009143|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+Hi this test message from IPH team
+Message11
+Message12
+Message13
+Message14
+Test111
+Test112
+^Z
+[8]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.inbound.kafka.topic --from-beginning --max-messages 60
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- bash -c \
+>   "timeout 5 bash -c '</dev/tcp/10.176.10.213/2001' && echo OPEN || echo FAIL"
+OPEN
+[osuser@bastion ~]$
