@@ -1,19 +1,6 @@
-# First find the strimzi operator pod name
-oc get pods -n openshift-operators | grep strimzi
-
-# Then check its logs - replace with actual pod name from above
-oc logs -n openshift-operators strimzi-cluster-operator-XXXXX --since=8h | grep -iE "roll|broker|reconcil|restart" | tail -30
-
-# Check broker pod start times to confirm exact restart time
-oc get pods -n dev-kafka | grep broker
-oc describe pod dev-kafka-cluster-broker-0 -n dev-kafka | grep "Started:"
-oc describe pod dev-kafka-cluster-broker-1 -n dev-kafka | grep "Started:"
-oc describe pod dev-kafka-cluster-broker-2 -n dev-kafka | grep "Started:"
-
-# Check if certificate renewal triggered the restart
-oc get secret -n dev-kafka | grep cluster-ca
-oc get secret dev-kafka-cluster-cluster-ca -n dev-kafka -o yaml | grep "not-after\|renewalDeadline\|notAfter"
-
-# Check Kafka CR generation history
-oc get kafka dev-kafka-cluster -n dev-kafka -o yaml | grep -A5 "conditions"
-
+[osuser@bastion ~]$ oc get pods -n openshift-operators
+NAME                                                   READY   STATUS    RESTARTS         AGE
+amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn   1/1     Running   54 (2d12h ago)   154d
+kiali-operator-546794cd7c-2ds4h                        1/1     Running   3 (67d ago)      154d
+servicemesh-operator3-888bb864c-dhccz                  1/1     Running   42 (30d ago)     154d
+[osuser@bastion ~]$
