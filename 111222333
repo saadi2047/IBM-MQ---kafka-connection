@@ -1,18 +1,19 @@
-[osuser@bastion ~]$ oc describe pod dev-kafka-cluster-broker-0 -n dev-kafka | grep -A5 "Events\|Reason\|Message" | tail -30
-Events:                      <none>
-[osuser@bastion ~]$ oc get events -n dev-kafka --sort-by='.lastTimestamp' | grep -iE "broker|roll|restart|update" | tail -20
-No resources found in dev-kafka namespace.
-[osuser@bastion ~]$ oc logs -n openshift-operators $(oc get pods -n openshift-operators | grep strimzi | awk '{print $1}') --since=8h | grep -iE "roll|broker|reconcil|restart" | tail -30
-error: expected 'logs [-f] [-p] (POD | TYPE/NAME) [-c CONTAINER]'.
-POD or TYPE/NAME is a required argument for the logs command
-See 'oc logs -h' for help and examples
-[osuser@bastion ~]$ oc get pods -n openshift-operators | grep strimzi | awk '{print $1}') --since=8h | grep -iE "roll|broker|reconcil|restart" | tail -30
--bash: syntax error near unexpected token `)'
-[osuser@bastion ~]$ oc get pods -n openshift-operators | grep strimzi | awk '{print $1} --since=8h | grep -iE "roll|broker|reconcil|restart" | tail -30
-> -bash: unexpected EOF while looking for matching `''
--bash: syntax error: unexpected end of file
-[osuser@bastion ~]$ oc get kafka dev-kafka-cluster -n dev-kafka -o yaml | grep -E "generation|resourceVersion|lastTransitionTime"
-  generation: 5
-  resourceVersion: "837671343"
-  - lastTransitionTime: "2026-06-25T06:02:02.535248982Z"
-[osuser@bastion ~]$
+# First find the strimzi operator pod name
+oc get pods -n openshift-operators | grep strimzi
+
+# Then check its logs - replace with actual pod name from above
+oc logs -n openshift-operators strimzi-cluster-operator-XXXXX --since=8h | grep -iE "roll|broker|reconcil|restart" | tail -30
+
+# Check broker pod start times to confirm exact restart time
+oc get pods -n dev-kafka | grep broker
+oc describe pod dev-kafka-cluster-broker-0 -n dev-kafka | grep "Started:"
+oc describe pod dev-kafka-cluster-broker-1 -n dev-kafka | grep "Started:"
+oc describe pod dev-kafka-cluster-broker-2 -n dev-kafka | grep "Started:"
+
+# Check if certificate renewal triggered the restart
+oc get secret -n dev-kafka | grep cluster-ca
+oc get secret dev-kafka-cluster-cluster-ca -n dev-kafka -o yaml | grep "not-after\|renewalDeadline\|notAfter"
+
+# Check Kafka CR generation history
+oc get kafka dev-kafka-cluster -n dev-kafka -o yaml | grep -A5 "conditions"
+
