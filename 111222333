@@ -4,3 +4,33 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
   --topic neft.inbound.kafka.topic \
   --from-beginning \
   --max-messages 100
+
+
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 100
+RFH ,▒MQSTR   ▒ <mcd><Msd>jms_text</Msd></mcd>  ▒<jms><Dst>queue://SBI_NEFT/NeftInboundQueue?destDescription=Queue+created+from+Queue+%27NeftInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2725-Jun-2026+12%3A09%3A31%27</Dst><Tms>1782387197525</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCH01076990123|HDFC0002441|25-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+RFH ,▒MQSTR   ▒ <mcd><Msd>jms_text</Msd></mcd>  ▒<jms><Dst>queue://SBI_NEFT/NeftInboundQueue?destDescription=Queue+created+from+Queue+%27NeftInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2725-Jun-2026+12%3A09%3A31%27</Dst><Tms>1782387245335</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCH01076990124|HDFC0002441|25-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFC0009142|HDFC0009142|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+AGG|HDFC0009142|HDFC0009143|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+Hi this test message from IPH team
+Message11
+Message12
+Message13
+Message14
+Test111
+Test112
+Test Message111
+Test Message 112
+Test Messge 113
+AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+SBIEPAY_NEFT|5E8057DB7A5D4CB0B4F3|RBIP202605066201756201|HDFCH00625297377|23105036336|MOLMARITIME(INDIA)PRIVATELIMITE|SBIN0011777|4899032117774|NE003RUV7X3PM1MFM2Y3|SBIEpayNEFT|10.00|05-Jun-26|0003|05-Jun-26|05-Jun-26||AGGNE003RUV7X3PM1MFM2Y3
+AGG|HDFCH00625297388|HDFC0009142|24-Jun-26|1.00|NE00379O8ZRQMUID6EE8
+
+
+
