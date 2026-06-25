@@ -1,17 +1,3 @@
-Release "epay-common" has been upgraded. Happy Helming!
-NAME: epay-common
-LAST DEPLOYED: Thu Jun 25 10:53:58 2026
-NAMESPACE: int-epay-common
-STATUS: deployed
-REVISION: 25
-TEST SUITE: None
-✅ Deployed epay_common with tag (none — common/shared chart) to int
-Cleaning up project directory and file based variables
-00:00
-Job succeeded
-
------
-
 [osuser@bastion ~]$ oc get pods -n uat-kafka
 NAME                                                READY   STATUS    RESTARTS          AGE
 uat-console-console-deployment-5d4fb9b74-5n9k6      2/2     Running   3 (67d ago)       77d
@@ -23,42 +9,214 @@ uat-kafka-cluster-controller-4                      1/1     Running   0         
 uat-kafka-cluster-controller-5                      1/1     Running   0                 154d
 uat-kafka-cluster-cruise-control-85b7474f57-wkt48   1/1     Running   350 (6d17h ago)   154d
 uat-kafka-cluster-entity-operator-668845cdc-pzmh5   2/2     Running   0                 154d
-uat-kafka-mirror-maker-mirrormaker2-0               0/1     Pending   0                 13m
+uat-kafka-mirror-maker-mirrormaker2-0               0/1     Pending   0                 3s
+[osuser@bastion ~]$ oc get deployment -n uat-kafka
+NAME                                READY   UP-TO-DATE   AVAILABLE   AGE
+uat-console-console-deployment      1/1     1            1           225d
+uat-kafka-cluster-cruise-control    1/1     1            1           225d
+uat-kafka-cluster-entity-operator   1/1     1            1           225d
+[osuser@bastion ~]$ oc get deployment uat-console-console-deployment -o yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "9"
+    javaoperatorsdk.io/previous: 734679e7-71fa-46d5-ae09-369b690fab09,694185516
+  creationTimestamp: "2025-11-12T06:23:46Z"
+  generation: 9
+  labels:
+    app.kubernetes.io/managed-by: streamshub-console-operator
+    app.kubernetes.io/name: console
+  name: uat-console-console-deployment
+  namespace: uat-kafka
+  ownerReferences:
+  - apiVersion: console.streamshub.github.com/v1alpha1
+    kind: Console
+    name: uat-console
+    uid: ee657354-9749-476c-bdd9-f02c905c1321
+  resourceVersion: "824071388"
+  uid: a66a1a1a-e30b-4787-a694-c434b58157a1
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: uat-console-console-deployment
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        streamshub.github.com/dependency-digest: cf7343f2193ea484f203b6f0ec159ec792edddea
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: uat-console-console-deployment
+    spec:
+      containers:
+      - env:
+        - name: CONSOLE_CONFIG_PATH
+          value: /deployments/config/console-config.yaml
+        image: registry.redhat.io/amq-streams/console-api-rhel9@sha256:7f3638288c8a354ba9feceeb14e990ed7a09e3ef245d6fd288cd0bd8ad6c2c75
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health/live
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        name: console-api
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health/ready
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        startupProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health/started
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /deployments/config
+          name: config
+        - mountPath: /tmp
+          name: work
+      - env:
+        - name: NEXTAUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: NEXTAUTH_SECRET
+              name: uat-console-console-secret
+        - name: NEXTAUTH_URL
+          value: https://uat-kafkaconsole.apps.dev.sbiepay.sbi
+        - name: BACKEND_URL
+          value: http://127.0.0.1:8080
+        - name: CONSOLE_CONFIG_PATH
+          value: /deployments/config/console-config.yaml
+        - name: CONSOLE_MODE
+          value: read-only
+        - name: LOG_LEVEL
+          value: info
+        image: registry.redhat.io/amq-streams/console-ui-rhel9@sha256:b0f8e0b895e1a4667da521ddacfc476c7fa2b9b0983044bd139978181499c774
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        name: console-ui
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        startupProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /deployments/config
+          name: config
+        - mountPath: /app/.next/cache
+          name: work
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: uat-console-console-serviceaccount
+      serviceAccountName: uat-console-console-serviceaccount
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: work
+      - name: config
+        secret:
+          defaultMode: 420
+          secretName: uat-console-console-secret
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2025-11-12T06:23:46Z"
+    lastUpdateTime: "2026-04-09T07:38:26Z"
+    message: ReplicaSet "uat-console-console-deployment-5d4fb9b74" has successfully
+      progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2026-06-18T17:02:23Z"
+    lastUpdateTime: "2026-06-18T17:02:23Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  observedGeneration: 9
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+[osuser@bastion ~]$ oc get deployment uat-console-console-deployment -o yaml | grep -i mirror
 [osuser@bastion ~]$
-
-
-------------------------
-
-mirrorMaker2:
-    enabled: false
-    name: "int-kafka-mirror-maker"
-    # Active/Passive setup for DR
-    clusters:
-      - alias: "source"
-        bootstrapServers: "int-kafka-cluster-kafka-bootstrap.int-kafka.svc.cluster.local:9092"
-      - alias: "target"
-        bootstrapServers: "dr-kafka-cluster-kafka-bootstrap.dr-kafka.svc.cluster.local:9092"
-    mirrors:
-      - sourceCluster: "source"
-        targetCluster: "target"
-        sourceConnector:
-          config:
-            replication.factor: 3
-            offset-syncs.topic.replication.factor: 3
-            sync.topic.acls.enabled: true
-            replication.policy.class: "org.apache.kafka.connect.mirror.IdentityReplicationPolicy"
-        heartbeatConnector:
-          config:
-            heartbeats.topic.replication.factor: 3
-        checkpointConnector:
-          config:
-            checkpoints.topic.replication.factor: 3
-        topicsPattern: ".*"
-        groupsPattern: ".*"
-    resources:
-      requests:
-        memory: "2Gi"
-        cpu: "1"
-      limits:
-        memory: "4Gi"
-        cpu: "2"
