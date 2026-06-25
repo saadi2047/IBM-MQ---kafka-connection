@@ -25,3 +25,40 @@ uat-kafka-cluster-cruise-control-85b7474f57-wkt48   1/1     Running   350 (6d17h
 uat-kafka-cluster-entity-operator-668845cdc-pzmh5   2/2     Running   0                 154d
 uat-kafka-mirror-maker-mirrormaker2-0               0/1     Pending   0                 13m
 [osuser@bastion ~]$
+
+
+------------------------
+
+mirrorMaker2:
+    enabled: false
+    name: "int-kafka-mirror-maker"
+    # Active/Passive setup for DR
+    clusters:
+      - alias: "source"
+        bootstrapServers: "int-kafka-cluster-kafka-bootstrap.int-kafka.svc.cluster.local:9092"
+      - alias: "target"
+        bootstrapServers: "dr-kafka-cluster-kafka-bootstrap.dr-kafka.svc.cluster.local:9092"
+    mirrors:
+      - sourceCluster: "source"
+        targetCluster: "target"
+        sourceConnector:
+          config:
+            replication.factor: 3
+            offset-syncs.topic.replication.factor: 3
+            sync.topic.acls.enabled: true
+            replication.policy.class: "org.apache.kafka.connect.mirror.IdentityReplicationPolicy"
+        heartbeatConnector:
+          config:
+            heartbeats.topic.replication.factor: 3
+        checkpointConnector:
+          config:
+            checkpoints.topic.replication.factor: 3
+        topicsPattern: ".*"
+        groupsPattern: ".*"
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1"
+      limits:
+        memory: "4Gi"
+        cpu: "2"
