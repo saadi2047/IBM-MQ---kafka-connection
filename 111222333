@@ -1,6 +1,11 @@
-[osuser@bastion ~]$ oc get pods -n openshift-operators
-NAME                                                   READY   STATUS    RESTARTS         AGE
-amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn   1/1     Running   54 (2d12h ago)   154d
-kiali-operator-546794cd7c-2ds4h                        1/1     Running   3 (67d ago)      154d
-servicemesh-operator3-888bb864c-dhccz                  1/1     Running   42 (30d ago)     154d
-[osuser@bastion ~]$
+oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=8h | grep -iE "roll|broker|reconcil|restart|trigger" | tail -40
+
+# Also check why the operator itself has 54 restarts
+oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn -n openshift-operators | grep -A5 "Last State\|Exit Code\|Reason"
+
+# Check certificate expiry - this is most common cause of scheduled broker rolls
+oc get secret dev-kafka-cluster-cluster-ca-cert -n dev-kafka -o yaml | grep "not-after\|ca.crt" | head -5
+
+# Decode the cert to see expiry date
+oc get secret dev-kafka-cluster-cluster-ca-cert -n dev-kafka -o jsonpath='{.data.ca\.crt}' | base64 -d | openssl x509 -noout -dates
+
