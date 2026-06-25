@@ -1,11 +1,67 @@
-oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=8h | grep -iE "roll|broker|reconcil|restart|trigger" | tail -40
-
-# Also check why the operator itself has 54 restarts
-oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn -n openshift-operators | grep -A5 "Last State\|Exit Code\|Reason"
-
-# Check certificate expiry - this is most common cause of scheduled broker rolls
-oc get secret dev-kafka-cluster-cluster-ca-cert -n dev-kafka -o yaml | grep "not-after\|ca.crt" | head -5
-
-# Decode the cert to see expiry date
-oc get secret dev-kafka-cluster-cluster-ca-cert -n dev-kafka -o jsonpath='{.data.ca\.crt}' | base64 -d | openssl x509 -noout -dates
-
+[osuser@bastion ~]$ oc get pods -n openshift-operators
+NAME                                                   READY   STATUS    RESTARTS         AGE
+amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn   1/1     Running   54 (2d12h ago)   154d
+kiali-operator-546794cd7c-2ds4h                        1/1     Running   3 (67d ago)      154d
+servicemesh-operator3-888bb864c-dhccz                  1/1     Running   42 (30d ago)     154d
+[osuser@bastion ~]$ oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=8h | grep -iE "roll|broker|reconcil|restart|trigger" | tail -40
+2026-06-25 10:26:48 INFO  AbstractOperator:401 - Reconciliation #25323(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
+2026-06-25 10:26:48 INFO  AbstractOperator:401 - Reconciliation #25296(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
+2026-06-25 10:26:50 ERROR VertxUtil:134 - Reconciliation #25296(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource int-kafka-mirror-maker-mirrormaker2-0 in namespace int-kafka to be ready
+2026-06-25 10:26:50 ERROR AbstractOperator:285 - Reconciliation #25296(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): createOrUpdate failed
+2026-06-25 10:26:50 WARN  AbstractOperator:566 - Reconciliation #25296(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Failed to reconcile
+2026-06-25 10:27:48 INFO  ClusterOperator:135 - Triggering periodic reconciliation for namespace *
+2026-06-25 10:27:48 INFO  AbstractOperator:401 - Reconciliation #25322(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
+2026-06-25 10:27:48 INFO  AbstractOperator:401 - Reconciliation #25323(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
+2026-06-25 10:27:48 INFO  AbstractOperator:266 - Reconciliation #25325(timer) Kafka(uat-kafka/uat-kafka-cluster): Kafka uat-kafka-cluster will be checked for creation or modification
+2026-06-25 10:27:48 INFO  AbstractOperator:266 - Reconciliation #25326(timer) Kafka(sit-kafka/sit-kafka-cluster): Kafka sit-kafka-cluster will be checked for creation or modification
+2026-06-25 10:27:48 INFO  AbstractOperator:266 - Reconciliation #25327(timer) Kafka(dev-kafka/dev-kafka-cluster): Kafka dev-kafka-cluster will be checked for creation or modification
+2026-06-25 10:27:48 INFO  AbstractOperator:266 - Reconciliation #25328(timer) Kafka(int-kafka/int-kafka-cluster): Kafka int-kafka-cluster will be checked for creation or modification
+2026-06-25 10:27:48 INFO  AbstractOperator:266 - Reconciliation #25329(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq): KafkaConnect dev-kafka-connect-mq will be checked for creation or modification
+2026-06-25 10:27:48 WARN  AbstractConfiguration:93 - Reconciliation #25329(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq): Configuration option "plugin.path" is forbidden and will be ignored
+2026-06-25 10:27:48 INFO  AbstractOperator:266 - Reconciliation #25332(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): KafkaMirrorMaker2 int-kafka-mirror-maker will be checked for creation or modification
+2026-06-25 10:27:52 INFO  KafkaConnectAssemblyOperator:472 - Reconciliation #25329(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq): creating/updating connector: neft-mq-sink
+2026-06-25 10:27:52 INFO  KafkaConnectAssemblyOperator:472 - Reconciliation #25329(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq): creating/updating connector: neft-mq-source
+2026-06-25 10:27:52 INFO  KafkaConnectAssemblyOperator:472 - Reconciliation #25329(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq): creating/updating connector: rtgs-mq-sink
+2026-06-25 10:27:52 INFO  KafkaConnectAssemblyOperator:472 - Reconciliation #25329(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq): creating/updating connector: rtgs-mq-source
+2026-06-25 10:27:53 INFO  AbstractOperator:546 - Reconciliation #25329(timer) KafkaConnect(dev-kafka/dev-kafka-connect-mq): reconciled
+2026-06-25 10:27:58 WARN  AbstractConfiguration:93 - Reconciliation #25325(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "bootstrap.servers" is forbidden and will be ignored
+2026-06-25 10:27:58 WARN  AbstractConfiguration:93 - Reconciliation #25325(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
+2026-06-25 10:27:58 WARN  AbstractConfiguration:93 - Reconciliation #25325(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
+2026-06-25 10:27:58 WARN  AbstractConfiguration:93 - Reconciliation #25325(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "security.protocol" is forbidden and will be ignored
+2026-06-25 10:27:58 WARN  AbstractModel:279 - Reconciliation #25325(timer) Kafka(uat-kafka/uat-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
+2026-06-25 10:27:58 WARN  AbstractConfiguration:93 - Reconciliation #25326(timer) Kafka(sit-kafka/sit-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
+2026-06-25 10:27:58 WARN  AbstractConfiguration:93 - Reconciliation #25326(timer) Kafka(sit-kafka/sit-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
+2026-06-25 10:27:58 WARN  AbstractModel:279 - Reconciliation #25326(timer) Kafka(sit-kafka/sit-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
+2026-06-25 10:27:58 WARN  AbstractConfiguration:93 - Reconciliation #25328(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "bootstrap.servers" is forbidden and will be ignored
+2026-06-25 10:27:58 WARN  AbstractConfiguration:93 - Reconciliation #25328(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
+2026-06-25 10:27:58 WARN  AbstractConfiguration:93 - Reconciliation #25328(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
+2026-06-25 10:27:58 WARN  AbstractConfiguration:93 - Reconciliation #25328(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "security.protocol" is forbidden and will be ignored
+2026-06-25 10:27:58 WARN  AbstractModel:279 - Reconciliation #25328(timer) Kafka(int-kafka/int-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
+2026-06-25 10:27:58 INFO  AbstractOperator:546 - Reconciliation #25325(timer) Kafka(uat-kafka/uat-kafka-cluster): reconciled
+2026-06-25 10:27:59 INFO  AbstractOperator:546 - Reconciliation #25326(timer) Kafka(sit-kafka/sit-kafka-cluster): reconciled
+2026-06-25 10:27:59 WARN  AbstractConfiguration:93 - Reconciliation #25327(timer) Kafka(dev-kafka/dev-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
+2026-06-25 10:27:59 WARN  AbstractConfiguration:93 - Reconciliation #25327(timer) Kafka(dev-kafka/dev-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
+2026-06-25 10:27:59 WARN  AbstractModel:279 - Reconciliation #25327(timer) Kafka(dev-kafka/dev-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
+2026-06-25 10:27:59 INFO  AbstractOperator:546 - Reconciliation #25328(timer) Kafka(int-kafka/int-kafka-cluster): reconciled
+2026-06-25 10:27:59 INFO  AbstractOperator:546 - Reconciliation #25327(timer) Kafka(dev-kafka/dev-kafka-cluster): reconciled
+[osuser@bastion ~]$ oc describe pod amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn -n openshift-operators | grep -A5 "Last State\|Exit Code\|Reason"
+    Last State:  Terminated
+      Reason:    Error
+      Message:   tractOperator:401 - Reconciliation #307352(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
+2026-06-22 21:45:05 INFO  AbstractOperator:401 - Reconciliation #307354(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
+2026-06-22 21:45:05 INFO  AbstractOperator:401 - Reconciliation #307361(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
+2026-06-22 21:45:29 INFO  LeaderElectionManager:121 - The new leader is
+2026-06-22 21:45:29 INFO  LeaderElectionManager:112 - Stopped being a leader
+--
+      Exit Code:    1
+      Started:      Tue, 26 May 2026 03:54:44 +0530
+      Finished:     Tue, 23 Jun 2026 03:15:31 +0530
+    Ready:          True
+    Restart Count:  54
+    Limits:
+[osuser@bastion ~]$ oc get secret dev-kafka-cluster-cluster-ca-cert -n dev-kafka -o yaml | grep "not-after\|ca.crt" | head -5
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZMVENDQXhXZ0F3SUJBZ0lVRy9BUW5HUkVPWXRNWFBUWmRKc3hXL3JCUlFzd0RRWUpLb1pJaHZjTkFRRU4KQlFBd0xURVRNQkVHQTFVRUNnd0thVzh1YzNSeWFXMTZhVEVXTUJRR0ExVUVBd3dOWTJ4MWMzUmxjaTFqWVNCMgpNREFlRncweU5URXhNVEV3T1RVNE16WmFGdzB5TmpFeE1URXdPVFU0TXpaYU1DMHhFekFSQmdOVkJBb01DbWx2CkxuTjBjbWx0ZW1reEZqQVVCZ05WQkFNTURXTnNkWE4wWlhJdFkyRWdkakF3Z2dJaU1BMEdDU3FHU0liM0RRRUIKQVFVQUE0SUNEd0F3Z2dJS0FvSUNBUUNwLzM5TEFaajdHdFZmeEhRdTZseUwvOEE4cFZ5dGNDTDF0UlZtM28wUApUdG9ENzBzb3FOckl2R1RocGxrRzRSRVNlTHF4eVNNbHMxcnI5cU5PZFBuVUFvWDNXSmJkbTlyM2RPdTV2TjJ0ClF1bnkzb1d1OUkwL2NrR01rbkkrUE51NU55RFFzNUNFaTEzTHBvdVBDQndVeDFZQld0ZE9VcXY4eEdIaGM5dlUKVldRZE5VZXRRTE9rM3B6S3F6alFIUWRENkxPakhJZEZxT1liU1V4MmV2TGpsSWhUeUxJL0xSelJrS29jY0ZEVgpaRUkwekdieEVtdzRhN0FmQk40dFJZbEh3UFhWU3pvckdnM21qaS9DWUQ3aEIySjdnYkxFbmM3d0tuUVlpNTN0CmFoV2dDRWRqUFFJbkZSMktvUWt0Z1pBT1lJUStWR2tXUW1Vc09oYW1TWENheDR2T2VoVFloUTIyVzc5TExFbmQKWFZPTUVVNWZOc2ZFU1NRczZVSVorTi9GQXREMTZOK2RvL3VrWnV0MUxHREdnL3c4Z0xzNEllNmpSZGp6UUovZQpHNytneGZnc3BhUHNYalVuOHJIdmVpNitqMkNMQ2JyaGpyUndGdU9BbUxERnUrcFBubkF4RkxVNTIwQWNIMDFHCkYySHRtMVp6c21LYXNyME5BdEJoWnFwa1hkREIvOGsxbFEzUjFPSm5kcTI1bE11VXhFd0IrWEpHUmJnbEVxU0QKakVGVHNlSGZVT082Vnlsb2M4eG9JdUhMaVpCNjNDUFpnTmt1T0RqYWtnZjRhQTdwNnozUHhNSUM2VnhRUWpPdwpTeDRsSnp0NHlNMDZ3dXVJR0RSc2FSOGQ5VG8yNk1PdUdzZkNiTzVHREY4a1BrTE5wRktoLzl5a0hBVlBVMnNrCkl3SURBUUFCbzBVd1F6QWRCZ05WSFE0RUZnUVVqZDdXL21sM3NYQkx1ZUdjZ0dmNnIvOEU1UjR3RWdZRFZSMFQKQVFIL0JBZ3dCZ0VCL3dJQkFEQU9CZ05WSFE4QkFmOEVCQU1DQVFZd0RRWUpLb1pJaHZjTkFRRU5CUUFEZ2dJQgpBRUlZenEyc01NcEdaSWRNL1ZJaGd5aGlwUitmSjJjUzd4SVlIVVlzNERFb0c4WUtPNi9TYzZlSUtsSXY4YXFkCmRDQnhLYW91ZDFJeHBnRGhQbHNVMVNQVGNpU0JoeENyQnQyc2NYY3B3YmxuZVlXczRNUTZKWFNjTGZoUFUyUnUKZTdJazJZSGxLdC81UXJBWlNOb0ViTDA5b0VtVHZNTHUrdmNMb1ByYTBJOU9XTWdkWVVVS0kxNGsrWlBpM0xwMQpOZXEwZnlKRUxCV2N3UG9LdUVHN29WbFdEZXlHamtTQVJUczBvZ3RoRGFCMVVZY1g4SlFtdXFydUNZcktEYkxMCklBSitqM3VFNHhmWVBDU2hvVUdPb1Vkc2NINHZEeVJpUkxvUXhQbjMxVUtEVnUwbHlIQ1NkSExRRVNpMFpiMWIKQWZVSDhuVW1Iano0T2xTVHRuU1lLYjE4VldndjlJMGwrV2Fhemc3R0dQWWp4SXcvbk5Xd2xSZzl6eHI1c3NzeApJS0c1U1BxYVRielhWYS9QS1c1MTg4NDdsdllQTjk3b1k2R0ZDc0M4NjFYMTVZTk5CY243djdjcVllNkpzcHdJClZTNVpxUWlhY2UrZFhtc0tRaGtOcU1KK1hMWUxra3lMNjlNOTkxTEhnV01OYjluRmVsMktWZXlLcHNsVTAxQnUKZEFwWitBTk5Ya2MwbkFFS2xaUDM1Zm5yWGFHdlNsdEQvcllzSWJlRTRjejg0U1ErU0dzM2FGRzRZNGRxekFkVQp4aGpwZ2FyT3dVLzI0SWxGNVlIV2o1RmZVa0ZUVVhpMHpBUVJza1FWQ3YxSVBKTC9CcCtUcytnMkZCV2VhTlhqCjgyVmh2Y0NZSlBZdDhreDh3eHJjMWQzRU5kd1V5WVZMYWpWVGNuY1Z2RmsyCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+[osuser@bastion ~]$ oc get secret dev-kafka-cluster-cluster-ca-cert -n dev-kafka -o jsonpath='{.data.ca\.crt}' | base64 -d | openssl x509 -noout -dates
+notBefore=Nov 11 09:58:36 2025 GMT
+notAfter=Nov 11 09:58:36 2026 GMT
+[osuser@bastion ~]$
