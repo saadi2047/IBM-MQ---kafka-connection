@@ -1,12 +1,102 @@
-Dear Sir,
+Message
+Partition
+2
+Offset
+1
+Size 
+370 B
+Timestamp (local)
+June 25, 2026 at 5:10:46 PM GMT+5:30
+Timestamp (UTC)
+June 25, 2026 at 11:40:46 AM UTC
+Unix timestamp
+1782387646
+Key format
+Plain
+Value format
+Plain
 
-As discussed, Ms. Ujwala Laxman Kabadi is unable to log in to JFrog.
+Value
 
-She is attempting to log in for the first time using her AD ID and password. However, she has never registered or configured any Authenticator application for MFA. Despite this, the JFrog login process is prompting her to enter a One-Time Code from an Authenticator app, preventing her from accessing the portal.
+Key
 
-Kindly assist in resolving this issue or resetting the MFA configuration so that she can complete the login process successfully.
+Headers
+Binary or non-UTF-8 encoded data cannot be displayed
+Binary or non-UTF-8 encoded data cannot be displayed
 
-Your support in this regard would be greatly appreciated.
 
-Thanks & Regards,
-[Your Name]
+
+---------------------------------------
+
+Overview
+Topics
+neft.inbound.kafka.topic
+neft.inbound.kafka.topic
+
+Messages 
+
+Partitions 
+4
+
+Consumer Groups 
+2
+
+Configuration 
+messages=latest retrieve=50
+This table has selectable rows. It can be navigated by row using tab, and each row can be selected using space or enter.
+
+Offset
+
+Timestamp (UTC)
+Key	Headers	Value	Size 
+1
+Partition 2
+6/25/26, 11:40:46 AM	No data	No data	
+Binary or non-UTF-8 encoded data cannot be displayed
+370 B
+0
+Partition 2
+6/25/26, 11:40:46 AM	No data	No data	
+Binary or non-UTF-8 encoded data cannot be displayed
+370 B
+49
+Partition 1
+6/24/26, 11:16:32 AM	
+test-key
+No data	
+AGG|HDFCH00625297388|HDFC0009142|24-Jun-26|1.00|NE00379O8ZRQMUID6EE8
+77 B
+48
+Partition 1
+6/24/26, 11:10:18 AM	
+test-key
+No data	
+SBIEPAY_NEFT|5E8057DB7A5D4CB0B4F3|RBIP202605066201756201|HDFCH00625297377|23105036336|MOLMARITIME(INDIA)PRIVATELIMITE|SBIN0011777|4899032117774|NE003RUV7X3PM1MFM2Y3|SBIEpayNEFT|10.00|05-Jun-26|0003|05-Jun-26|05-Jun-26||AGGNE003RUV7X3PM1MFM2Y3
+250 B
+47
+Partition 1
+6/24/26, 11:07:58 AM	
+test-key
+No data	
+AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
+78 B
+46
+Partition 1
+6/24/26, 10:28:40 AM	No data	No data	
+Test Messge 113
+14 B
+45
+Partition 1
+6/24/26, 10:28:30 AM	No data	No data	
+Test Message 112
+15 B
+44
+Partition 1
+6/24/26, 10:28:18 AM	No data	No data	
+Test Message111
+14 B
+43
+Partition 1
+6/24/26, 10:19:04 AM	No data	No data	
+Test112
+6 B
