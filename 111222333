@@ -1,10 +1,29 @@
-oc get pods -n uat-kafka | grep mirror
-oc get pods -n sit-kafka | grep mirror
-oc get pods -n int-kafka | grep mirror
-
-# Delete the CRs - this will stop Strimzi from recreating the pods
-oc delete kafkamirrormaker2 uat-kafka-mirror-maker -n uat-kafka
-oc delete kafkamirrormaker2 sit-kafka-mirror-maker -n sit-kafka
-oc delete kafkamirrormaker2 int-kafka-mirror-maker -n int-kafka
-
-oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=5m | grep -iE "mirror-maker|timeout|error" | tail -10
+[osuser@bastion ~]$ oc get pods -n sit-kafka | grep mirror
+[osuser@bastion ~]$ oc get pods -n int-kafka | grep mirror
+[osuser@bastion ~]$ oc delete kafkamirrormaker2 uat-kafka-mirror-maker -n uat-kafka
+kafkamirrormaker2.kafka.strimzi.io "uat-kafka-mirror-maker" deleted
+[osuser@bastion ~]$ oc get pods -n uat-kafka | grep mirror
+[osuser@bastion ~]$ oc get pods -n uat-kafka | grep mirror
+[osuser@bastion ~]$ oc get pods -n uat-kafka
+NAME                                                READY   STATUS    RESTARTS          AGE
+uat-console-console-deployment-5d4fb9b74-5n9k6      2/2     Running   3 (67d ago)       77d
+uat-kafka-cluster-broker-0                          1/1     Running   0                 34d
+uat-kafka-cluster-broker-1                          1/1     Running   0                 34d
+uat-kafka-cluster-broker-2                          1/1     Running   0                 154d
+uat-kafka-cluster-controller-3                      1/1     Running   0                 154d
+uat-kafka-cluster-controller-4                      1/1     Running   0                 154d
+uat-kafka-cluster-controller-5                      1/1     Running   0                 154d
+uat-kafka-cluster-cruise-control-85b7474f57-wkt48   1/1     Running   350 (6d18h ago)   154d
+uat-kafka-cluster-entity-operator-668845cdc-pzmh5   2/2     Running   0                 154d
+[osuser@bastion ~]$ oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=5m | grep -iE "mirror-maker|timeout|error" | tail -10
+2026-06-25 11:00:48 INFO  AbstractOperator:401 - Reconciliation #25496(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
+2026-06-25 11:00:50 ERROR VertxUtil:134 - Reconciliation #25496(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource uat-kafka-mirror-maker-mirrormaker2-0 in namespace uat-kafka to be ready
+2026-06-25 11:00:50 ERROR AbstractOperator:285 - Reconciliation #25496(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): createOrUpdate failed
+io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource uat-kafka-mirror-maker-mirrormaker2-0 in namespace uat-kafka to be ready
+2026-06-25 11:00:50 ERROR AbstractOperator:360 - Reconciliation #25496(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Current KafkaMirrorMaker2 resource not found
+2026-06-25 11:00:50 WARN  AbstractOperator:566 - Reconciliation #25496(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Failed to reconcile
+io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource uat-kafka-mirror-maker-mirrormaker2-0 in namespace uat-kafka to be ready
+2026-06-25 11:00:50 INFO  AbstractOperator:305 - Reconciliation #25535(watch) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): KafkaMirrorMaker2 uat-kafka-mirror-maker should be deleted
+2026-06-25 11:00:50 INFO  AbstractOperator:311 - Reconciliation #25535(watch) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Assembly uat-kafka-mirror-maker or some parts of it will be deleted by garbage collection
+2026-06-25 11:00:50 INFO  AbstractOperator:546 - Reconciliation #25535(watch) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): reconciled
+[osuser@bastion ~]$
