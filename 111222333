@@ -1,103 +1,12 @@
-[osuser@bastion ~]$ oc get pods -n dev-kafka | grep broker
-dev-kafka-cluster-broker-0                           1/1     Running   0                5h39m
-dev-kafka-cluster-broker-1                           1/1     Running   0                5h39m
-dev-kafka-cluster-broker-2                           1/1     Running   0                5h39m
-[osuser@bastion ~]$ oc describe pod dev-kafka-cluster-broker-0 -n dev-kafka | grep -A5 "Last State\|Started\|Finished"
-      Started:      Thu, 25 Jun 2026 05:56:43 +0530
-    Ready:          True
-    Restart Count:  0
-    Liveness:       exec [/opt/kafka/kafka_liveness.sh] delay=15s timeout=5s period=10s #success=1 #failure=3
-    Readiness:      exec [/opt/kafka/kafka_readiness.sh] delay=15s timeout=5s period=10s #success=1 #failure=3
-    Environment:
-[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
->   echo "=== $c ==="
->   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
->     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
-> donefor c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
--bash: syntax error near unexpected token `do'
-[osuser@bastion ~]$   echo "=== $c ==="
-===  ===
-[osuser@bastion ~]$   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
->     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
-{
-    "error_code": 404,
-    "message": "HTTP 404 Not Found"
-}
-[osuser@bastion ~]$ done
--bash: syntax error near unexpected token `done'
-[osuser@bastion ~]$
-[osuser@bastion ~]$
-[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
->   echo "=== $c ==="
->   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
->     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
-> done
-=== neft-mq-source ===
-{
-    "name": "neft-mq-source",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "source"
-}
-=== neft-mq-sink ===
-{
-    "name": "neft-mq-sink",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "sink"
-}
-=== rtgs-mq-source ===
-{
-    "name": "rtgs-mq-source",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "source"
-}
-=== rtgs-mq-sink ===
-{
-    "name": "rtgs-mq-sink",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "sink"
-}
-[osuser@bastion ~]$ oc get pods -n dev-kafka | grep connect-mq
-dev-kafka-connect-mq-connect-0                       1/1     Running   3 (5h41m ago)    2d18h
-dev-kafka-connect-mq-connect-1                       1/1     Running   0                5h40m
-dev-kafka-connect-mq-connect-2                       1/1     Running   2 (5h41m ago)    2d18h
-[osuser@bastion ~]$
+# Check broker-0 events
+oc describe pod dev-kafka-cluster-broker-0 -n dev-kafka | grep -A5 "Events\|Reason\|Message" | tail -30
+
+# Check if Strimzi operator triggered a rolling update
+oc get events -n dev-kafka --sort-by='.lastTimestamp' | grep -iE "broker|roll|restart|update" | tail -20
+
+# Check Strimzi cluster operator logs around midnight
+oc logs -n openshift-operators $(oc get pods -n openshift-operators | grep strimzi | awk '{print $1}') --since=8h | grep -iE "roll|broker|reconcil|restart" | tail -30
+
+
+# Check if there was a Kafka CR change that triggered reconciliation
+oc get kafka dev-kafka-cluster -n dev-kafka -o yaml | grep -E "generation|resourceVersion|lastTransitionTime"
