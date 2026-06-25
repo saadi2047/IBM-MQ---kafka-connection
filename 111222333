@@ -1,7 +1,46 @@
-# Confirm mirror maker is disabled/gone in int-kafka
-oc get pods -n int-kafka | grep mirror-maker
-
-# Check operator logs - should no longer see the timeout error
-oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=10m | grep -iE "int-kafka|mirror-maker|timeout|error" | tail -20
-
-
+[osuser@bastion ~]$ oc get pods -n int-kafka
+NAME                                                 READY   STATUS    RESTARTS          AGE
+int-console-console-deployment-9c5d8fbc9-phnn5       2/2     Running   0                 65d
+int-kafka-cluster-broker-0                           1/1     Running   0                 34d
+int-kafka-cluster-broker-1                           1/1     Running   0                 154d
+int-kafka-cluster-broker-2                           1/1     Running   0                 34d
+int-kafka-cluster-controller-3                       1/1     Running   0                 154d
+int-kafka-cluster-controller-4                       1/1     Running   0                 154d
+int-kafka-cluster-controller-5                       1/1     Running   0                 154d
+int-kafka-cluster-cruise-control-7558ff4cdc-kn6p2    1/1     Running   342 (6d17h ago)   154d
+int-kafka-cluster-entity-operator-79699cdd59-z47jk   2/2     Running   5 (154d ago)      154d
+int-kafka-mirror-maker-mirrormaker2-0                0/1     Pending   0                 183d
+[osuser@bastion ~]$ oc get pods -n int-kafka
+NAME                                                 READY   STATUS    RESTARTS          AGE
+int-console-console-deployment-9c5d8fbc9-phnn5       2/2     Running   0                 65d
+int-kafka-cluster-broker-0                           1/1     Running   0                 34d
+int-kafka-cluster-broker-1                           1/1     Running   0                 154d
+int-kafka-cluster-broker-2                           1/1     Running   0                 34d
+int-kafka-cluster-controller-3                       1/1     Running   0                 154d
+int-kafka-cluster-controller-4                       1/1     Running   0                 154d
+int-kafka-cluster-controller-5                       1/1     Running   0                 154d
+int-kafka-cluster-cruise-control-7558ff4cdc-kn6p2    1/1     Running   342 (6d17h ago)   154d
+int-kafka-cluster-entity-operator-79699cdd59-z47jk   2/2     Running   5 (154d ago)      154d
+[osuser@bastion ~]$ oc get pods -n int-kafka | grep mirror-maker
+[osuser@bastion ~]$ oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-98c8d5f6-z4tmn --since=10m | grep -iE "int-kafka|mirror-maker|timeout|error" | tail -20
+2026-06-25 10:35:58 WARN  AbstractConfiguration:93 - Reconciliation #25387(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "bootstrap.servers" is forbidden and will be ignored
+2026-06-25 10:35:58 WARN  AbstractConfiguration:93 - Reconciliation #25387(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
+2026-06-25 10:35:58 WARN  AbstractConfiguration:93 - Reconciliation #25387(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
+2026-06-25 10:35:58 WARN  AbstractConfiguration:93 - Reconciliation #25387(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "security.protocol" is forbidden and will be ignored
+2026-06-25 10:35:58 WARN  AbstractModel:279 - Reconciliation #25387(timer) Kafka(int-kafka/int-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
+2026-06-25 10:35:58 INFO  AbstractOperator:546 - Reconciliation #25387(timer) Kafka(int-kafka/int-kafka-cluster): reconciled
+2026-06-25 10:36:48 INFO  AbstractOperator:401 - Reconciliation #25359(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Reconciliation is in progress
+2026-06-25 10:36:48 INFO  AbstractOperator:401 - Reconciliation #25360(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Reconciliation is in progress
+2026-06-25 10:36:48 INFO  AbstractOperator:401 - Reconciliation #25369(timer) KafkaMirrorMaker2(int-kafka/int-kafka-mirror-maker): Reconciliation is in progress
+2026-06-25 10:36:50 ERROR VertxUtil:134 - Reconciliation #25359(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource uat-kafka-mirror-maker-mirrormaker2-0 in namespace uat-kafka to be ready
+2026-06-25 10:36:50 ERROR AbstractOperator:285 - Reconciliation #25359(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): createOrUpdate failed
+io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource uat-kafka-mirror-maker-mirrormaker2-0 in namespace uat-kafka to be ready
+2026-06-25 10:36:50 ERROR VertxUtil:134 - Reconciliation #25360(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Exceeded timeout of 300000ms while waiting for Pods resource sit-kafka-mirror-maker-mirrormaker2-0 in namespace sit-kafka to be ready
+2026-06-25 10:36:50 ERROR AbstractOperator:285 - Reconciliation #25360(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): createOrUpdate failed
+io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource sit-kafka-mirror-maker-mirrormaker2-0 in namespace sit-kafka to be ready
+2026-06-25 10:36:50 WARN  AbstractOperator:566 - Reconciliation #25359(timer) KafkaMirrorMaker2(uat-kafka/uat-kafka-mirror-maker): Failed to reconcile
+io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource uat-kafka-mirror-maker-mirrormaker2-0 in namespace uat-kafka to be ready
+2026-06-25 10:36:50 WARN  AbstractOperator:566 - Reconciliation #25360(timer) KafkaMirrorMaker2(sit-kafka/sit-kafka-mirror-maker): Failed to reconcile
+io.strimzi.operator.common.TimeoutException: Exceeded timeout of 300000ms while waiting for Pods resource sit-kafka-mirror-maker-mirrormaker2-0 in namespace sit-kafka to be ready
+        at io.fabric8.kubernetes.client.extended.leaderelection.LeaderElector.lambda$renewWithTimeout$6(LeaderElector.java:207) ~[io.fabric8.kubernetes-client-api-7.2.0.redhat-00001.jar:?]
+[osuser@bastion ~]$
