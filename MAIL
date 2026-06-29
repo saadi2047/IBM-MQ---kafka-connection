@@ -5,3 +5,11 @@ The affected users are now able to access the JFrog Artifactory portal, and acce
 However, a few users are still facing login issues. These users require their MFA (Authenticator) device to be reset, as they are unable to complete the authentication process.
 
 Please find the details of the affected users in the table below:
+
+
+
+Additionally, as requested, we have included the registered email IDs of the affected users.
+
+Kindly reset the MFA devices for the above users so they can configure their Authenticator application and access JFrog successfully.
+
+Thank you for your support.
