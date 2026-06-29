@@ -1,3 +1,24 @@
+[osuser@bastion ~]$ oc get pods -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS        AGE
+dev-console-console-deployment-577c797ccf-bpcbl      2/2     Running   0               23d
+dev-kafka-cluster-broker-0                           1/1     Running   0               4d5h
+dev-kafka-cluster-broker-1                           1/1     Running   0               4d5h
+dev-kafka-cluster-broker-2                           1/1     Running   0               4d5h
+dev-kafka-cluster-controller-3                       1/1     Running   0               23d
+dev-kafka-cluster-controller-4                       1/1     Running   0               11d
+dev-kafka-cluster-controller-5                       1/1     Running   0               67d
+dev-kafka-cluster-cruise-control-d949867dd-hc9cs     1/1     Running   25 (4d5h ago)   17d
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (90d ago)     102d
+dev-kafka-connect-mq-connect-0                       1/1     Running   3 (4d5h ago)    6d18h
+dev-kafka-connect-mq-connect-1                       1/1     Running   0               4d5h
+dev-kafka-connect-mq-connect-2                       1/1     Running   2 (4d5h ago)    6d18h
+[osuser@bastion ~]$
+
+
+-------------
+
+
+
 Preparing Connect truststore
 Adding /opt/kafka/connect-certs/dev-kafka-cluster-cluster-ca-cert/ca.crt to truststore /tmp/kafka/cluster.truststore.p12 with alias /opt/kafka/connect-certs/dev-kafka-cluster-cluster-ca-cert/ca.crt
 Certificate was added to keystore
