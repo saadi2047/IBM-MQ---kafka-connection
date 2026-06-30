@@ -59,3 +59,20 @@ for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
 done
+
+'
+
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-producer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.outbound.kafka.topic
+
+
+terminal2
+
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.inbound.kafka.topic \
+  --offset latest \
+  --partition 0
