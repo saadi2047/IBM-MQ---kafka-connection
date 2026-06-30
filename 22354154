@@ -1,33 +1,33 @@
-[osuser@bastion ~]$ oc get pods -n openshift-operators | grep amq-streams
-amq-streams-cluster-operator-v3.0.1-2-6b7669fd4c-g9tx7   1/1     Running   0              7m10s
-[osuser@bastion ~]$ oc describe pod -n openshift-operators $(oc get pods -n openshift-operators | grep amq-streams-cluster | awk '{print $1}') | grep -E "Restart|Last State|Exit Code"
-    Restart Count:  0
-[osuser@bastion ~]$ oc logs -n openshift-operators amq-streams-cluster-operator-v3.0.1-2-6b7669fd4c-g9tx7 --since=1h | grep -iE "dev-kafka-connect|reconcil|rolling|roll" | tail -20
-2026-06-29 13:53:57 WARN  AbstractConfiguration:93 - Reconciliation #62(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "bootstrap.servers" is forbidden and will be ignored
-2026-06-29 13:53:57 WARN  AbstractConfiguration:93 - Reconciliation #62(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
-2026-06-29 13:53:57 WARN  AbstractConfiguration:93 - Reconciliation #62(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
-2026-06-29 13:53:57 WARN  AbstractConfiguration:93 - Reconciliation #62(timer) Kafka(uat-kafka/uat-kafka-cluster): Configuration option "security.protocol" is forbidden and will be ignored
-2026-06-29 13:53:57 WARN  AbstractModel:279 - Reconciliation #62(timer) Kafka(uat-kafka/uat-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
-2026-06-29 13:53:57 WARN  AbstractConfiguration:93 - Reconciliation #65(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "bootstrap.servers" is forbidden and will be ignored
-2026-06-29 13:53:57 WARN  AbstractConfiguration:93 - Reconciliation #65(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
-2026-06-29 13:53:57 WARN  AbstractConfiguration:93 - Reconciliation #65(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
-2026-06-29 13:53:57 WARN  AbstractConfiguration:93 - Reconciliation #65(timer) Kafka(int-kafka/int-kafka-cluster): Configuration option "security.protocol" is forbidden and will be ignored
-2026-06-29 13:53:57 WARN  AbstractModel:279 - Reconciliation #65(timer) Kafka(int-kafka/int-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
-2026-06-29 13:53:57 INFO  AbstractOperator:546 - Reconciliation #62(timer) Kafka(uat-kafka/uat-kafka-cluster): reconciled
-2026-06-29 13:53:57 INFO  AbstractOperator:546 - Reconciliation #65(timer) Kafka(int-kafka/int-kafka-cluster): reconciled
-2026-06-29 13:53:57 WARN  AbstractConfiguration:93 - Reconciliation #64(timer) Kafka(dev-kafka/dev-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
-2026-06-29 13:53:57 WARN  AbstractConfiguration:93 - Reconciliation #64(timer) Kafka(dev-kafka/dev-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
-2026-06-29 13:53:57 WARN  AbstractModel:279 - Reconciliation #64(timer) Kafka(dev-kafka/dev-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
-2026-06-29 13:53:57 INFO  AbstractOperator:546 - Reconciliation #64(timer) Kafka(dev-kafka/dev-kafka-cluster): reconciled
-2026-06-29 13:54:06 WARN  AbstractConfiguration:93 - Reconciliation #63(timer) Kafka(sit-kafka/sit-kafka-cluster): Configuration option "network.inbound.balance.threshold" is forbidden and will be ignored
-2026-06-29 13:54:06 WARN  AbstractConfiguration:93 - Reconciliation #63(timer) Kafka(sit-kafka/sit-kafka-cluster): Configuration option "network.outbound.balance.threshold" is forbidden and will be ignored
-2026-06-29 13:54:06 WARN  AbstractModel:279 - Reconciliation #63(timer) Kafka(sit-kafka/sit-kafka-cluster): Anomaly goals contained goals which are not in the configured default goals. Anomaly goals have been changed to match the specified default goals.
-2026-06-29 13:54:06 INFO  AbstractOperator:546 - Reconciliation #63(timer) Kafka(sit-kafka/sit-kafka-cluster): reconciled
-[osuser@bastion ~]$ helm history epay-common -n dev-epay-common | tail -5
-WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
-67              Sat Jun  6 10:44:24 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-68              Sat Jun  6 10:49:32 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-69              Mon Jun 22 10:23:56 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-70              Mon Jun 22 12:03:43 2026        superseded      epay_common-0.1.0       1.0.0           Upgrade complete
-71              Mon Jun 22 12:10:58 2026        deployed        epay_common-0.1.0       1.0.0           Upgrade complete
-[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get pods -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS       AGE
+dev-console-console-deployment-577c797ccf-bpcbl      2/2     Running   0              24d
+dev-kafka-cluster-broker-0                           1/1     Running   0              5d5h
+dev-kafka-cluster-broker-1                           1/1     Running   0              5d5h
+dev-kafka-cluster-broker-2                           1/1     Running   0              5d5h
+dev-kafka-cluster-controller-3                       1/1     Running   0              24d
+dev-kafka-cluster-controller-4                       1/1     Running   0              12d
+dev-kafka-cluster-controller-5                       1/1     Running   0              68d
+dev-kafka-cluster-cruise-control-d949867dd-hc9cs     1/1     Running   26 (16h ago)   18d
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (91d ago)    103d
+dev-kafka-connect-mq-connect-0                       1/1     Running   5 (16h ago)    7d17h
+dev-kafka-connect-mq-connect-1                       1/1     Running   2 (16h ago)    5d5h
+dev-kafka-connect-mq-connect-2                       1/1     Running   4 (16h ago)    7d17h
+
+
+------------------
+
+[osuser@bastion ~]$ oc get pods -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS       AGE
+dev-console-console-deployment-577c797ccf-bpcbl      2/2     Running   0              24d
+dev-kafka-cluster-broker-0                           1/1     Running   0              5d5h
+dev-kafka-cluster-broker-1                           1/1     Running   0              5d5h
+dev-kafka-cluster-broker-2                           1/1     Running   0              5d5h
+dev-kafka-cluster-controller-3                       1/1     Running   0              24d
+dev-kafka-cluster-controller-4                       1/1     Running   0              12d
+dev-kafka-cluster-controller-5                       1/1     Running   0              68d
+dev-kafka-cluster-cruise-control-d949867dd-hc9cs     1/1     Running   26 (16h ago)   18d
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (91d ago)    103d
+dev-kafka-connect-mq-connect-0                       1/1     Running   5 (16h ago)    7d17h
+dev-kafka-connect-mq-connect-1                       1/1     Running   2 (16h ago)    5d5h
+dev-kafka-connect-mq-connect-2                       1/1     Running   4 (16h ago)    7d17h
+
