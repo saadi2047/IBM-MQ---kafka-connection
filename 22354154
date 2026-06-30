@@ -1,32 +1,6 @@
-Subject: Request for MIS Inbound/Outbound Queue Details - SBIePay 2.0 Integration
+ Timed out waiting for backend service
+Timed out waiting for backend service: Timed out waiting to send the call. Call: describeMetadataQuorum (5041)
 
-Dear Team,
 
-The NEFT/RTGS message flow integration with SBIePay 2.0 is working successfully with the existing inbound and outbound queues.
-
-Similar to the NEFT/RTGS queue setup, we now need to configure MIS message flow for dealer validation. Could you please share the following details:
-
-1. MIS Inbound Queue name and Queue Manager (for MIS messages coming from your side to us)
-2. MIS Outbound Queue name and Queue Manager (for MIS messages we will send back to you)
-3. Channel details for the same
-4. Any specific message format requirements for MIS (similar to NEFT/RTGS pipe-delimited format, or different)
-
-Once we receive these details, we will configure a separate Kafka Connect connector pair (mis-mq-source and mis-mq-sink) mapped to dedicated Kafka topics (neft.mis.inbound.kafka.topic and neft.mis.outbound.kafka.topic) similar to our existing NEFT/RTGS setup.
-
-Please let us know if any additional information is required from our end to proceed.
-
-Thanks and Regards,
-Saadi Mohammad Muzzammil
-DevSecOps Team
-SBI ePay 2.0
-
-Hi Team,
-We have completed the NEFT/RTGS integration and it is working fine on our end.
-Now we need to set up MIS message flow as well, similar to how we did NEFT/RTGS. Could you please share the following:
-
-MIS Inbound queue name and queue manager
-MIS Outbound queue name and queue manager
-Channel name for the same
-
-Once we have these details we will configure the connectors on our end and start testing.
-Please let us know if you need anything from our side.
+Timed out waiting for backend service
+Timed out waiting for backend service: Call(callName=describeMetadataQuorum, deadlineMs=1782806173811, tries=1, nextAllowedTryMs=1782806173923) timed out at 1782806173817 after 1 attempt(s) (5041)
