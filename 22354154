@@ -1,3 +1,19 @@
+[osuser@bastion ~]$ oc get pods -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS       AGE
+dev-console-console-deployment-577c797ccf-bpcbl      2/2     Running   0              24d
+dev-kafka-cluster-broker-0                           1/1     Running   0              5d6h
+dev-kafka-cluster-broker-1                           1/1     Running   0              5d6h
+dev-kafka-cluster-broker-2                           1/1     Running   0              5d6h
+dev-kafka-cluster-controller-3                       1/1     Running   0              24d
+dev-kafka-cluster-controller-4                       1/1     Running   0              12d
+dev-kafka-cluster-controller-5                       1/1     Running   0              68d
+dev-kafka-cluster-cruise-control-d949867dd-hc9cs     1/1     Running   26 (17h ago)   18d
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (91d ago)    103d
+dev-kafka-connect-mq-connect-0                       1/1     Running   5 (17h ago)    7d18h
+dev-kafka-connect-mq-connect-1                       1/1     Running   2 (17h ago)    5d6h
+dev-kafka-connect-mq-connect-2                       1/1     Running   4 (17h ago)    7d18h
+[osuser@bastion ~]$ oc project dev-kafka
+Now using project "dev-kafka" on server "https://api.dev.sbiepay.sbi:6443".
 [osuser@bastion ~]$ oc rsh dev-kafka-cluster-broker-0
 sh-5.1$ cd bin
 sh-5.1$ ./kafka-console-consumer.sh \
@@ -29,210 +45,35 @@ RFH ,▒MQSTR   ▒ <mcd><Msd>jms_text</Msd></mcd>  ▒<jms><Dst>queue://SBI_NEF
 SBIEPY|HDFCH01076999431|HDFC0002441|25-Jun-26|1.00|NE003W66QZRQMOX5ENAY
 SBIEPY|HDFCH01076995555|HDFC0002441|29-Jun-26|1.00|NE003W66QZRQMOX5ENAY
 SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-
-
-
-____________________
-
-
-
-neft.outbound.kafka.topic
-
-Messages 
-
-Partitions 
-4
-
-Consumer Groups 
-1
-
-Configuration 
-messages=latest retrieve=50
-This table has selectable rows. It can be navigated by row using tab, and each row can be selected using space or enter.
-
-Offset
-
-Timestamp (UTC)
-Key	Headers	Value	Size 
-380
-Partition 2
-6/30/26, 6:32:36 AM	
-SBIEPAY_Dealer_Validation
-No data	
-<200 OK OK,SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA,[]>
-90 B
-379
-Partition 2
-6/30/26, 6:27:17 AM	
-SBIEPAY_Dealer_Validation
-No data	
-<200 OK OK,SBIEPY|HDFCH01076995102|HDFC0002441|30-Jun-26|N|Invalid NEF/RTGS Request,[]>
-112 B
-378
-Partition 2
-6/30/26, 6:19:29 AM	
-SBIEPAY_Dealer_Validation
-No data	
-<200 OK OK,SBIEPY|HDFCH01076995101|HDFC0002441|30-Jun-26|N|NEF/RTGS Invalid Amount,[]>
-111 B
-377
-Partition 2
-6/29/26, 12:47:15 PM	
-SBIEPAY_Dealer_Validation
-No data	
-<200 OK OK,SBIEPY|HDFCH01076995555|HDFC0002441|29-Jun-26|Y|NA,[]>
-90 B
-376
-Partition 2
-6/29/26, 11:12:19 AM	
-SBIEPAY_Dealer_Validation
-No data	
-<200 OK OK,SBIEPY|HDFCH01076999431|HDFC0002441|25-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
-123 B
-375
-Partition 2
-6/25/26, 11:40:46 AM	
-SBIEPAY_Dealer_Validation
-No data	
-Binary or non-UTF-8 encoded data cannot be displayed
-396 B
-374
-Partition 2
-6/25/26, 11:40:46 AM	
-SBIEPAY_Dealer_Validation
-No data	
-Binary or non-UTF-8 encoded data cannot be displayed
-396 B
-373
-Partition 2
-6/24/26, 11:16:32 AM	
-SBIEPAY_Dealer_Validation
-No data	
-<200 OK OK,AGG|HDFCH00625297388|HDFC0009142|24-Jun-26|Y|NA,[]>
-87 B
-372
-Partition 2
-6/24/26, 11:07:58 AM	
-SBIEPAY_Dealer_Validation
-No data	
+^Z
+[1]+  Stopped(SIGTSTP)        ./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.inbound.kafka.topic --from-beginning --max-messages 100
+sh-5.1$ ./kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.outbound.kafka.topic \
+  --from-beginning \
+  --max-messages 50
 <200 OK OK,AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
-120 B
-43
-Partition 0
-6/24/26, 10:29:11 AM	No data	No data	
-> --max-messages 60
-20 B
-42
-Partition 0
-6/24/26, 10:29:11 AM	No data	No data	
-> --from-beginning \
-21 B
-41
-Partition 0
-6/24/26, 10:29:11 AM	No data	No data	
-> --topic neft.inbound.kafka.topic \
-37 B
-40
-Partition 0
-6/24/26, 10:29:11 AM	No data	No data	
-> --bootstrap-server localhost:9092 \
-38 B
-39
-Partition 0
-6/24/26, 10:29:11 AM	No data	No data	
-> bin/kafka-console-consumer.sh \
-34 B
-38
-Partition 0
-6/24/26, 10:29:11 AM	No data	No data	
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-71 B
-37
-Partition 0
-6/24/26, 10:25:52 AM	No data	No data	
-message from epay2
-17 B
-36
-Partition 0
-6/24/26, 10:25:44 AM	No data	No data	
-saadi
-4 B
-371
-Partition 2
-6/18/26, 6:36:49 AM	
-SBIEPAY_Dealer_Validation
-No data	
+<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
+<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|Y|NA,[]>
+<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|Y|NA,[]>
 <200 OK OK,AGG|HDFC0009142|HDFC0009143|18-Jun-26|Y|NA,[]>
-82 B
-370
-Partition 2
-6/18/26, 6:36:49 AM	
-SBIEPAY_Dealer_Validation
-No data	
 <200 OK OK,AGG|HDFC0009142|HDFC0009142|18-Jun-26|Y|NA,[]>
-82 B
-369
-Partition 2
-6/18/26, 6:35:29 AM	
-SBIEPAY_Dealer_Validation
-No data	
 <200 OK OK,AGG|HDFC0009142|HDFC0009143|18-Jun-26|Y|NA,[]>
-82 B
-367
-Partition 2
-6/18/26, 6:11:18 AM	
-SBIEPAY_Dealer_Validation
-No data	
-<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|Y|NA,[]>
-87 B
-368
-Partition 2
-6/18/26, 6:11:18 AM	
-SBIEPAY_Dealer_Validation
-No data	
-<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|Y|NA,[]>
-87 B
-366
-Partition 2
-6/18/26, 6:07:54 AM	
-SBIEPAY_Dealer_Validation
-No data	
 <200 OK OK,AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
-120 B
-365
-Partition 2
-6/18/26, 6:07:54 AM	
-SBIEPAY_Dealer_Validation
-No data	
-<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
-120 B
-Last updated: 6/30/26, 12:03:15 PM
-Message
-Partition
-2
-Offset
-380
-Size 
-90 B
-Timestamp (local)
-June 30, 2026 at 12:02:36 PM GMT+5:30
-Timestamp (UTC)
-June 30, 2026 at 6:32:36 AM UTC
-Unix timestamp
-1782801156
-Key format
-Plain
-Value format
-Plain
-
-Value
-
-Key
-
-Headers
+<200 OK OK,AGG|HDFCH00625297388|HDFC0009142|24-Jun-26|Y|NA,[]>
+<200 OK OK,RFH ,�MQSTR   � <mcd><Msd>jms_text</Msd></mcd>  �<jms><Dst>queue://SBI_NEFT/NeftInboundQueue?destDescription=Queue+created+from+Queue+%27NeftInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2725-Jun-2026+12%3A09%3A31%27</Dst><Tms>1782387197525</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCH01076990123|HDFC0002441|25-Jun-26|Y|NA,[]>
+<200 OK OK,RFH ,�MQSTR   � <mcd><Msd>jms_text</Msd></mcd>  �<jms><Dst>queue://SBI_NEFT/NeftInboundQueue?destDescription=Queue+created+from+Queue+%27NeftInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2725-Jun-2026+12%3A09%3A31%27</Dst><Tms>1782387245335</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCH01076990124|HDFC0002441|25-Jun-26|Y|NA,[]>
+<200 OK OK,SBIEPY|HDFCH01076999431|HDFC0002441|25-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
+<200 OK OK,SBIEPY|HDFCH01076995555|HDFC0002441|29-Jun-26|Y|NA,[]>
+<200 OK OK,SBIEPY|HDFCH01076995101|HDFC0002441|30-Jun-26|N|NEF/RTGS Invalid Amount,[]>
+<200 OK OK,SBIEPY|HDFCH01076995102|HDFC0002441|30-Jun-26|N|Invalid NEF/RTGS Request,[]>
 <200 OK OK,SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA,[]>
-<200 OK OK,SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA,[]>
-
-----------------------------------------
-
+saadi
+message from epay2
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 60
 
