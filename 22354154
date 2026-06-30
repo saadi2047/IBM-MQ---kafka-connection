@@ -13,3 +13,27 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
   --offset latest \
   --partition 0
 
+
+
+
+
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.mis.inbound.kafka.topic \
+>   --offset latest \
+>   --partition 0
+HI data
+HI IPH
+
+
+
+
+[osuser@bastion ~]$ oc rsh dev-kafka-cluster-broker-0
+sh-5.1$ cd bin
+sh-5.1$ ./kafka-console-producer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.outbound.kafka.topic
+>saadi
+>testing message from kafka
+>
