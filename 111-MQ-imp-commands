@@ -12,6 +12,12 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
   --from-beginning \
   --max-messages 50
 
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.outbound.kafka.topic \
+  --offset latest \
+  --partition 0
 
 # Check neft inbound - all messages with timestamps
 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
