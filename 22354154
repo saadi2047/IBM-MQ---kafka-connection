@@ -1,75 +1,32 @@
-sh-5.1$ ./kafka-console-consumer.sh   --bootstrap-server localhost:9092   --topic neft.inbound.kafka.topic   --from-beginning   --max-messages 100
-AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
-AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
-AGG|HDFC0009142|HDFC0009142|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
-AGG|HDFC0009142|HDFC0009143|18-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
-Hi this test message from IPH team
-Message11
-Message12
-Message13
-Message14
-Test111
-Test112
-Test Message111
-Test Message 112
-Test Messge 113
-AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|10.00|NE003RUV7X3PM1MFM2Y3
-SBIEPAY_NEFT|5E8057DB7A5D4CB0B4F3|RBIP202605066201756201|HDFCH00625297377|23105036336|MOLMARITIME(INDIA)PRIVATELIMITE|SBIN0011777|4899032117774|NE003RUV7X3PM1MFM2Y3|SBIEpayNEFT|10.00|05-Jun-26|0003|05-Jun-26|05-Jun-26||AGGNE003RUV7X3PM1MFM2Y3
-AGG|HDFCH00625297388|HDFC0009142|24-Jun-26|1.00|NE00379O8ZRQMUID6EE8
-RFH ,▒MQSTR   ▒ <mcd><Msd>jms_text</Msd></mcd>  ▒<jms><Dst>queue://SBI_NEFT/NeftInboundQueue?destDescription=Queue+created+from+Queue+%27NeftInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2725-Jun-2026+12%3A09%3A31%27</Dst><Tms>1782387197525</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCH01076990123|HDFC0002441|25-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-RFH ,▒MQSTR   ▒ <mcd><Msd>jms_text</Msd></mcd>  ▒<jms><Dst>queue://SBI_NEFT/NeftInboundQueue?destDescription=Queue+created+from+Queue+%27NeftInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2725-Jun-2026+12%3A09%3A31%27</Dst><Tms>1782387245335</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCH01076990124|HDFC0002441|25-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-SBIEPY|HDFCH01076999431|HDFC0002441|25-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-SBIEPY|HDFCH01076995555|HDFC0002441|29-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-SBIEPY|HDFCH01076995101|HDFC0002441|30-Jun-26|10.00|NE003W66QZRQMOX5ENAY
-SBIEPY|HDFCH01076995102|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-SBIEPY|HDFCH01076995104|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-SBIEPY|HDFCH01076995104|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
-^Z
-[3]+  Stopped(SIGTSTP)        ./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.inbound.kafka.topic --from-beginning --max-messages 100
-sh-5.1$ ./kafka-console-consumer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic neft.outbound.kafka.topic \
-  --offset latest \
-  --partition 0
-^Z
-[4]+  Stopped(SIGTSTP)        ./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.outbound.kafka.topic --offset latest --partition 0
-sh-5.1$ ./kafka-console-consumer.sh   --bootstrap-server localhost:9092   --topic neft.outbound.kafka.topic   --from-beginning   --max-messages 50
-<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
-<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
-<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|Y|NA,[]>
-<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|Y|NA,[]>
-<200 OK OK,AGG|HDFC0009142|HDFC0009143|18-Jun-26|Y|NA,[]>
-<200 OK OK,AGG|HDFC0009142|HDFC0009142|18-Jun-26|Y|NA,[]>
-<200 OK OK,AGG|HDFC0009142|HDFC0009143|18-Jun-26|Y|NA,[]>
-<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
-<200 OK OK,AGG|HDFCH00625297388|HDFC0009142|24-Jun-26|Y|NA,[]>
-saadi
-message from epay2
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
->   bin/kafka-console-consumer.sh \
->   --bootstrap-server localhost:9092 \
->   --topic neft.inbound.kafka.topic \
->   --from-beginning \
->   --max-messages 60
-<200 OK OK,RFH ,�MQSTR   � <mcd><Msd>jms_text</Msd></mcd>  �<jms><Dst>queue://SBI_NEFT/NeftInboundQueue?destDescription=Queue+created+from+Queue+%27NeftInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2725-Jun-2026+12%3A09%3A31%27</Dst><Tms>1782387197525</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCH01076990123|HDFC0002441|25-Jun-26|Y|NA,[]>
-<200 OK OK,RFH ,�MQSTR   � <mcd><Msd>jms_text</Msd></mcd>  �<jms><Dst>queue://SBI_NEFT/NeftInboundQueue?destDescription=Queue+created+from+Queue+%27NeftInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2725-Jun-2026+12%3A09%3A31%27</Dst><Tms>1782387245335</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCH01076990124|HDFC0002441|25-Jun-26|Y|NA,[]>
-<200 OK OK,SBIEPY|HDFCH01076999431|HDFC0002441|25-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
-<200 OK OK,SBIEPY|HDFCH01076995555|HDFC0002441|29-Jun-26|Y|NA,[]>
-<200 OK OK,SBIEPY|HDFCH01076995101|HDFC0002441|30-Jun-26|N|NEF/RTGS Invalid Amount,[]>
-<200 OK OK,SBIEPY|HDFCH01076995102|HDFC0002441|30-Jun-26|N|Invalid NEF/RTGS Request,[]>
-<200 OK OK,SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA,[]>
-<200 OK OK,SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA,[]>
-<200 OK OK,SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA,[]>
-<200 OK OK,SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA,[]>
-SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA
-SBIEPY|HDFCH01076995104|HDFC0002441|30-Jun-26|Y|NA
-SBIEPY|HDFCH01076995104|HDFC0002441|30-Jun-26|Y|NA
-^Z
-[5]+  Stopped(SIGTSTP)        ./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.outbound.kafka.topic --from-beginning --max-messages 50
-sh-5.1$ ./kafka-console-consumer.sh   --bootstrap-server localhost:9092   --topic neft.mis.inbound.kafka.topic   --from-beginning   --max-messages 100
+Subject: Request for MIS Inbound/Outbound Queue Details - SBIePay 2.0 Integration
 
+Dear Team,
+
+The NEFT/RTGS message flow integration with SBIePay 2.0 is working successfully with the existing inbound and outbound queues.
+
+Similar to the NEFT/RTGS queue setup, we now need to configure MIS message flow for dealer validation. Could you please share the following details:
+
+1. MIS Inbound Queue name and Queue Manager (for MIS messages coming from your side to us)
+2. MIS Outbound Queue name and Queue Manager (for MIS messages we will send back to you)
+3. Channel details for the same
+4. Any specific message format requirements for MIS (similar to NEFT/RTGS pipe-delimited format, or different)
+
+Once we receive these details, we will configure a separate Kafka Connect connector pair (mis-mq-source and mis-mq-sink) mapped to dedicated Kafka topics (neft.mis.inbound.kafka.topic and neft.mis.outbound.kafka.topic) similar to our existing NEFT/RTGS setup.
+
+Please let us know if any additional information is required from our end to proceed.
+
+Thanks and Regards,
+Saadi Mohammad Muzzammil
+DevSecOps Team
+SBI ePay 2.0
+
+Hi Team,
+We have completed the NEFT/RTGS integration and it is working fine on our end.
+Now we need to set up MIS message flow as well, similar to how we did NEFT/RTGS. Could you please share the following:
+
+MIS Inbound queue name and queue manager
+MIS Outbound queue name and queue manager
+Channel name for the same
+
+Once we have these details we will configure the connectors on our end and start testing.
+Please let us know if you need anything from our side.
