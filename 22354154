@@ -1,6 +1,19 @@
- Timed out waiting for backend service
-Timed out waiting for backend service: Timed out waiting to send the call. Call: describeMetadataQuorum (5041)
+# Check console pod status
+oc get pods -n dev-kafka | grep console
+
+# Check console pod logs for backend errors
+oc logs dev-console-console-deployment-577c797ccf-bpcbl -n dev-kafka --tail=50
+
+# Check if Kafka admin API is responding
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-metadata-quorum.sh \
+  --bootstrap-server localhost:9092 \
+  describe --status
+
+# Check broker resource usage - quorum describe timeout often means broker is under load
+oc adm top pod -n dev-kafka | grep broker
 
 
-Timed out waiting for backend service
-Timed out waiting for backend service: Call(callName=describeMetadataQuorum, deadlineMs=1782806173811, tries=1, nextAllowedTryMs=1782806173923) timed out at 1782806173817 after 1 attempt(s) (5041)
+# Check controller pods - describeMetadataQuorum hits the KRaft controllers
+oc get pods -n dev-kafka | grep controller
+oc adm top pod -n dev-kafka | grep controller
