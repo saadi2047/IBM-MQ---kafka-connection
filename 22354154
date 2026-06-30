@@ -17,23 +17,38 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
 
 
 
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
->   bin/kafka-console-consumer.sh \
->   --bootstrap-server localhost:9092 \
->   --topic neft.mis.inbound.kafka.topic \
->   --offset latest \
->   --partition 0
-HI data
-HI IPH
+Subject: Re: SBIePay2.0 MIS Queue Configuration - Ready for Testing
 
+Dear Team,
 
+Thank you for sharing the MIS queue details. We have completed the configuration on our end using the same setup as NEFT/RTGS:
 
+---
 
-[osuser@bastion ~]$ oc rsh dev-kafka-cluster-broker-0
-sh-5.1$ cd bin
-sh-5.1$ ./kafka-console-producer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic neft.mis.outbound.kafka.topic
->saadi
->testing message from kafka
->
+MIS Configuration (DEV):
+  Queue Manager : SBI_NEFT
+  Host          : 10.176.10.213
+  Port          : 2001
+  Channel       : SBIEPAY2.SVRCONN
+
+MIS Inbound  Queue : NeftMISCInboundQueue   -> neft.mis.inbound.kafka.topic
+MIS Outbound Queue : NeftMISCOutBoundQueue  <- neft.mis.outbound.kafka.topic
+
+---
+
+We have completed initial connectivity testing on our end:
+
+- Test messages sent by your team on NeftMISCInboundQueue were received
+  successfully on our side.
+- Test messages sent from our side were published to
+  neft.mis.outbound.kafka.topic and delivered to NeftMISCOutBoundQueue.
+
+Kindly confirm receipt of our test messages on NeftMISCOutBoundQueue, and
+we can proceed with full MIS testing.
+
+Please let us know if you'd like to schedule a call to test this together.
+
+Thanks and Regards,
+Saadi Mohammad Muzzammil
+DevSecOps Team
+SBI ePay 2.0
