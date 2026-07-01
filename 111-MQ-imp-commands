@@ -76,3 +76,23 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
   --topic neft.mis.inbound.kafka.topic \
   --offset latest \
   --partition 0
+
+
+
+--------------
+# Check mis-mq-source connector specifically
+oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+  curl -s http://localhost:8083/connectors/mis-mq-source/status | python3 -m json.tool
+
+
+# Check MIS connector logs for any connection errors
+oc logs dev-kafka-connect-mq-connect-1 -n dev-kafka --tail=50 | grep -iE "mis|NeftMISC|error|fail"
+
+
+# Check if anything landed in MIS inbound topic
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.inbound.kafka.topic \
+  --from-beginning \
+  --max-messages 20
