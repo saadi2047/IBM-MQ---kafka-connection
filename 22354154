@@ -1,54 +1,50 @@
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-console-producer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic neft.mis.outbound.kafka.topic
-
-
-terminal2
-
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-console-consumer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic neft.mis.inbound.kafka.topic \
-  --offset latest \
-  --partition 0
-
-
-
-
-
-Subject: Re: SBIePay2.0 MIS Queue Configuration - Ready for Testing
-
-Dear Team,
-
-Thank you for sharing the MIS queue details. We have completed the configuration on our end using the same setup as NEFT/RTGS:
-
----
-
-MIS Configuration (DEV):
-  Queue Manager : SBI_NEFT
-  Host          : 10.176.10.213
-  Port          : 2001
-  Channel       : SBIEPAY2.SVRCONN
-
-MIS Inbound  Queue : NeftMISCInboundQueue   -> neft.mis.inbound.kafka.topic
-MIS Outbound Queue : NeftMISCOutBoundQueue  <- neft.mis.outbound.kafka.topic
-
----
-
-We have completed initial connectivity testing on our end:
-
-- Test messages sent by your team on NeftMISCInboundQueue were received
-  successfully on our side.
-- Test messages sent from our side were published to
-  neft.mis.outbound.kafka.topic and delivered to NeftMISCOutBoundQueue.
-
-Kindly confirm receipt of our test messages on NeftMISCOutBoundQueue, and
-we can proceed with full MIS testing.
-
-Please let us know if you'd like to schedule a call to test this together.
-
-Thanks and Regards,
-Saadi Mohammad Muzzammil
-DevSecOps Team
-SBI ePay 2.0
+[osuser@bastion ~]$ oc project dev-kafka
+Now using project "dev-kafka" on server "https://api.dev.sbiepay.sbi:6443".
+[osuser@bastion ~]$ oc get po
+NAME                                                 READY   STATUS    RESTARTS       AGE
+dev-console-console-deployment-577c797ccf-bpcbl      2/2     Running   0              25d
+dev-kafka-cluster-broker-0                           1/1     Running   0              6d5h
+dev-kafka-cluster-broker-1                           1/1     Running   0              6d5h
+dev-kafka-cluster-broker-2                           1/1     Running   0              6d5h
+dev-kafka-cluster-controller-3                       1/1     Running   0              25d
+dev-kafka-cluster-controller-4                       1/1     Running   0              13d
+dev-kafka-cluster-controller-5                       1/1     Running   0              69d
+dev-kafka-cluster-cruise-control-d949867dd-hc9cs     1/1     Running   26 (40h ago)   19d
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (92d ago)    104d
+dev-kafka-connect-mq-connect-0                       1/1     Running   5 (40h ago)    8d
+dev-kafka-connect-mq-connect-1                       1/1     Running   2 (40h ago)    6d5h
+dev-kafka-connect-mq-connect-2                       1/1     Running   4 (40h ago)    8d
+[osuser@bastion ~]$ oc get po -n int-kafka
+NAME                                                 READY   STATUS    RESTARTS        AGE
+int-console-console-deployment-9c5d8fbc9-phnn5       2/2     Running   0               70d
+int-kafka-cluster-broker-0                           1/1     Running   0               40d
+int-kafka-cluster-broker-1                           1/1     Running   0               159d
+int-kafka-cluster-broker-2                           1/1     Running   0               40d
+int-kafka-cluster-controller-3                       1/1     Running   0               159d
+int-kafka-cluster-controller-4                       1/1     Running   0               159d
+int-kafka-cluster-controller-5                       1/1     Running   0               159d
+int-kafka-cluster-cruise-control-7558ff4cdc-kn6p2    1/1     Running   347 (40h ago)   159d
+int-kafka-cluster-entity-operator-79699cdd59-z47jk   2/2     Running   5 (159d ago)    159d
+[osuser@bastion ~]$ oc get po -n sit-kafka
+NAME                                                 READY   STATUS    RESTARTS       AGE
+sit-console-console-deployment-594f7f5f7-2kkj7       2/2     Running   0              70d
+sit-kafka-cluster-broker-0                           1/1     Running   2 (19d ago)    19d
+sit-kafka-cluster-broker-1                           1/1     Running   0              58d
+sit-kafka-cluster-broker-2                           1/1     Running   0              16d
+sit-kafka-cluster-controller-3                       1/1     Running   0              73d
+sit-kafka-cluster-controller-4                       1/1     Running   0              58d
+sit-kafka-cluster-controller-5                       1/1     Running   0              19d
+sit-kafka-cluster-cruise-control-f99978486-vb5dl     1/1     Running   27 (40h ago)   19d
+sit-kafka-cluster-entity-operator-67865b654f-ssvbm   2/2     Running   0              19d
+[osuser@bastion ~]$ oc get po -n uat-kafka
+NAME                                                READY   STATUS    RESTARTS        AGE
+uat-console-console-deployment-5d4fb9b74-5n9k6      2/2     Running   3 (73d ago)     82d
+uat-kafka-cluster-broker-0                          1/1     Running   0               40d
+uat-kafka-cluster-broker-1                          1/1     Running   0               40d
+uat-kafka-cluster-broker-2                          1/1     Running   0               159d
+uat-kafka-cluster-controller-3                      1/1     Running   0               159d
+uat-kafka-cluster-controller-4                      1/1     Running   0               159d
+uat-kafka-cluster-controller-5                      1/1     Running   0               159d
+uat-kafka-cluster-cruise-control-85b7474f57-wkt48   1/1     Running   356 (40h ago)   159d
+uat-kafka-cluster-entity-operator-668845cdc-pzmh5   2/2     Running   0               159d
+[osuser@bastion ~]$
