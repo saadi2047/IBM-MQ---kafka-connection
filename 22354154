@@ -1,17 +1,40 @@
-# Check mis-mq-source connector specifically
-oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
-  curl -s http://localhost:8083/connectors/mis-mq-source/status | python3 -m json.tool
 
 
-# Check MIS connector logs for any connection errors
-oc logs dev-kafka-connect-mq-connect-1 -n dev-kafka --tail=50 | grep -iE "mis|NeftMISC|error|fail"
-
-
-# Check if anything landed in MIS inbound topic
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-console-consumer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic neft.mis.inbound.kafka.topic \
-  --from-beginning \
-  --max-messages 20
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+>   curl -s http://localhost:8083/connectors/mis-mq-source/status | python3 -m json.tool
+{
+    "name": "mis-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+[osuser@bastion ~]$ oc logs dev-kafka-connect-mq-connect-1 -n dev-kafka --tail=50 | grep -iE "mis|NeftMISC|error|fail"
+2026-07-01 10:05:55,112 INFO 172.16.8.245 - - [01/Jul/2026:10:05:55 +0000] "GET /connectors/mis-mq-source/topics HTTP/1.1" 200 61 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1976535023-270]
+2026-07-01 10:07:55,252 INFO 172.16.8.245 - - [01/Jul/2026:10:07:55 +0000] "GET /connectors/mis-mq-sink/config HTTP/1.1" 200 541 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1976535023-271]
+2026-07-01 10:07:55,253 INFO 172.16.8.245 - - [01/Jul/2026:10:07:55 +0000] "GET /connectors/mis-mq-source/config HTTP/1.1" 200 544 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1976535023-272]
+2026-07-01 10:07:55,255 INFO 172.16.8.245 - - [01/Jul/2026:10:07:55 +0000] "GET /connectors/mis-mq-source/status HTTP/1.1" 200 295 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1976535023-263]
+2026-07-01 10:07:55,255 INFO 172.16.8.245 - - [01/Jul/2026:10:07:55 +0000] "GET /connectors/mis-mq-sink/status HTTP/1.1" 200 291 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1976535023-272]
+2026-07-01 10:07:55,256 INFO 172.16.8.245 - - [01/Jul/2026:10:07:55 +0000] "GET /connectors/mis-mq-sink/status HTTP/1.1" 200 291 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1976535023-270]
+2026-07-01 10:07:55,257 INFO 172.16.8.245 - - [01/Jul/2026:10:07:55 +0000] "GET /connectors/mis-mq-source/status HTTP/1.1" 200 295 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1976535023-271]
+2026-07-01 10:07:55,257 INFO 172.16.8.245 - - [01/Jul/2026:10:07:55 +0000] "GET /connectors/mis-mq-sink/topics HTTP/1.1" 200 60 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1976535023-270]
+2026-07-01 10:07:55,258 INFO 172.16.8.245 - - [01/Jul/2026:10:07:55 +0000] "GET /connectors/mis-mq-source/topics HTTP/1.1" 200 61 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1976535023-272]
+2026-07-01 10:12:39,130 INFO [0:0:0:0:0:0:0:1] - - [01/Jul/2026:10:12:39 +0000] "GET /connectors/mis-mq-source/status HTTP/1.1" 200 295 "-" "curl/7.76.1" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1976535023-270]
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.mis.inbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 20
+HI data
+HI IPH
+vxczvxvx
 
