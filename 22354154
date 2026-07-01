@@ -10,3 +10,15 @@ Channel: SBIEPAY2.SVRCONN
 
 Could you please check on your end whether CorporateMISOutputServer is configured to route MIS messages to NeftMISCInboundQueue on Queue Manager SBI_NEFT? It appears the message may be going to a different queue.
 Please confirm the exact queue where the MIS output is being placed so we can verify end to end.
+
+
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.outbound.kafka.topic \
+  --from-beginning \
+  --max-messages 50
+
+
+# Check neft-mq-sink connector logs for delivery errors
+oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --tail=100 | grep -iE "neft-mq-sink|NeftOut|error|fail|deliver"
