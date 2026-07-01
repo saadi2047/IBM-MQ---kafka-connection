@@ -22,3 +22,56 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
 
 # Check neft-mq-sink connector logs for delivery errors
 oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --tail=100 | grep -iE "neft-mq-sink|NeftOut|error|fail|deliver"
+
+
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 60
+<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
+<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
+<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|Y|NA,[]>
+<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|18-Jun-26|Y|NA,[]>
+<200 OK OK,AGG|HDFC0009142|HDFC0009143|18-Jun-26|Y|NA,[]>
+<200 OK OK,AGG|HDFC0009142|HDFC0009142|18-Jun-26|Y|NA,[]>
+<200 OK OK,AGG|HDFC0009142|HDFC0009143|18-Jun-26|Y|NA,[]>
+<200 OK OK,AGG|HDFCH00625297377|HDFC0009142|05-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
+<200 OK OK,AGG|HDFCH00625297388|HDFC0009142|24-Jun-26|Y|NA,[]>
+<200 OK OK,RFH ,�MQSTR   � <mcd><Msd>jms_text</Msd></mcd>  �<jms><Dst>queue://SBI_NEFT/NeftInboundQueue?destDescription=Queue+created+from+Queue+%27NeftInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2725-Jun-2026+12%3A09%3A31%27</Dst><Tms>1782387197525</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCH01076990123|HDFC0002441|25-Jun-26|Y|NA,[]>
+<200 OK OK,RFH ,�MQSTR   � <mcd><Msd>jms_text</Msd></mcd>  �<jms><Dst>queue://SBI_NEFT/NeftInboundQueue?destDescription=Queue+created+from+Queue+%27NeftInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2725-Jun-2026+12%3A09%3A31%27</Dst><Tms>1782387245335</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCH01076990124|HDFC0002441|25-Jun-26|Y|NA,[]>
+<200 OK OK,SBIEPY|HDFCH01076999431|HDFC0002441|25-Jun-26|N|NEFT/RTGS Invalid input date format,[]>
+<200 OK OK,SBIEPY|HDFCH01076995555|HDFC0002441|29-Jun-26|Y|NA,[]>
+<200 OK OK,SBIEPY|HDFCH01076995101|HDFC0002441|30-Jun-26|N|NEF/RTGS Invalid Amount,[]>
+<200 OK OK,SBIEPY|HDFCH01076995102|HDFC0002441|30-Jun-26|N|Invalid NEF/RTGS Request,[]>
+<200 OK OK,SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA,[]>
+<200 OK OK,SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA,[]>
+<200 OK OK,SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA,[]>
+<200 OK OK,SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA,[]>
+SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|Y|NA
+SBIEPY|HDFCH01076995104|HDFC0002441|30-Jun-26|Y|NA
+SBIEPY|HDFCH01076995104|HDFC0002441|30-Jun-26|Y|NA
+<200 OK OK,SBIEPY|HDFCH01076995105|HDFC0002441|30-Jun-26|Y|NA,[]>
+SBIEPY|HDFCH01076995106|HDFC0002441|30-Jun-26|Y|NA
+SBIEPY|HDFCH01076995107|HDFC0002441|30-Jun-26|Y|NA
+SBIEPY|HDFCH01076995108|HDFC0002441|30-Jun-26|Y|NA
+SBIEPY|HDFCH01076990111|HDFC0002441|30-Jun-26|Y|NA
+SBIEPY|HDFCH01076990111|HDFC0002441|01-Jul-26|Y|NA
+SBIEPY|HDFCH01076990112|HDFC0002441|01-Jul-26|Y|NA
+^Z
+[4]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.outbound.kafka.topic --from-beginning --max-messages 50
+[osuser@bastion ~]$ oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --tail=100 | grep -iE "neft-mq-sink|NeftOut|error|fail|deliver"
+2026-07-01 10:23:55,417 INFO 172.16.8.245 - - [01/Jul/2026:10:23:55 +0000] "GET /connectors/neft-mq-sink/config HTTP/1.1" 200 534 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1106860280-336]
+2026-07-01 10:23:55,424 INFO 172.16.8.245 - - [01/Jul/2026:10:23:55 +0000] "GET /connectors/neft-mq-sink/status HTTP/1.1" 200 292 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1106860280-351]
+2026-07-01 10:23:55,426 INFO 172.16.8.245 - - [01/Jul/2026:10:23:55 +0000] "GET /connectors/neft-mq-sink/topics HTTP/1.1" 200 57 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1106860280-348]
+2026-07-01 10:25:55,367 INFO 172.16.8.245 - - [01/Jul/2026:10:25:55 +0000] "GET /connectors/neft-mq-sink/config HTTP/1.1" 200 534 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1106860280-348]
+2026-07-01 10:25:55,372 INFO 172.16.8.245 - - [01/Jul/2026:10:25:55 +0000] "GET /connectors/neft-mq-sink/topics HTTP/1.1" 200 57 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1106860280-354]
+2026-07-01 10:27:43,444 INFO [neft-mq-sink|task-0] [Consumer clientId=connector-consumer-neft-mq-sink-0, groupId=connect-neft-mq-sink] Attempt to heartbeat failed since coordinator dev-kafka-cluster-broker-1.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483646 rack: null) is either not started or not valid (org.apache.kafka.clients.consumer.internals.ConsumerCoordinator) [task-thread-neft-mq-sink-0]
+2026-07-01 10:27:43,444 INFO [neft-mq-sink|task-0] [Consumer clientId=connector-consumer-neft-mq-sink-0, groupId=connect-neft-mq-sink] Group coordinator dev-kafka-cluster-broker-1.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483646 rack: null) is unavailable or invalid due to cause: error response NOT_COORDINATOR. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.clients.consumer.internals.ConsumerCoordinator) [task-thread-neft-mq-sink-0]
+2026-07-01 10:27:43,444 INFO [neft-mq-sink|task-0] [Consumer clientId=connector-consumer-neft-mq-sink-0, groupId=connect-neft-mq-sink] Requesting disconnect from last known coordinator dev-kafka-cluster-broker-1.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483646 rack: null) (org.apache.kafka.clients.consumer.internals.ConsumerCoordinator) [task-thread-neft-mq-sink-0]
+2026-07-01 10:27:43,444 INFO [neft-mq-sink|task-0] [Consumer clientId=connector-consumer-neft-mq-sink-0, groupId=connect-neft-mq-sink] Client requested disconnect from node 2147483646 (org.apache.kafka.clients.NetworkClient) [task-thread-neft-mq-sink-0]
+2026-07-01 10:27:43,937 INFO [neft-mq-sink|task-0] [Consumer clientId=connector-consumer-neft-mq-sink-0, groupId=connect-neft-mq-sink] Discovered group coordinator dev-kafka-cluster-broker-0.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483647 rack: null) (org.apache.kafka.clients.consumer.internals.ConsumerCoordinator) [task-thread-neft-mq-sink-0]
+2026-07-01 10:27:46,598 INFO [Worker clientId=connect-dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083, groupId=dev-kafka-connect-mq-cluster] Attempt to heartbeat failed since coordinator dev-kafka-cluster-broker-1.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483646 rack: null) is either not started or not valid (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083-1]
+2026-07-01 10:27:46,598 INFO [Worker clientId=connect-dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083, groupId=dev-kafka-connect-mq-cluster] Group coordinator dev-kafka-cluster-broker-1.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483646 rack: null) is unavailable or invalid due to cause: error response NOT_COORDINATOR. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083-1]
+[osuser@bastion ~]$
