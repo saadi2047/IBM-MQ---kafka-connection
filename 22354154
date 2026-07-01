@@ -1,32 +1,4 @@
-Dear Team,
-Thank you for sharing the screenshot.
-We can see from your audit trail that the MIS message was sent via CorporateMISOutputServer with status Pending CorpMisAck. However we have not received any message on our NeftMISCInboundQueue.
-Our connector is actively listening on:
-
-Queue Manager: SBI_NEFT
-Queue: NeftMISCInboundQueue
-Host: 10.176.10.213, Port: 2001
-Channel: SBIEPAY2.SVRCONN
-
-Could you please check on your end whether CorporateMISOutputServer is configured to route MIS messages to NeftMISCInboundQueue on Queue Manager SBI_NEFT? It appears the message may be going to a different queue.
-Please confirm the exact queue where the MIS output is being placed so we can verify end to end.
-
-
 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-console-consumer.sh \
+  bin/kafka-consumer-groups.sh \
   --bootstrap-server localhost:9092 \
-  --topic neft.outbound.kafka.topic \
-  --from-beginning \
-  --max-messages 50
-
-
-# Check neft-mq-sink connector logs for delivery errors
-oc logs dev-kafka-connect-mq-connect-0 -n dev-kafka --tail=100 | grep -iE "neft-mq-sink|NeftOut|error|fail|deliver"
-
-Dear Team,
-We can confirm that our system has processed all transactions and sent acknowledgements to NeftOutBoundQueue for the following transactions:
-
-HDFCH01076990111 — 01-Jul-26 — Status: Y|NA (Valid)
-HDFCH01076990112 — 01-Jul-26 — Status: Y|NA (Valid)
-
-Could you please check on your MQ side whether these acknowledgements were received on NeftOutBoundQueue? Once you confirm receipt of these ACKs, the MIS should be generated automatically on your side.
+  --describe --group connect-neft-mq-sink 2>/dev/null | grep neft.outbound
