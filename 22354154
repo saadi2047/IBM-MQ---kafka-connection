@@ -4,3 +4,10 @@ oc delete kafkamirrormaker2 sit-kafka-mirror-maker -n sit-kafka
 # Check uat-kafka too - likely same situation
 oc get kafkamirrormaker2 -n uat-kafka
 oc delete kafkamirrormaker2 uat-kafka-mirror-maker -n uat-kafka 2>/dev/null || echo "already gone"
+
+
+grep -n "if.*mirrorMaker2\|if.*enabled" \
+  /home/claude/deployment18/deployment-main/sit/charts/epay_common/templates/kafka/kafka-mirror-maker.yaml | head -5
+
+grep -n "if.*mirrorMaker2\|if.*enabled" \
+  /home/claude/deployment18/deployment-main/uat/charts/epay_common/templates/kafka/kafka-mirror-maker.yaml | head -5
