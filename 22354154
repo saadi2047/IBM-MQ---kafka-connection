@@ -1,5 +1,102 @@
-for c in neft-mq-source neft-mq-sink mis-mq-source mis-mq-sink rtgs-mq-source rtgs-mq-sink; do
-  echo "=== $c ==="
-  oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
-    curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
-done
+[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink mis-mq-source mis-mq-sink rtgs-mq-source rtgs-mq-sink; do
+>   echo "=== $c ==="
+>   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+>     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
+> done
+=== neft-mq-source ===
+{
+    "name": "neft-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+=== neft-mq-sink ===
+{
+    "name": "neft-mq-sink",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "sink"
+}
+=== mis-mq-source ===
+{
+    "name": "mis-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+=== mis-mq-sink ===
+{
+    "name": "mis-mq-sink",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "sink"
+}
+=== rtgs-mq-source ===
+{
+    "name": "rtgs-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+=== rtgs-mq-sink ===
+{
+    "name": "rtgs-mq-sink",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "sink"
+}
+[osuser@bastion ~]$
