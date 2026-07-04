@@ -1,15 +1,144 @@
-[osuser@bastion ~]$ oc get pods -n sit-kafka | grep broker
-sit-kafka-cluster-broker-0                           1/1     Running   2 (20d ago)    20d
-sit-kafka-cluster-broker-1                           1/1     Running   0              59d
-sit-kafka-cluster-broker-2                           1/1     Running   0              17d
-[osuser@bastion ~]$ oc get kafkamirrormaker2 -n uat-kafka
-No resources found in uat-kafka namespace.
-[osuser@bastion ~]$ oc get kafkamirrormaker2 -n sit-kafka
-No resources found in sit-kafka namespace.
-[osuser@bastion ~]$ oc delete kafkamirrormaker2 sit-kafka-mirror-maker -n sit-kafka
-Error from server (NotFound): kafkamirrormaker2s.kafka.strimzi.io "sit-kafka-mirror-maker" not found
-[osuser@bastion ~]$ oc delete kafkamirrormaker2 uat-kafka-mirror-maker -n uat-kafka 2>/dev/null || echo "already gone"
-already gone
-[osuser@bastion ~]$ oc delete kafkamirrormaker2 sit-kafka-mirror-maker -n uat-kafka 2>/dev/null || echo "already gone"
-already gone
-[osuser@bastion ~]$
+Project: dev-kafka
+Pods
+
+Filter
+
+Name
+Search by name...
+/
+
+Name
+
+Status
+
+Ready
+
+Restarts
+
+Memory
+
+CPU
+
+Created
+
+Node
+Actions
+Pod
+P
+dev-console-console-deployment-577c797ccf-8dz7g
+Running
+2/2	0	972.0 MiB	0.005 cores	
+Jul 4, 2026, 12:13 AM
+Node
+N
+worker2.dev.sbiepay.sbi
+
+Pod
+P
+dev-kafka-cluster-broker-0
+Running
+1/1	0	13,715.3 MiB	0.396 cores	
+Jun 25, 2026, 5:56 AM
+Node
+N
+worker1.dev.sbiepay.sbi
+
+Pod
+P
+dev-kafka-cluster-broker-1
+Running
+1/1	0	4,510.1 MiB	1.023 cores	
+Jul 4, 2026, 1:21 AM
+Node
+N
+worker3.dev.sbiepay.sbi
+
+Pod
+P
+dev-kafka-cluster-broker-2
+Running
+1/1	0	17,674.1 MiB	0.786 cores	
+Jun 25, 2026, 5:56 AM
+Node
+N
+worker1.dev.sbiepay.sbi
+
+Pod
+P
+dev-kafka-cluster-controller-3
+Running
+1/1	0	3,924.3 MiB	0.070 cores	
+Jun 5, 2026, 6:37 PM
+Node
+N
+worker2.dev.sbiepay.sbi
+
+Pod
+P
+dev-kafka-cluster-controller-4
+Running
+1/1	0	2,922.4 MiB	0.067 cores	
+Jun 18, 2026, 6:08 AM
+Node
+N
+worker2.dev.sbiepay.sbi
+
+Pod
+P
+dev-kafka-cluster-controller-5
+Running
+1/1	0	1,063.0 MiB	0.062 cores	
+Jul 4, 2026, 1:21 AM
+Node
+N
+worker3.dev.sbiepay.sbi
+
+Pod
+P
+dev-kafka-cluster-cruise-control-d949867dd-qmxmn
+Running
+1/1	0	2,227.1 MiB	0.014 cores	
+Jul 4, 2026, 12:13 AM
+Node
+N
+worker2.dev.sbiepay.sbi
+
+Pod
+P
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk
+Running
+2/2	1	800.2 MiB	0.005 cores	
+Mar 19, 2026, 6:43 AM
+Node
+N
+worker2.dev.sbiepay.sbi
+
+Pod
+P
+dev-kafka-connect-mq-connect-0
+Running
+1/1	0	4,230.7 MiB	0.009 cores	
+Jul 4, 2026, 1:21 AM
+Node
+N
+worker3.dev.sbiepay.sbi
+
+Pod
+P
+dev-kafka-connect-mq-connect-1
+Running
+1/1	2	4,308.0 MiB	0.008 cores	
+Jun 25, 2026, 5:57 AM
+Node
+N
+worker1.dev.sbiepay.sbi
+
+Pod
+P
+dev-kafka-connect-mq-connect-2
+Running
+1/1	4	4,330.6 MiB	0.013 cores	
+Jun 22, 2026, 5:21 PM
+Node
+N
+worker2.dev.sbiepay.sbi
