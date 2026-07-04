@@ -60,7 +60,14 @@ for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do
     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
 done
 
-'
+---------------------------------------------------------------------------
+for c in neft-mq-source neft-mq-sink mis-mq-source mis-mq-sink; do
+  echo "=== $c ==="
+  oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+    curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
+done
+
+--------------------------------------------------------------------------------------
 
 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
   bin/kafka-console-producer.sh \
