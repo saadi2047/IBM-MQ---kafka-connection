@@ -1,48 +1,5 @@
-[osuser@bastion ~]$ oc get pods -n dev-kafka
-NAME                                                 READY   STATUS    RESTARTS        AGE
-dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0               16h
-dev-kafka-cluster-broker-0                           1/1     Running   0               9d
-dev-kafka-cluster-broker-1                           1/1     Running   0               15h
-dev-kafka-cluster-broker-2                           1/1     Running   0               9d
-dev-kafka-cluster-controller-3                       1/1     Running   0               28d
-dev-kafka-cluster-controller-4                       1/1     Running   0               16d
-dev-kafka-cluster-controller-5                       1/1     Running   0               15h
-dev-kafka-cluster-cruise-control-d949867dd-qmxmn     1/1     Running   0               16h
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (95d ago)     107d
-dev-kafka-connect-mq-connect-0                       1/1     Running   0               15h
-dev-kafka-connect-mq-connect-1                       1/1     Running   2 (4d22h ago)   9d
-dev-kafka-connect-mq-connect-2                       1/1     Running   4 (4d22h ago)   11d
-[osuser@bastion ~]$ oc get pods -n sit-kafka
-NAME                                                 READY   STATUS    RESTARTS         AGE
-sit-console-console-deployment-594f7f5f7-2kkj7       2/2     Running   0                74d
-sit-kafka-cluster-broker-0                           1/1     Running   2 (22d ago)      22d
-sit-kafka-cluster-broker-1                           1/1     Running   0                61d
-sit-kafka-cluster-broker-2                           1/1     Running   0                19d
-sit-kafka-cluster-controller-3                       1/1     Running   0                76d
-sit-kafka-cluster-controller-4                       1/1     Running   0                61d
-sit-kafka-cluster-controller-5                       1/1     Running   0                22d
-sit-kafka-cluster-cruise-control-f99978486-vb5dl     1/1     Running   28 (2d21h ago)   22d
-sit-kafka-cluster-entity-operator-67865b654f-ssvbm   2/2     Running   0                22d
-[osuser@bastion ~]$ oc get pods -n uat-kafka
-NAME                                                READY   STATUS    RESTARTS          AGE
-uat-console-console-deployment-5d4fb9b74-5n9k6      2/2     Running   3 (76d ago)       86d
-uat-kafka-cluster-broker-0                          1/1     Running   0                 43d
-uat-kafka-cluster-broker-1                          1/1     Running   0                 43d
-uat-kafka-cluster-broker-2                          1/1     Running   0                 163d
-uat-kafka-cluster-controller-3                      1/1     Running   0                 163d
-uat-kafka-cluster-controller-4                      1/1     Running   0                 163d
-uat-kafka-cluster-controller-5                      1/1     Running   0                 163d
-uat-kafka-cluster-cruise-control-85b7474f57-wkt48   1/1     Running   356 (4d22h ago)   163d
-uat-kafka-cluster-entity-operator-668845cdc-pzmh5   2/2     Running   0                 163d
-[osuser@bastion ~]$ oc get pods -n int-kafka
-NAME                                                 READY   STATUS    RESTARTS          AGE
-int-console-console-deployment-9c5d8fbc9-phnn5       2/2     Running   0                 74d
-int-kafka-cluster-broker-0                           1/1     Running   0                 43d
-int-kafka-cluster-broker-1                           1/1     Running   0                 163d
-int-kafka-cluster-broker-2                           1/1     Running   0                 43d
-int-kafka-cluster-controller-3                       1/1     Running   0                 163d
-int-kafka-cluster-controller-4                       1/1     Running   0                 163d
-int-kafka-cluster-controller-5                       1/1     Running   0                 163d
-int-kafka-cluster-cruise-control-7558ff4cdc-kn6p2    1/1     Running   347 (4d22h ago)   163d
-int-kafka-cluster-entity-operator-79699cdd59-z47jk   2/2     Running   5 (163d ago)      163d
-[osuser@bastion ~]$
+for c in neft-mq-source neft-mq-sink mis-mq-source mis-mq-sink rtgs-mq-source rtgs-mq-sink; do
+  echo "=== $c ==="
+  oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+    curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool | grep "state\|worker_id"
+done
