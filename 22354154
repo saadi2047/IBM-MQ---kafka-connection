@@ -1,21 +1,48 @@
-[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- \
->   curl -s -X POST http://localhost:8083/connectors/neft-mq-sink/tasks/0/restart
-[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- \
->   curl -s http://localhost:8083/connectors/neft-mq-sink/status | python3 -m json.tool
-{
-    "name": "neft-mq-sink",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "FAILED",
-            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083",
-            "trace": "org.apache.kafka.connect.errors.ConnectException: com.ibm.msg.client.jms.DetailedJMSRuntimeException: JMSWMQ0018: Failed to connect to queue manager 'SBI_NEFT' with connection mode 'Client' and host name '10.176.10.213(2001)'.\nCheck the queue manager is started and if running in client mode, check there is a listener running. Please see the linked exception for more information.\n\tat com.ibm.eventstreams.connect.mqsink.MQSinkTask.start(MQSinkTask.java:94)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.initializeAndStart(WorkerSinkTask.java:324)\n\tat org.apache.kafka.connect.runtime.WorkerTask.doStart(WorkerTask.java:176)\n\tat org.apache.kafka.connect.runtime.WorkerTask.doRun(WorkerTask.java:225)\n\tat org.apache.kafka.connect.runtime.WorkerTask.run(WorkerTask.java:281)\n\tat org.apache.kafka.connect.runtime.isolation.Plugins.lambda$withClassLoader$1(Plugins.java:238)\n\tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\tat java.base/java.lang.Thread.run(Thread.java:840)\nCaused by: com.ibm.msg.client.jms.DetailedJMSRuntimeException: JMSWMQ0018: Failed to connect to queue manager 'SBI_NEFT' with connection mode 'Client' and host name '10.176.10.213(2001)'.\nCheck the queue manager is started and if running in client mode, check there is a listener running. Please see the linked exception for more information.\n\tat com.ibm.msg.client.jms.DetailedJMSException.getUnchecked(DetailedJMSException.java:268)\n\tat com.ibm.msg.client.jms.internal.JmsErrorUtils.convertJMSException(JmsErrorUtils.java:173)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl.createContext(JmsConnectionFactoryImpl.java:577)\n\tat com.ibm.eventstreams.connect.mqsink.JMSWorker.createJMSContext(JMSWorker.java:375)\n\tat com.ibm.eventstreams.connect.mqsink.JMSWorker.connect(JMSWorker.java:147)\n\tat com.ibm.eventstreams.connect.mqsink.MQSinkTask.start(MQSinkTask.java:90)\n\t... 10 more\nCaused by: com.ibm.mq.MQException: JMSCMQ0001: IBM MQ call failed with compcode '2' ('MQCC_FAILED') reason '2537' ('MQRC_CHANNEL_NOT_AVAILABLE').\n\tat com.ibm.msg.client.wmq.common.internal.Reason.createException(Reason.java:217)\n\tat com.ibm.msg.client.wmq.internal.WMQConnection.<init>(WMQConnection.java:506)\n\tat com.ibm.msg.client.wmq.factories.WMQConnectionFactory.createV7ProviderConnection(WMQConnectionFactory.java:9351)\n\tat com.ibm.msg.client.wmq.factories.WMQConnectionFactory.createProviderConnection(WMQConnectionFactory.java:8581)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl._createConnection(JmsConnectionFactoryImpl.java:322)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl.createContext(JmsConnectionFactoryImpl.java:543)\n\t... 13 more\nCaused by: com.ibm.mq.jmqi.JmqiException: CC=2;RC=2537;AMQ9204: Connection to host '10.176.10.213(2001)' rejected. [1=com.ibm.mq.jmqi.JmqiException[CC=2;RC=2537;AMQ9558: The remote channel 'SBIEPAY2.SVRCONN' on host '' is not currently available. [3=SBIEPAY2.SVRCONN]],3=10.176.10.213(2001),4=,5=RemoteConnection.analyseErrorSegment]\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.jmqiConnect(RemoteFAP.java:13911)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.access$200(RemoteFAP.java:13340)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP.jmqiConnect(RemoteFAP.java:1544)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP.jmqiConnect(RemoteFAP.java:1413)\n\tat com.ibm.mq.ese.jmqi.InterceptedJmqiImpl.jmqiConnect(InterceptedJmqiImpl.java:377)\n\tat com.ibm.mq.ese.jmqi.ESEJMQI.jmqiConnect(ESEJMQI.java:562)\n\tat com.ibm.msg.client.wmq.internal.WMQConnection.<init>(WMQConnection.java:438)\n\t... 17 more\nCaused by: com.ibm.mq.jmqi.JmqiException: CC=2;RC=2537;AMQ9558: The remote channel 'SBIEPAY2.SVRCONN' on host '' is not currently available. [3=SBIEPAY2.SVRCONN]\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnection.analyseErrorSegment(RemoteConnection.java:4852)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnection.receiveTSH(RemoteConnection.java:3549)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnection.initSess(RemoteConnection.java:1421)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnection.connect(RemoteConnection.java:1009)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getNewConnection(RemoteConnectionSpecification.java:691)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getSessionFromNewConnection(RemoteConnectionSpecification.java:283)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getSession(RemoteConnectionSpecification.java:170)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionPool.getSession(RemoteConnectionPool.java:128)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.jmqiConnect(RemoteFAP.java:13575)\n\t... 23 more\n"
-        }
-    ],
-    "type": "sink"
-}
+[osuser@bastion ~]$ oc get pods -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS        AGE
+dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0               16h
+dev-kafka-cluster-broker-0                           1/1     Running   0               9d
+dev-kafka-cluster-broker-1                           1/1     Running   0               15h
+dev-kafka-cluster-broker-2                           1/1     Running   0               9d
+dev-kafka-cluster-controller-3                       1/1     Running   0               28d
+dev-kafka-cluster-controller-4                       1/1     Running   0               16d
+dev-kafka-cluster-controller-5                       1/1     Running   0               15h
+dev-kafka-cluster-cruise-control-d949867dd-qmxmn     1/1     Running   0               16h
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (95d ago)     107d
+dev-kafka-connect-mq-connect-0                       1/1     Running   0               15h
+dev-kafka-connect-mq-connect-1                       1/1     Running   2 (4d22h ago)   9d
+dev-kafka-connect-mq-connect-2                       1/1     Running   4 (4d22h ago)   11d
+[osuser@bastion ~]$ oc get pods -n sit-kafka
+NAME                                                 READY   STATUS    RESTARTS         AGE
+sit-console-console-deployment-594f7f5f7-2kkj7       2/2     Running   0                74d
+sit-kafka-cluster-broker-0                           1/1     Running   2 (22d ago)      22d
+sit-kafka-cluster-broker-1                           1/1     Running   0                61d
+sit-kafka-cluster-broker-2                           1/1     Running   0                19d
+sit-kafka-cluster-controller-3                       1/1     Running   0                76d
+sit-kafka-cluster-controller-4                       1/1     Running   0                61d
+sit-kafka-cluster-controller-5                       1/1     Running   0                22d
+sit-kafka-cluster-cruise-control-f99978486-vb5dl     1/1     Running   28 (2d21h ago)   22d
+sit-kafka-cluster-entity-operator-67865b654f-ssvbm   2/2     Running   0                22d
+[osuser@bastion ~]$ oc get pods -n uat-kafka
+NAME                                                READY   STATUS    RESTARTS          AGE
+uat-console-console-deployment-5d4fb9b74-5n9k6      2/2     Running   3 (76d ago)       86d
+uat-kafka-cluster-broker-0                          1/1     Running   0                 43d
+uat-kafka-cluster-broker-1                          1/1     Running   0                 43d
+uat-kafka-cluster-broker-2                          1/1     Running   0                 163d
+uat-kafka-cluster-controller-3                      1/1     Running   0                 163d
+uat-kafka-cluster-controller-4                      1/1     Running   0                 163d
+uat-kafka-cluster-controller-5                      1/1     Running   0                 163d
+uat-kafka-cluster-cruise-control-85b7474f57-wkt48   1/1     Running   356 (4d22h ago)   163d
+uat-kafka-cluster-entity-operator-668845cdc-pzmh5   2/2     Running   0                 163d
+[osuser@bastion ~]$ oc get pods -n int-kafka
+NAME                                                 READY   STATUS    RESTARTS          AGE
+int-console-console-deployment-9c5d8fbc9-phnn5       2/2     Running   0                 74d
+int-kafka-cluster-broker-0                           1/1     Running   0                 43d
+int-kafka-cluster-broker-1                           1/1     Running   0                 163d
+int-kafka-cluster-broker-2                           1/1     Running   0                 43d
+int-kafka-cluster-controller-3                       1/1     Running   0                 163d
+int-kafka-cluster-controller-4                       1/1     Running   0                 163d
+int-kafka-cluster-controller-5                       1/1     Running   0                 163d
+int-kafka-cluster-cruise-control-7558ff4cdc-kn6p2    1/1     Running   347 (4d22h ago)   163d
+int-kafka-cluster-entity-operator-79699cdd59-z47jk   2/2     Running   5 (163d ago)      163d
 [osuser@bastion ~]$
