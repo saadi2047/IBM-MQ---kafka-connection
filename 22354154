@@ -1,7 +1,9 @@
-Last login: Mon Jul  6 11:07:12 2026 from 10.30.64.59
-[osuser@bastion ~]$ oc get pods -n dev-kafka -o wide | grep broker
-dev-kafka-cluster-broker-0                           1/1     Running   0               41h     172.16.16.177   worker3.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-broker-1                           1/1     Running   0               40h     172.16.16.178   worker3.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-broker-2                           1/1     Running   0               40h     172.16.16.179   worker3.dev.sbiepay.sbi   <none>           <none>
-[osuser@bastion ~]$
+# Check if podAntiAffinity is present in the broker node pool
+oc get kafkanodepool broker -n dev-kafka -o yaml | grep -A20 "affinity"
 
+# Check the Helm deployed values
+helm get values epay-common -n dev-epay-common | grep -A15 "affinity"
+
+# Check if the KafkaNodePool has the anti-affinity configured
+oc get kafkanodepool -n dev-kafka
+oc get kafkanodepool broker -n dev-kafka -o yaml | grep -A30 "template"
