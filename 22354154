@@ -9,3 +9,5 @@ We have confirmed receipt of your transaction HDFCH01076994361. However SBIEPY m
 AGG format messages arrive cleanly without headers — please configure your SBIEPY message sender to send as plain text without JMS headers, similar to AGG messages.
 Please resolve both issues at the earliest so we can complete NEFT/MIS testing.
 Thanks and Regards,
+
+SBIEPY|HDFCH01076994361|HDFC0002441|03-Jul-26|1.00|NE003W66QZRQMOX5ENAY
