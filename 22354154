@@ -1,90 +1,50 @@
-[osuser@bastion ~]$   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
->     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool | grep "state"
-        "state": "RUNNING",
-            "state": "RUNNING",
-[osuser@bastion ~]$ done
--bash: syntax error near unexpected token `done'
-[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink mis-mq-source mis-mq-sink rtgs-mq-source rtgs-mq-sink; do
->   echo "=== $c ==="
->   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
->     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool | grep "state"
-> done
-=== neft-mq-source ===
-        "state": "RUNNING",
-            "state": "RUNNING",
-=== neft-mq-sink ===
-        "state": "RUNNING",
-            "state": "FAILED",
-=== mis-mq-source ===
-        "state": "RUNNING",
-            "state": "RUNNING",
-=== mis-mq-sink ===
-        "state": "RUNNING",
-            "state": "RUNNING",
-=== rtgs-mq-source ===
-        "state": "RUNNING",
-            "state": "RUNNING",
-=== rtgs-mq-sink ===
-        "state": "RUNNING",
-            "state": "RUNNING",
-[osuser@bastion ~]$ oc get pods
+Last login: Mon Jul  6 10:13:41 2026 from 10.30.64.58
+[osuser@bastion ~]$ oc get pod -n dev-kafka
 NAME                                                 READY   STATUS    RESTARTS        AGE
-dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0               18h
-dev-kafka-cluster-broker-0                           1/1     Running   0               10m
-dev-kafka-cluster-broker-1                           1/1     Running   0               9m38s
-dev-kafka-cluster-broker-2                           1/1     Running   0               8m37s
-dev-kafka-cluster-controller-3                       1/1     Running   0               28d
-dev-kafka-cluster-controller-4                       1/1     Running   0               16d
-dev-kafka-cluster-controller-5                       1/1     Running   0               17h
-dev-kafka-cluster-cruise-control-d949867dd-qmxmn     1/1     Running   0               18h
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (95d ago)     107d
-dev-kafka-connect-mq-connect-0                       1/1     Running   0               17h
-dev-kafka-connect-mq-connect-1                       1/1     Running   2 (4d23h ago)   9d
-dev-kafka-connect-mq-connect-2                       1/1     Running   4 (4d23h ago)   12d
-[osuser@bastion ~]$ oc get node
-NAME                      STATUS   ROLES                  AGE    VERSION
-infra1.dev.sbiepay.sbi    Ready    infra                  665d   v1.32.9
-infra2.dev.sbiepay.sbi    Ready    infra                  665d   v1.32.9
-infra3.dev.sbiepay.sbi    Ready    infra                  665d   v1.32.9
-master1.dev.sbiepay.sbi   Ready    control-plane,master   665d   v1.32.9
-master2.dev.sbiepay.sbi   Ready    control-plane,master   665d   v1.32.9
-master3.dev.sbiepay.sbi   Ready    control-plane,master   665d   v1.32.9
-worker1.dev.sbiepay.sbi   Ready    worker                 665d   v1.32.9
-worker1.integ.epay.sbi    Ready    worker                 296d   v1.32.9
-worker1.sit.epay.sbi      Ready    worker                 619d   v1.32.9
-worker1.uat.epay.sbi      Ready    worker                 619d   v1.32.9
-worker2.dev.sbiepay.sbi   Ready    worker                 665d   v1.32.9
-worker2.integ.epay.sbi    Ready    worker                 297d   v1.32.9
-worker2.sit.epay.sbi      Ready    worker                 619d   v1.32.9
-worker2.uat.epay.sbi      Ready    worker                 619d   v1.32.9
-worker3.dev.sbiepay.sbi   Ready    worker                 665d   v1.32.9
-worker3.integ.epay.sbi    Ready    worker                 296d   v1.32.9
-worker3.sit.epay.sbi      Ready    worker                 619d   v1.32.9
-worker3.uat.epay.sbi      Ready    worker                 619d   v1.32.9
-[osuser@bastion ~]$ oc top adm node
-error: unknown command "top" for "oc"
-
-Did you mean this?
-        cp
-        tag
-[osuser@bastion ~]$ oc adm top node
-NAME                      CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
-infra1.dev.sbiepay.sbi    1224m        10%    14235Mi         22%
-infra2.dev.sbiepay.sbi    646m         5%     11132Mi         17%
-infra3.dev.sbiepay.sbi    1184m        10%    10766Mi         17%
-master1.dev.sbiepay.sbi   2839m        18%    34580Mi         54%
-master2.dev.sbiepay.sbi   1831m        11%    30520Mi         48%
-master3.dev.sbiepay.sbi   1896m        12%    32987Mi         52%
-worker1.dev.sbiepay.sbi   681m         4%     18699Mi         29%
-worker1.integ.epay.sbi    668m         4%     28307Mi         44%
-worker1.sit.epay.sbi      660m         4%     24769Mi         39%
-worker1.uat.epay.sbi      2753m        17%    26784Mi         42%
-worker2.dev.sbiepay.sbi   1034m        6%     37883Mi         59%
-worker2.integ.epay.sbi    1309m        8%     24600Mi         38%
-worker2.sit.epay.sbi      3856m        24%    26626Mi         42%
-worker2.uat.epay.sbi      2953m        19%    40602Mi         64%
-worker3.dev.sbiepay.sbi   4036m        26%    20852Mi         33%
-worker3.integ.epay.sbi    1927m        12%    24191Mi         38%
-worker3.sit.epay.sbi      1684m        10%    43309Mi         68%
-worker3.uat.epay.sbi      2566m        16%    37020Mi         58%
+dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0               2d10h
+dev-kafka-cluster-broker-0                           1/1     Running   0               40h
+dev-kafka-cluster-broker-1                           1/1     Running   0               40h
+dev-kafka-cluster-broker-2                           1/1     Running   0               40h
+dev-kafka-cluster-controller-3                       1/1     Running   0               30d
+dev-kafka-cluster-controller-4                       1/1     Running   0               18d
+dev-kafka-cluster-controller-5                       1/1     Running   0               2d9h
+dev-kafka-cluster-cruise-control-d949867dd-qmxmn     1/1     Running   0               2d10h
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (97d ago)     109d
+dev-kafka-connect-mq-connect-0                       1/1     Running   0               2d9h
+dev-kafka-connect-mq-connect-1                       1/1     Running   2 (6d16h ago)   11d
+dev-kafka-connect-mq-connect-2                       1/1     Running   4 (6d16h ago)   13d
+[osuser@bastion ~]$ oc get pod -n sit-kafka
+NAME                                                 READY   STATUS    RESTARTS         AGE
+sit-console-console-deployment-594f7f5f7-2kkj7       2/2     Running   0                75d
+sit-kafka-cluster-broker-0                           1/1     Running   2 (24d ago)      24d
+sit-kafka-cluster-broker-1                           1/1     Running   0                63d
+sit-kafka-cluster-broker-2                           1/1     Running   0                21d
+sit-kafka-cluster-controller-3                       1/1     Running   0                78d
+sit-kafka-cluster-controller-4                       1/1     Running   0                63d
+sit-kafka-cluster-controller-5                       1/1     Running   0                24d
+sit-kafka-cluster-cruise-control-f99978486-vb5dl     1/1     Running   28 (4d15h ago)   24d
+sit-kafka-cluster-entity-operator-67865b654f-ssvbm   2/2     Running   0                24d
+[osuser@bastion ~]$ oc get pod -n uat-kafka
+NAME                                                READY   STATUS    RESTARTS          AGE
+uat-console-console-deployment-5d4fb9b74-5n9k6      2/2     Running   3 (78d ago)       87d
+uat-kafka-cluster-broker-0                          1/1     Running   0                 45d
+uat-kafka-cluster-broker-1                          1/1     Running   0                 45d
+uat-kafka-cluster-broker-2                          1/1     Running   0                 164d
+uat-kafka-cluster-controller-3                      1/1     Running   0                 164d
+uat-kafka-cluster-controller-4                      1/1     Running   0                 164d
+uat-kafka-cluster-controller-5                      1/1     Running   0                 164d
+uat-kafka-cluster-cruise-control-85b7474f57-wkt48   1/1     Running   356 (6d16h ago)   164d
+uat-kafka-cluster-entity-operator-668845cdc-pzmh5   2/2     Running   0                 164d
+[osuser@bastion ~]$ oc get pod -n int-kafka
+NAME                                                 READY   STATUS    RESTARTS          AGE
+int-console-console-deployment-9c5d8fbc9-phnn5       2/2     Running   0                 75d
+int-kafka-cluster-broker-0                           1/1     Running   0                 45d
+int-kafka-cluster-broker-1                           1/1     Running   0                 164d
+int-kafka-cluster-broker-2                           1/1     Running   0                 45d
+int-kafka-cluster-controller-3                       1/1     Running   0                 164d
+int-kafka-cluster-controller-4                       1/1     Running   0                 164d
+int-kafka-cluster-controller-5                       1/1     Running   0                 164d
+int-kafka-cluster-cruise-control-7558ff4cdc-kn6p2    1/1     Running   347 (6d16h ago)   164d
+int-kafka-cluster-entity-operator-79699cdd59-z47jk   2/2     Running   5 (164d ago)      164d
 [osuser@bastion ~]$
+
