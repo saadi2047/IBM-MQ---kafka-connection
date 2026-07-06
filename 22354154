@@ -1,10 +1,76 @@
-oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- \
-  curl -s -X POST http://localhost:8083/connectors/neft-mq-sink/tasks/0/restart
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- \
+>   curl -s -X POST http://localhost:8083/connectors/neft-mq-sink/tasks/0/restart
+[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink mis-mq-source mis-mq-sink; do   echo "=== $c ===";   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka --     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool; done
+=== neft-mq-source ===
+{
+    "name": "neft-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+=== neft-mq-sink ===
+{
+    "name": "neft-mq-sink",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "sink"
+}
+=== mis-mq-source ===
+{
+    "name": "mis-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+=== mis-mq-sink ===
+{
+    "name": "mis-mq-sink",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "FAILED",
+            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083",
+            "trace": "org.apache.kafka.connect.errors.ConnectException: Exiting WorkerSinkTask due to unrecoverable exception.\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.deliverMessages(WorkerSinkTask.java:636)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.poll(WorkerSinkTask.java:345)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.iteration(WorkerSinkTask.java:247)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.execute(WorkerSinkTask.java:216)\n\tat org.apache.kafka.connect.runtime.WorkerTask.doRun(WorkerTask.java:226)\n\tat org.apache.kafka.connect.runtime.WorkerTask.run(WorkerTask.java:281)\n\tat org.apache.kafka.connect.runtime.isolation.Plugins.lambda$withClassLoader$1(Plugins.java:238)\n\tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\tat java.base/java.lang.Thread.run(Thread.java:840)\nCaused by: org.apache.kafka.connect.errors.ConnectException: com.ibm.msg.client.jms.DetailedTransactionRolledBackRuntimeException: JMSCMQ0002: The method 'MQCMIT' failed.\nAn IBM MQ call failed.\nPlease see the linked exception for more information.\n\tat com.ibm.eventstreams.connect.mqsink.ExceptionProcessor.handleException(ExceptionProcessor.java:96)\n\tat com.ibm.eventstreams.connect.mqsink.MQSinkTask.put(MQSinkTask.java:137)\n\tat org.apache.kafka.connect.runtime.WorkerSinkTask.deliverMessages(WorkerSinkTask.java:606)\n\t... 11 more\nCaused by: com.ibm.msg.client.jms.DetailedTransactionRolledBackRuntimeException: JMSCMQ0002: The method 'MQCMIT' failed.\nAn IBM MQ call failed.\nPlease see the linked exception for more information.\n\tat com.ibm.msg.client.jms.DetailedTransactionRolledBackException.getUnchecked(DetailedTransactionRolledBackException.java:275)\n\tat com.ibm.msg.client.jms.internal.JmsErrorUtils.convertJMSException(JmsErrorUtils.java:173)\n\tat com.ibm.msg.client.jms.internal.JmsContextImpl.commit(JmsContextImpl.java:279)\n\tat com.ibm.eventstreams.connect.mqsink.JMSWorker.commit(JMSWorker.java:351)\n\tat com.ibm.eventstreams.connect.mqsink.MQSinkTask.putAtLeastOnce(MQSinkTask.java:184)\n\tat com.ibm.eventstreams.connect.mqsink.MQSinkTask.put(MQSinkTask.java:129)\n\t... 12 more\nCaused by: com.ibm.msg.client.jms.DetailedJMSException: JMSWMQ0028: At least one asynchronous put message failed or gave a warning.\nWhen a message is put asynchronously, any problems are not reported as exceptions thrown from the send() method. Instead they are passed to the exception listener, if one is defined. The exception listener is driven at syncpoint for transacted sessions, or every SEND_CHECK_COUNT asynchronous puts for non-transacted sessions.\nPlease see the linked exception for more information on the failures and/or warnings.\n\tat java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)\n\tat java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)\n\tat java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)\n\tat java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)\n\tat java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)\n\tat com.ibm.msg.client.commonservices.j2se.NLSServices.createException(NLSServices.java:334)\n\tat com.ibm.msg.client.commonservices.nls.NLSServices.createException(NLSServices.java:226)\n\tat com.ibm.msg.client.wmq.internal.WMQSession.callMQSTAT(WMQSession.java:693)\n\tat com.ibm.msg.client.wmq.internal.WMQSession.syncpoint(WMQSession.java:2057)\n\tat com.ibm.msg.client.wmq.internal.WMQSession.commit(WMQSession.java:907)\n\tat com.ibm.msg.client.jms.internal.JmsSessionImpl.commitTransaction(JmsSessionImpl.java:2858)\n\tat com.ibm.msg.client.jms.internal.JmsSessionImpl.commit(JmsSessionImpl.java:754)\n\tat com.ibm.msg.client.jms.internal.JmsContextImpl$SessionWrapper.commit(JmsContextImpl.java:2174)\n\tat com.ibm.msg.client.jms.internal.JmsContextImpl.commit(JmsContextImpl.java:273)\n\t... 15 more\nCaused by: com.ibm.mq.MQException: JMSWMQ0002: Extra diagnostics provided by MQSTAT: compcode '2' reason '2085' object name 'NeftMISCOutBoundQueue                           ' resolved object name 'null' object type '1' queue manager name '                                                ' resolved queue manager name 'null' put failure count '1' put success count '0' put warning count '0'.\n\tat com.ibm.msg.client.wmq.internal.WMQSession.callMQSTAT(WMQSession.java:691)\n\t... 21 more\n"
+        }
+    ],
+    "type": "sink"
+}
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 100 | grep "HDFCH01076994361"
+Binary file (standard input) matches
 
-
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-console-consumer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic neft.inbound.kafka.topic \
-  --from-beginning \
-  --max-messages 100 | grep "HDFCH01076994361"
