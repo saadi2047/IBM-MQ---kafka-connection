@@ -1,1 +1,7 @@
-oc get pods -n dev-kafka -o wide | grep broker
+Last login: Mon Jul  6 11:07:12 2026 from 10.30.64.59
+[osuser@bastion ~]$ oc get pods -n dev-kafka -o wide | grep broker
+dev-kafka-cluster-broker-0                           1/1     Running   0               41h     172.16.16.177   worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-1                           1/1     Running   0               40h     172.16.16.178   worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-2                           1/1     Running   0               40h     172.16.16.179   worker3.dev.sbiepay.sbi   <none>           <none>
+[osuser@bastion ~]$
+
