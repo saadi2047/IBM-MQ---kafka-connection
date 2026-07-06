@@ -1,6 +1,8 @@
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-console-consumer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic neft.inbound.kafka.topic \
-  --from-beginning \
-  --max-messages 100 | grep -a "HDFCH01076994361"
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 100 | grep -a "HDFCH01076994361"
+SBIEPY|HDFCH01076994361|HDFC0002441|03-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+
