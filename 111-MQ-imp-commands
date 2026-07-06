@@ -67,6 +67,13 @@ for c in neft-mq-source neft-mq-sink mis-mq-source mis-mq-sink; do
     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
 done
 
+
+------------------------
+restartin the connectors
+oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- \
+  curl -s -X POST http://localhost:8083/connectors/neft-mq-sink/tasks/0/restart
+
+
 --------------------------------------------------------------------------------------
 
 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
@@ -111,3 +118,12 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
   bin/kafka-consumer-groups.sh \
   --bootstrap-server localhost:9092 \
   --describe --group connect-neft-mq-sink 2>/dev/null | grep neft.outbound
+
+------------------
+check message with specific message
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.inbound.kafka.topic \
+  --from-beginning \
+  --max-messages 100 | grep "HDFCH01076994361"
