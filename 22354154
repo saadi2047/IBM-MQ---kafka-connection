@@ -1,1 +1,6 @@
-oc get pods -n dev-kafka -l strimzi.io/pool-name=broker
+[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/pool-name=broker
+NAME                         READY   STATUS    RESTARTS   AGE
+dev-kafka-cluster-broker-0   1/1     Running   0          41h
+dev-kafka-cluster-broker-1   1/1     Running   0          41h
+dev-kafka-cluster-broker-2   1/1     Running   0          41h
+[osuser@bastion ~]$
