@@ -1,9 +1,128 @@
-# Check if podAntiAffinity is present in the broker node pool
-oc get kafkanodepool broker -n dev-kafka -o yaml | grep -A20 "affinity"
-
-# Check the Helm deployed values
-helm get values epay-common -n dev-epay-common | grep -A15 "affinity"
-
-# Check if the KafkaNodePool has the anti-affinity configured
-oc get kafkanodepool -n dev-kafka
-oc get kafkanodepool broker -n dev-kafka -o yaml | grep -A30 "template"
+Last login: Mon Jul  6 11:07:12 2026 from 10.30.64.59
+[osuser@bastion ~]$ oc get pods -n dev-kafka -o wide | grep broker
+dev-kafka-cluster-broker-0                           1/1     Running   0               41h     172.16.16.177   worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-1                           1/1     Running   0               40h     172.16.16.178   worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-2                           1/1     Running   0               40h     172.16.16.179   worker3.dev.sbiepay.sbi   <none>           <none>
+[osuser@bastion ~]$ oc get kafkanodepool broker -n dev-kafka -o yaml | grep -A20 "affinity"
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: strimzi.io/name
+                operator: In
+                values:
+                - dev-kafka-cluster-broker
+            topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 120
+status:
+  clusterId: 3aEx1xmUSTWs8xSplBnYtA
+  conditions: []
+  labelSelector: strimzi.io/cluster=dev-kafka-cluster,strimzi.io/name=dev-kafka-cluster-kafka,strimzi.io/kind=Kafka,strimzi.io/pool-name=broker
+  nodeIds:
+  - 0
+  - 1
+  - 2
+  observedGeneration: 3
+  replicas: 3
+[osuser@bastion ~]$ helm get values epay-common -n dev-epay-common | grep -A15 "affinity"
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/worker
+                operator: Exists
+              - key: workload-type
+                operator: In
+                values:
+                - gemfire
+      replicas: 3
+      terminationGracePeriodSeconds: 120
+      tolerations:
+      - effect: NoSchedule
+        key: workload-type
+--
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/worker
+                operator: Exists
+              - key: workload-type
+                operator: In
+                values:
+                - gemfire
+      replicas: 3
+      terminationGracePeriodSeconds: 120
+      tolerations:
+      - effect: NoSchedule
+        key: workload-type
+--
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: node-role.kubernetes.io/worker
+              operator: Exists
+            - key: workload-type
+              operator: In
+              values:
+              - gemfire
+    mountPath: /opt/gemfire/VMware_GemFire_Management_Console
+    name: gemfire-data
+    storageClassName: trident-csi-retain
+    terminationGracePeriodSeconds: 120
+    tolerations:
+--
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: strimzi.io/name
+                operator: In
+                values:
+                - dev-kafka-cluster-broker
+            topologyKey: kubernetes.io/hostname
+      name: broker
+      replicas: 3
+      resources:
+        limits:
+          cpu: "24"
+          memory: 128Gi
+[osuser@bastion ~]$ oc get kafkanodepool -n dev-kafka
+NAME         DESIRED REPLICAS   ROLES            NODEIDS
+broker       3                  ["broker"]       [0,1,2]
+controller   3                  ["controller"]   [3,4,5]
+[osuser@bastion ~]$ oc get kafkanodepool broker -n dev-kafka -o yaml | grep -A30 "template"
+  template:
+    kafkaContainer: {}
+    pod:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: strimzi.io/name
+                operator: In
+                values:
+                - dev-kafka-cluster-broker
+            topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 120
+status:
+  clusterId: 3aEx1xmUSTWs8xSplBnYtA
+  conditions: []
+  labelSelector: strimzi.io/cluster=dev-kafka-cluster,strimzi.io/name=dev-kafka-cluster-kafka,strimzi.io/kind=Kafka,strimzi.io/pool-name=broker
+  nodeIds:
+  - 0
+  - 1
+  - 2
+  observedGeneration: 3
+  replicas: 3
+  roles:
+  - broker
+[osuser@bastion ~]$
