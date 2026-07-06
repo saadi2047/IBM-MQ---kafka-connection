@@ -1,8 +1,11 @@
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
->   bin/kafka-console-consumer.sh \
->   --bootstrap-server localhost:9092 \
->   --topic neft.inbound.kafka.topic \
->   --from-beginning \
->   --max-messages 100 | grep -a "HDFCH01076994361"
-SBIEPY|HDFCH01076994361|HDFC0002441|03-Jul-26|1.00|NE003W66QZRQMOX5ENAY
-
+Dear Team,
+We have verified our end and found the following two issues that need your attention:
+Issue 1 — NeftMISCOutBoundQueue does not exist (Blocking MIS flow)
+Our mis-mq-sink connector is failing with:
+MQRC 2085 — Unknown Object Name: NeftMISCOutBoundQueue
+Please create the queue NeftMISCOutBoundQueue on Queue Manager SBI_NEFT at 10.176.10.213:2001 so we can deliver MIS responses from our side.
+Issue 2 — RFH2/JMS binary headers on SBIEPY messages
+We have confirmed receipt of your transaction HDFCH01076994361. However SBIEPY messages are arriving with RFH2/JMS binary headers which is causing display issues on our Kafka console and CLI tools. Please refer to the attached screenshot for reference.
+AGG format messages arrive cleanly without headers — please configure your SBIEPY message sender to send as plain text without JMS headers, similar to AGG messages.
+Please resolve both issues at the earliest so we can complete NEFT/MIS testing.
+Thanks and Regards,
