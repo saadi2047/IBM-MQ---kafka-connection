@@ -1,6 +1,16 @@
-[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/pool-name=broker
-NAME                         READY   STATUS    RESTARTS   AGE
-dev-kafka-cluster-broker-0   1/1     Running   0          41h
-dev-kafka-cluster-broker-1   1/1     Running   0          41h
-dev-kafka-cluster-broker-2   1/1     Running   0          41h
-[osuser@bastion ~]$
+Dear Team,
+We are writing to formally report that our NEFT outbound connector (neft-mq-sink) has been in FAILED state since July 4, 2026 at 07:25 IST due to the SBIEPAY2.SVRCONN channel being unavailable on the SBI_NEFT queue manager.
+Error details:
+
+JMSWMQ0018: Failed to connect to queue manager 'SBI_NEFT' 
+Host: 10.176.10.213(2001)
+AMQ9558: The remote channel 'SBIEPAY2.SVRCONN' is not currently available
+MQRC_CHANNEL_NOT_AVAILABLE (RC=2537)
+
+Impact:
+	•	NEFT outbound acknowledgements are not being delivered to NeftOutBoundQueue
+	•	MIS testing is completely blocked as MIS generation depends on our ACK
+	•	NEFT/RTGS integration testing cannot proceed
+We have verified that the issue is on your MQ side — all our connectors and infrastructure are healthy. Please find attached the error logs and screenshots for reference.
+Could you please provide an urgent ETA for restoration of the SBIEPAY2.SVRCONN channel on SBI_NEFT at 10.176.10.213:2001?
+Thanks and Regards,
