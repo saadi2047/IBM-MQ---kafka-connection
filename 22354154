@@ -1,12 +1,162 @@
-[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A3 "imagePullSecrets"
-      imagePullSecrets:
-      - name: microservices-dev-pull-secret
-  tls:
-    trustedCertificates:
-[osuser@bastion ~]$ oc get secret jfrog-pull-secret -n sit-kafka -o jsonpath='{.data.\.dockerconfigjson}' | \
->   base64 -d | python3 -m json.tool | grep -i "registry\|server\|auth" | head -10
-    "auths": {
-            "auth": "ZGV2c2Vjb3BzdXNlcjpleUoyWlhJaU9pSXlJaXdpZEhsd0lqb2lTbGRVSWl3aVlXeG5Jam9pVWxNeU5UWWlMQ0pyYVdRaU9pSnBOWEYwTmpKcFFsQXRkMlZEUkRVMWFta3pUakp1ZVdJNGNsVnBTVlZ3VG5WRGRtdFZjVUY2ZEVZd0luMC5leUp6ZFdJaU9pSnFabUZqUURBeGF6VTJhelZyYzI1cVltZDNNV2hsZUdwNWN6UXdNMk5qTDNWelpYSnpMMlJsZG5ObFkyOXdjM1Z6WlhJaUxDSnpZM0FpT2lKaGNIQnNhV1ZrTFhCbGNtMXBjM05wYjI1ekwzSnZiR1Z6T21sMFpYQmhlWEJuTFhOaWFXVndZWGt5T2x3aVZtbGxkMlZ5WENJc0lpd2lZWFZrSWpvaUtrQXFJaXdpYVhOeklqb2lhbVptWlVBd01XczFObXMxYTNOdWFtSm5kekZvWlhocWVYTTBNRE5qWXlJc0ltVjRjQ0k2TVRnd09EZzVOVFEzTkN3aWFXRjBJam94TnpjM016VTVORGMwTENKcWRHa2lPaUppT1dFNVpqZzFOUzAyWVRFeUxUUXhOakl0T0dGbE1pMDBNMkl5WmpJMlpXSmlNVGNpZlEuaG9oLXp5TUMwRnp1WEVoOXYyMHF6SHl6TVRxMWgwQXpoYzVmZEk2YXZWY1FxRjNoRU81cHFBY2pGaEI5RWk5ei1lZVBua1VCdzFfdEZsbWlkRVBqR0lqcnBYaW1CV1dVM1lBcjhoM2xUaWZodUtpY0RsTFdndVJZNEdsT0pmS2wteVV3MEFjVUhQQ3UxRUJ6LUIxNlNweU03VzliZ0J0VDRQenJMOG0tcG0tSTBtSW1KMHM3U3h0eGM3RkdJYVk1VVh4NHRoeVdOOEhYTm5jZkZpYU14bDJTd3ZOSFB2ZHhRRXZyZG9HenMteU92TzdXZkpBeVY4RGl5ZV9hREFKOW5JWU5aMXZ2QmR0Z3NiWVlhMVNGTU5aSUI2WHFGYlI0V0hXMXctQzVrZ1V3X0w1YVBpb0psblhyaGhQT1F0WFZ3WUlleDFWYjR2VURvb3I1WFdWeGFB"
-[osuser@bastion ~]$ oc get secret -n sit-epay-common | grep -iE "pull|microservices|jfrog"
-jfrog-pull-secret                       kubernetes.io/dockerconfigjson   1      67d
+[osuser@bastion ~]$ oc get pods -n dev-kafka | grep broker
+dev-kafka-cluster-broker-0                           1/1     Running   0                6d4h
+dev-kafka-cluster-broker-1                           1/1     Running   0                6d4h
+dev-kafka-cluster-broker-2                           1/1     Running   0                6d4h
+[osuser@bastion ~]$ oc get pods -n dev-kafka -o wide | grep broker
+dev-kafka-cluster-broker-0                           1/1     Running   0                6d4h   172.16.8.14     worker1.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-1                           1/1     Running   0                6d4h   172.16.14.154   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-2                           1/1     Running   0                6d4h   172.16.17.92    worker3.dev.sbiepay.sbi   <none>           <none>
+[osuser@bastion ~]$ oc rsh dev-kafka-connect-mq-connect-0 -n dev-kafka
+ERRO[0000] exec failed: unable to start container process: exec: "-n": executable file not found in $PATH
+command terminated with exit code 255
+[osuser@bastion ~]$ oc project dev-kafka
+Already on project "dev-kafka" on server "https://api.dev.sbiepay.sbi:6443".
+[osuser@bastion ~]$ oc rsh dev-kafka-connect-mq-connect-0 -n dev-kafka
+ERRO[0000] exec failed: unable to start container process: exec: "-n": executable file not found in $PATH
+command terminated with exit code 255
+[osuser@bastion ~]$ oc rsh dev-kafka-connect-mq-connect-0
+sh-5.1$ nc -vz 10.176.10.213 2001
+Ncat: Version 7.92 ( https://nmap.org/ncat )
+Ncat: Connected to 10.176.10.213:2001.
+Ncat: 0 bytes sent, 0 bytes received in 0.02 seconds.
+sh-5.1$ nc -vz 10.176.10.213 2005
+Ncat: Version 7.92 ( https://nmap.org/ncat )
+Ncat: Connected to 10.176.10.213:2005.
+Ncat: 0 bytes sent, 0 bytes received in 0.02 seconds.
+sh-5.1$ exit
+exit
+[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink mis-mq-source mis-mq-sink; do
+>   echo "=== $c ==="
+>   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+>     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool | grep "state"
+> done
+=== neft-mq-source ===
+        "state": "RUNNING",
+            "state": "RUNNING",
+=== neft-mq-sink ===
+        "state": "RUNNING",
+            "state": "RUNNING",
+=== rtgs-mq-source ===
+        "state": "RUNNING",
+            "state": "RUNNING",
+=== rtgs-mq-sink ===
+        "state": "RUNNING",
+            "state": "RUNNING",
+=== mis-mq-source ===
+        "state": "RUNNING",
+            "state": "RUNNING",
+=== mis-mq-sink ===
+        "state": "RUNNING",
+            "state": "RUNNING",
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --offset latest \
+>   --partition 0
+^Z
+[1]+  Stopped 
+
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.mis.inbound.kafka.topic \
+>   --from-beginning --max-messages 20
+SBIEPAY_NEFT                       |          HDFCH01076994031|    RBIP202607086288694901|               HDFC0002441|            50200070668991|                           RATNANJALI SKY LINE LLP|               SBIN0011777|             2399990004372|      NE003W66QZRQMOX5ENAY|              SBIEPAY NEFT|                         1|                 08-Jul-26|                      0001|                 08-Jul-26|                 08-Jul-26|          |         SBIEPYNE003W66QZRQMOX5ENAY
+SBIEPAY_NEFT                       |          HDFCH01076914033|    RBIP202607106288694903|               HDFC0002441|            50200070668991|                           RATNANJALI SKY LINE LLP|               SBIN0011777|             2399990004372|      NE003PWIIRBRMPVMQZZ0|              SBIEPAY NEFT|                         1|                 10-Jul-26|                      0001|                 10-Jul-26|                 10-Jul-26|          |         SBIEPYNE003PWIIRBRMPVMQZZ0
+^Z
+[3]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.mis.inbound.kafka.topic --from-beginning --max-messages 20
+[osuser@bastion ~]$ for topic in neft.inbound.kafka.topic neft.outbound.kafka.topic \
+>   rtgs.inbound.kafka.topic rtgs.outbound.kafka.topic \
+>   neft.mis.inbound.kafka.topic neft.mis.outbound.kafka.topic; do
+>   echo "=== $topic ==="
+>   oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>     bin/kafka-topics.sh --bootstrap-server localhost:9092 \
+>     --describe --topic $topic
+> done
+=== neft.inbound.kafka.topic ===
+Topic: neft.inbound.kafka.topic TopicId: 6F5wOWs2QIiNt_iYKcE4Ew PartitionCount: 4       ReplicationFactor: 3    Configs: compression.type=producer,min.insync.replicas=2,cleanup.policy=delete,segment.bytes=1073741824
+        Topic: neft.inbound.kafka.topic Partition: 0    Leader: 1       Replicas: 1,2,0 Isr: 1,0,2      Elr:    LastKnownElr:
+        Topic: neft.inbound.kafka.topic Partition: 1    Leader: 1       Replicas: 1,2,0 Isr: 1,0,2      Elr:    LastKnownElr:
+        Topic: neft.inbound.kafka.topic Partition: 2    Leader: 2       Replicas: 2,0,1 Isr: 1,0,2      Elr:    LastKnownElr:
+        Topic: neft.inbound.kafka.topic Partition: 3    Leader: 0       Replicas: 0,1,2 Isr: 1,0,2      Elr:    LastKnownElr:
+=== neft.outbound.kafka.topic ===
+Topic: neft.outbound.kafka.topic        TopicId: VZpVLkuTQZS2f9S5luXtxQ PartitionCount: 4       ReplicationFactor: 3    Configs: compression.type=producer,min.insync.replicas=2,cleanup.policy=delete,segment.bytes=1073741824
+        Topic: neft.outbound.kafka.topic        Partition: 0    Leader: 1       Replicas: 1,2,0 Isr: 1,0,2      Elr:    LastKnownElr:
+        Topic: neft.outbound.kafka.topic        Partition: 1    Leader: 1       Replicas: 1,2,0 Isr: 1,0,2      Elr:    LastKnownElr:
+        Topic: neft.outbound.kafka.topic        Partition: 2    Leader: 2       Replicas: 2,0,1 Isr: 1,0,2      Elr:    LastKnownElr:
+        Topic: neft.outbound.kafka.topic        Partition: 3    Leader: 0       Replicas: 0,1,2 Isr: 1,0,2      Elr:    LastKnownElr:
+=== rtgs.inbound.kafka.topic ===
+Topic: rtgs.inbound.kafka.topic TopicId: mQeiZ1zeT4mzX8RGEG8yWQ PartitionCount: 1       ReplicationFactor: 3    Configs: compression.type=producer,min.insync.replicas=2,cleanup.policy=delete,segment.bytes=1073741824
+        Topic: rtgs.inbound.kafka.topic Partition: 0    Leader: 2       Replicas: 2,0,1 Isr: 1,0,2      Elr:    LastKnownElr:
+=== rtgs.outbound.kafka.topic ===
+Topic: rtgs.outbound.kafka.topic        TopicId: poazpw1FT5C9vF5YwO9Byg PartitionCount: 1       ReplicationFactor: 3    Configs: compression.type=producer,min.insync.replicas=2,cleanup.policy=delete,segment.bytes=1073741824
+        Topic: rtgs.outbound.kafka.topic        Partition: 0    Leader: 0       Replicas: 0,2,1 Isr: 1,0,2      Elr:    LastKnownElr:
+=== neft.mis.inbound.kafka.topic ===
+Topic: neft.mis.inbound.kafka.topic     TopicId: b7GvxiIfRguLfHp2g00img PartitionCount: 1       ReplicationFactor: 3    Configs: compression.type=producer,min.insync.replicas=2,cleanup.policy=delete,segment.bytes=1073741824
+        Topic: neft.mis.inbound.kafka.topic     Partition: 0    Leader: 2       Replicas: 2,0,1 Isr: 1,0,2      Elr:    LastKnownElr:
+=== neft.mis.outbound.kafka.topic ===
+Topic: neft.mis.outbound.kafka.topic    TopicId: wEebPjgHRfaJREPNY6tWZg PartitionCount: 1       ReplicationFactor: 3    Configs: compression.type=producer,min.insync.replicas=2,cleanup.policy=delete,segment.bytes=1073741824
+        Topic: neft.mis.outbound.kafka.topic    Partition: 0    Leader: 0       Replicas: 0,1,2 Isr: 1,0,2      Elr:    LastKnownElr:
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-consumer-groups.sh \
+>   --bootstrap-server localhost:9092 \
+>   --describe --group payment-consumers 2>/dev/null
+
+GROUP             TOPIC                                      PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+payment-consumers payment_email_notification_topic           0          793             793             0               consumer-payment-consumers-5-9ba12732-bb63-4640-8d5c-841f462515c8 /172.16.8.232   consumer-payment-consumers-5
+payment-consumers payment_email_notification_topic           3          414             414             0               consumer-payment-consumers-5-9ba12732-bb63-4640-8d5c-841f462515c8 /172.16.8.232   consumer-payment-consumers-5
+payment-consumers payment_email_notification_topic           1          169             169             0               consumer-payment-consumers-5-9ba12732-bb63-4640-8d5c-841f462515c8 /172.16.8.232   consumer-payment-consumers-5
+payment-consumers payment_email_notification_topic           2          177             177             0               consumer-payment-consumers-5-9ba12732-bb63-4640-8d5c-841f462515c8 /172.16.8.232   consumer-payment-consumers-5
+payment-consumers neft.inbound.kafka.topic                   1          73              73              0               consumer-payment-consumers-6-d843ec72-1301-4f17-95f7-4287a3d289ef /172.16.8.232   consumer-payment-consumers-6
+payment-consumers neft.inbound.kafka.topic                   2          7               7               0               consumer-payment-consumers-6-d843ec72-1301-4f17-95f7-4287a3d289ef /172.16.8.232   consumer-payment-consumers-6
+payment-consumers neft.inbound.kafka.topic                   0          16              16              0               consumer-payment-consumers-6-d843ec72-1301-4f17-95f7-4287a3d289ef /172.16.8.232   consumer-payment-consumers-6
+payment-consumers neft.inbound.kafka.topic                   3          2               2               0               consumer-payment-consumers-6-d843ec72-1301-4f17-95f7-4287a3d289ef /172.16.8.232   consumer-payment-consumers-6
+payment-consumers payment_cashstatusquery_notification_topic 0          5725023         5725023         0               consumer-payment-consumers-4-a8ba44ca-fa7f-4c0f-bfc5-d4af14f75600 /172.16.8.232   consumer-payment-consumers-4
+payment-consumers payment_cashstatusquery_notification_topic 1          6360887         6360887         0               consumer-payment-consumers-4-a8ba44ca-fa7f-4c0f-bfc5-d4af14f75600 /172.16.8.232   consumer-payment-consumers-4
+payment-consumers payment_cashstatusquery_notification_topic 2          6474898         6474898         0               consumer-payment-consumers-4-a8ba44ca-fa7f-4c0f-bfc5-d4af14f75600 /172.16.8.232   consumer-payment-consumers-4
+payment-consumers payment_cashstatusquery_notification_topic 3          6789955         6789955         0               consumer-payment-consumers-4-a8ba44ca-fa7f-4c0f-bfc5-d4af14f75600 /172.16.8.232   consumer-payment-consumers-4
+payment-consumers payment_sms_notification_topic             2          0               0               0               consumer-payment-consumers-1-d9265063-fc38-40c7-8f4e-488b5eab41cf /172.16.8.232   consumer-payment-consumers-1
+payment-consumers payment_sms_notification_topic             3          1               1               0               consumer-payment-consumers-1-d9265063-fc38-40c7-8f4e-488b5eab41cf /172.16.8.232   consumer-payment-consumers-1
+payment-consumers payment_sms_notification_topic             0          1               1               0               consumer-payment-consumers-1-d9265063-fc38-40c7-8f4e-488b5eab41cf /172.16.8.232   consumer-payment-consumers-1
+payment-consumers payment_sms_notification_topic             1          1576            1576            0               consumer-payment-consumers-1-d9265063-fc38-40c7-8f4e-488b5eab41cf /172.16.8.232   consumer-payment-consumers-1
+payment-consumers neft.mis.inbound.kafka.topic               0          77              77              0               consumer-payment-consumers-2-52d82aab-757a-4df9-92ea-af84f33dd45e /172.16.8.232   consumer-payment-consumers-2
+payment-consumers rtgs.inbound.kafka.topic                   0          6               6               0               consumer-payment-consumers-7-e46ada29-1369-4ebd-9a33-78946c34bf31 /172.16.8.232   consumer-payment-consumers-7
+payment-consumers rtgs.mis.inbound.kafka.topic               0          8               8               0               consumer-payment-consumers-3-67aec607-7c3e-4788-91bf-6cfe80004dcf /172.16.8.232   consumer-payment-consumers-3[osuser@bastion ~]$
+[osuser@bastion ~]$
+[osuser@bastion ~]$
+[osuser@bastion ~]$
+
+
+[osuser@bastion ~]$
+[osuser@bastion ~]$
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get pods -n dev-kafka | grep exporter
+dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7    1/1     Running   1 (4d16h ago)    6d2h
+[osuser@bastion ~]$ oc logs $(oc get pods -n dev-kafka | grep exporter | awk '{print $1}') \
+>   -n dev-kafka --tail=20 | grep -iE "error|warn|connected"
+[osuser@bastion ~]$ oc adm top node | grep -E "NAME|worker"
+NAME                      CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
+worker1.dev.sbiepay.sbi   1024m        6%     29662Mi         46%
+worker1.integ.epay.sbi    3752m        24%    30346Mi         47%
+worker1.sit.epay.sbi      2277m        14%    28950Mi         45%
+worker1.uat.epay.sbi      1992m        12%    27514Mi         43%
+worker2.dev.sbiepay.sbi   2189m        14%    53911Mi         85%
+worker2.integ.epay.sbi    953m         6%     20417Mi         32%
+worker2.sit.epay.sbi      2717m        17%    26912Mi         42%
+worker2.uat.epay.sbi      3305m        21%    40478Mi         63%
+worker3.dev.sbiepay.sbi   2388m        15%    38006Mi         60%
+worker3.integ.epay.sbi    776m         5%     22238Mi         35%
+worker3.sit.epay.sbi      1060m        6%     23246Mi         36%
+worker3.uat.epay.sbi      2230m        14%    36865Mi         58%
+[osuser@bastion ~]$ oc get pods -n openshift-operators | grep amq-streams
+amq-streams-cluster-operator-v3.0.1-2-6b7669fd4c-g9tx7   1/1     Running   0              13d
+[osuser@bastion ~]$ oc describe pod -n openshift-operators \
+>   $(oc get pods -n openshift-operators | grep amq-streams-cluster | awk '{print $1}') | \
+>   grep -E "Restart Count|Limits|Requests"
+    Restart Count:  0
+    Limits:
+    Requests:
+[osuser@bastion ~]$ oc adm top pod -n openshift-operators | grep amq-streams
+amq-streams-cluster-operator-v3.0.1-2-6b7669fd4c-g9tx7   19m          439Mi
 [osuser@bastion ~]$
