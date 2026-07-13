@@ -1,0 +1,26 @@
+Subject: SBIePay 2.0 — SIT Environment MQ Queue Requirements for NEFT/RTGS/MIS Integration
+Dear Team,
+We have successfully completed NEFT and NEFT MIS integration end-to-end on our DEV environment. We are now proceeding with the SIT environment implementation.
+As done for DEV, we require dedicated IBM MQ queues to be configured on your UAT MQ setup for our SIT environment integration. Kindly create the following queues using the same Queue Manager and Channel details as DEV:
+Queue Manager: SBI_NEFT / SBI_RTGS
+Host: 10.176.10.213
+Channel: SBIEPAY2.SVRCONN
+
+NEFT Queues (SIT):
+Queue TypeQueue NameInboundSIT_NeftInboundQueueOutboundSIT_NeftOutBoundQueueMIS InboundSIT_NeftMISCInboundQueueMIS OutboundSIT_NeftMISCOutBoundQueue
+
+RTGS Queues (SIT):
+Queue TypeQueue NameInboundSIT_RTGSInboundQueueOutboundSIT_RTGSOutBoundQueueMIS InboundSIT_RTGSMISCInboundQueueMIS OutboundSIT_RTGSMISCOutBoundQueue
+
+Total: 8 queues required for SIT environment.
+Please note:
+
+Queue naming convention follows the same pattern as DEV with SIT_ prefix
+Your UAT MQ environment will be used for our SIT integration testing
+No additional firewall/FAR request is needed from our end as all our environments are on the same OpenShift cluster
+
+Kindly confirm the queue names once created so we can proceed with connector configuration on our end at the earliest.
+Thanks and Regards,
+Saadi Mohammad Muzzammil
+DevSecOps Team
+SBI ePay 2.0
