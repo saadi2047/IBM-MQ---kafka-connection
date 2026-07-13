@@ -1,31 +1,12 @@
-[osuser@bastion ~]$ oc get secret -n sit-kafka | grep pull
-jfrog-pull-secret                                    kubernetes.io/dockerconfigjson        1      67d
-[osuser@bastion ~]$ helm get values epay-common -n sit-epay-common | grep -iE "imageRegistry|imagePull|registry"
-WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
-    image: registry.sit.epay.sbi:8443/ubi9/pivotal-gemfire/vmware-gemfire:10.1.2
-    image: registry.sit.epay.sbi:8443/ubi9/gemfire-management-console/gemfire-management-console:latest
-  imagePullSecrets: microservices-sit-pull-secret
-  imageRegistry: registry.dev.epay.sbi:8443
-    image: epaynonprod-registry-quay-quay-enterprise.apps.sit.epay.sbi/redhatdefultimage/debeziumconnect:01
-    imagePullSecrets:
-[osuser@bastion ~]$ helm get values epay-common -n sit-epay-common | grep -iE "imageRegistry|imagePull|registry" | head -10
-WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
-    image: registry.sit.epay.sbi:8443/ubi9/pivotal-gemfire/vmware-gemfire:10.1.2
-    image: registry.sit.epay.sbi:8443/ubi9/gemfire-management-console/gemfire-management-console:latest
-  imagePullSecrets: microservices-sit-pull-secret
-  imageRegistry: registry.dev.epay.sbi:8443
-    image: epaynonprod-registry-quay-quay-enterprise.apps.sit.epay.sbi/redhatdefultimage/debeziumconnect:01
-    imagePullSecrets:
-[osuser@bastion ~]$ oc get secret -n sit-kafka | grep pull
-jfrog-pull-secret                                    kubernetes.io/dockerconfigjson        1      67d
-[osuser@bastion ~]$ oc run test-pull --image=registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3 \
->   --restart=Never -n sit-kafka --dry-run=client -o yaml | grep image
-  - image: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
-[osuser@bastion ~]$ oc get serviceaccount default -n sit-kafka -o yaml | grep -A5 "imagePullSecrets"
-imagePullSecrets:
-- name: default-dockercfg-gwwlv
-kind: ServiceAccount
-metadata:
-  annotations:
-    openshift.io/internal-registry-pull-secret-ref: default-dockercfg-gwwlv
-[osuser@bastion ~]$
+# Check what jfrog-pull-secret contains (which registry it authenticates to)
+oc get secret jfrog-pull-secret -n sit-kafka -o yaml | grep -i "auths\|registry" | head -5
+
+# Check if microservices-sit-pull-secret exists in sit-kafka
+oc get secret -n sit-kafka | grep microservices
+
+# Check what pull secret the DEV kafka connect pods use
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -i "imagePullSecret\|pullSecret"
+
+# Test from SIT connect pod once deployed
+nc -vz 10.176.10.213 2001  # NEFT
+nc -vz 10.176.10.213 2005  # RTGS
