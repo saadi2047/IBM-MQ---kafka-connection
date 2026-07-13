@@ -1,11 +1,14 @@
-[osuser@bastion ~]$ oc get secret -n sit-kafka | grep pull
-jfrog-pull-secret                                    kubernetes.io/dockerconfigjson        1      67d
-[osuser@bastion ~]$ helm get values epay-common -n sit-epay-common | grep -iE "imageRegistry|imagePull|registry"
-WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
-    image: registry.sit.epay.sbi:8443/ubi9/pivotal-gemfire/vmware-gemfire:10.1.2
-    image: registry.sit.epay.sbi:8443/ubi9/gemfire-management-console/gemfire-management-console:latest
-  imagePullSecrets: microservices-sit-pull-secret
-  imageRegistry: registry.dev.epay.sbi:8443
-    image: epaynonprod-registry-quay-quay-enterprise.apps.sit.epay.sbi/redhatdefultimage/debeziumconnect:01
-    imagePullSecrets:
-[osuser@bastion ~]$
+# Check what registry SIT uses
+helm get values epay-common -n sit-epay-common | grep -iE "imageRegistry|imagePull|registry" | head -10
+
+
+# Check pull secrets in sit-kafka namespace
+oc get secret -n sit-kafka | grep pull
+
+# Check if the image is accessible from SIT
+oc run test-pull --image=registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3 \
+  --restart=Never -n sit-kafka --dry-run=client -o yaml | grep image
+
+# Also check what imagePullSecrets the sit-kafka namespace has
+oc get serviceaccount default -n sit-kafka -o yaml | grep -A5 "imagePullSecrets"
+
