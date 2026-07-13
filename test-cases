@@ -1,0 +1,276 @@
+Sure! Here are all 17 test cases with commands, step by step:
+
+---
+
+## TC-INFRA-01 — Kafka Broker Health Check
+
+```bash
+oc get pods -n dev-kafka | grep broker
+```
+**Pass:** All 3 brokers Running, READY 1/1, RESTARTS 0
+
+---
+
+## TC-INFRA-02 — Broker Anti-Affinity Verification
+
+```bash
+oc get pods -n dev-kafka -o wide | grep broker
+```
+**Pass:** broker-0 on worker1, broker-1 on worker2, broker-2 on worker3
+
+---
+
+## TC-INFRA-03 — MQ Connectivity NEFT Port 2001
+
+```bash
+oc rsh dev-kafka-connect-mq-connect-0 -n dev-kafka
+nc -vz 10.176.10.213 2001
+exit
+```
+**Pass:** `Ncat: Connected to 10.176.10.213:2001`
+
+---
+
+## TC-INFRA-04 — MQ Connectivity RTGS Port 2005
+
+```bash
+oc rsh dev-kafka-connect-mq-connect-0 -n dev-kafka
+nc -vz 10.176.10.213 2005
+exit
+```
+**Pass:** `Ncat: Connected to 10.176.10.213:2005`
+
+---
+
+## TC-INFRA-05 — All Connectors Running Status
+
+```bash
+for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink mis-mq-source mis-mq-sink; do
+  echo "=== $c ==="
+  oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+    curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool | grep "state"
+done
+```
+**Pass:** All 6 connectors show `state: RUNNING`
+
+---
+
+## TC-INFRA-06 — NEFT Inbound Message Flow (MQ → Kafka)
+
+```bash
+# Step 1: Watch for new messages in real time
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.inbound.kafka.topic \
+  --offset latest \
+  --partition 0
+```
+Ask IPH to send test message on `NeftInboundQueue` — message should appear within 2-3 seconds.
+
+**Pass:** Message appears on topic matching IPH sent content
+
+---
+
+## TC-INFRA-07 — NEFT Outbound Message Flow (Kafka → MQ)
+
+```bash
+# Step 1: Produce test message
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-producer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.outbound.kafka.topic
+```
+Type and press Enter:
+```
+>SBIEPY|HDFCH01076TEST01|HDFC0002441|13-Jul-26|1.00|NE003TEST000001
+```
+Press `Ctrl+C` to exit.
+
+```bash
+# Step 2: Verify message on topic
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.outbound.kafka.topic \
+  --from-beginning --max-messages 50 | grep -a "TEST01"
+```
+Ask IPH to confirm receipt on `NeftOutBoundQueue`.
+
+**Pass:** IPH confirms receipt
+
+---
+
+## TC-INFRA-08 — RTGS Inbound Message Flow (MQ → Kafka)
+
+```bash
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic rtgs.inbound.kafka.topic \
+  --offset latest \
+  --partition 0
+```
+Ask IPH to send test message on `RTGSInboundQueue`.
+
+**Pass:** Message appears on `rtgs.inbound.kafka.topic`
+
+---
+
+## TC-INFRA-09 — RTGS Outbound Message Flow (Kafka → MQ)
+
+```bash
+# Step 1: Produce test message
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-producer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic rtgs.outbound.kafka.topic
+```
+Type and press Enter:
+```
+>SBIEPY|RTGSTEST001|HDFC0002441|13-Jul-26|1.00|NE003RTGSTEST01
+```
+Press `Ctrl+C` to exit.
+
+```bash
+# Step 2: Verify on topic
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic rtgs.outbound.kafka.topic \
+  --from-beginning --max-messages 20 | grep -a "RTGSTEST001"
+```
+Ask IPH to confirm receipt on `RTGSOutBoundQueue`.
+
+**Pass:** IPH confirms receipt
+
+---
+
+## TC-INFRA-10 — MIS Inbound Message Flow (MQ → Kafka)
+
+```bash
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.inbound.kafka.topic \
+  --from-beginning --max-messages 20
+```
+Ask IPH to send MIS message on `NeftMISCInboundQueue` after a NEFT transaction ACK.
+
+**Pass:** MIS message received on `neft.mis.inbound.kafka.topic`
+
+---
+
+## TC-INFRA-11 — MIS Outbound Message Flow (Kafka → MQ)
+
+```bash
+# Step 1: Produce test MIS message
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-producer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.outbound.kafka.topic
+```
+Type and press Enter:
+```
+>SBIEPAY_NEFT|HDFCH01076TEST|HDFC0002441|13-Jul-26|Y|NA
+```
+Press `Ctrl+C` to exit.
+
+```bash
+# Step 2: Verify on topic
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.outbound.kafka.topic \
+  --from-beginning --max-messages 20 | grep -a "TEST"
+```
+Ask IPH to confirm receipt on `NeftMISCOutBoundQueue`.
+
+**Pass:** IPH confirms receipt
+
+---
+
+## TC-INFRA-12 — Topic Health
+
+```bash
+for topic in neft.inbound.kafka.topic neft.outbound.kafka.topic \
+  rtgs.inbound.kafka.topic rtgs.outbound.kafka.topic \
+  neft.mis.inbound.kafka.topic neft.mis.outbound.kafka.topic; do
+  echo "=== $topic ==="
+  oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+    bin/kafka-topics.sh --bootstrap-server localhost:9092 \
+    --describe --topic $topic
+done
+```
+**Pass:** ISR count = replication factor for all topics, no under-replicated partitions
+
+---
+
+## TC-INFRA-13 — Consumer Group Lag
+
+```bash
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-consumer-groups.sh \
+  --bootstrap-server localhost:9092 \
+  --describe --group payment-consumers 2>/dev/null
+```
+**Pass:** LAG column shows 0 for all partitions
+
+---
+
+## TC-INFRA-14 — Connector Auto-Recovery
+
+```bash
+# Step 1: Restart connector task
+oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+  curl -s -X POST http://localhost:8083/connectors/neft-mq-source/tasks/0/restart
+
+# Step 2: Wait 10 seconds then verify
+sleep 10
+oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+  curl -s http://localhost:8083/connectors/neft-mq-source/status | python3 -m json.tool | grep "state"
+```
+**Pass:** Connector returns to `RUNNING` within 30 seconds
+
+---
+
+## TC-INFRA-15 — Kafka Exporter Metrics
+
+```bash
+oc get pods -n dev-kafka | grep exporter
+
+oc logs $(oc get pods -n dev-kafka | grep exporter | awk '{print $1}') \
+  -n dev-kafka --tail=20 | grep -iE "error|warn|connected"
+```
+**Pass:** Exporter pod Running 1/1, no errors in logs
+
+---
+
+## TC-INFRA-16 — Node Memory Health
+
+```bash
+oc adm top node | grep -E "NAME|worker"
+```
+**Pass:** No worker node above 75% memory
+
+---
+
+## TC-INFRA-17 — AMQ Operator Health
+
+```bash
+# Status
+oc get pods -n openshift-operators | grep amq-streams
+
+# Resource limits and restarts
+oc describe pod -n openshift-operators \
+  $(oc get pods -n openshift-operators | grep amq-streams-cluster | awk '{print $1}') | \
+  grep -E "Restart Count|Limits|Requests"
+
+# Memory usage
+oc adm top pod -n openshift-operators | grep amq-streams
+```
+**Pass:** Running 1/1, Memory Limit 1Gi, Restart Count 0, memory usage < 750Mi
+
+---
+
+Run them one by one and share output — we'll mark each PASS/FAIL and update the document.
