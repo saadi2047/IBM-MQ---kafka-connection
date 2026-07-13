@@ -1,12 +1,29 @@
-# Check what jfrog-pull-secret contains (which registry it authenticates to)
-oc get secret jfrog-pull-secret -n sit-kafka -o yaml | grep -i "auths\|registry" | head -5
-
-# Check if microservices-sit-pull-secret exists in sit-kafka
-oc get secret -n sit-kafka | grep microservices
-
-# Check what pull secret the DEV kafka connect pods use
-oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -i "imagePullSecret\|pullSecret"
-
-# Test from SIT connect pod once deployed
-nc -vz 10.176.10.213 2001  # NEFT
-nc -vz 10.176.10.213 2005  # RTGS
+[osuser@bastion ~]$ oc project sit-kafka
+Now using project "sit-kafka" on server "https://api.dev.sbiepay.sbi:6443".
+[osuser@bastion ~]$ oc get pods -n sit-kafka
+NAME                                                 READY   STATUS    RESTARTS         AGE
+sit-console-console-deployment-594f7f5f7-2kkj7       2/2     Running   0                83d
+sit-kafka-cluster-broker-0                           1/1     Running   0                6d3h
+sit-kafka-cluster-broker-1                           1/1     Running   0                6d3h
+sit-kafka-cluster-broker-2                           1/1     Running   0                6d3h
+sit-kafka-cluster-controller-3                       1/1     Running   0                85d
+sit-kafka-cluster-controller-4                       1/1     Running   0                70d
+sit-kafka-cluster-controller-5                       1/1     Running   0                31d
+sit-kafka-cluster-cruise-control-f99978486-vb5dl     1/1     Running   59 (2d14h ago)   31d
+sit-kafka-cluster-entity-operator-67865b654f-ssvbm   2/2     Running   0                31d
+[osuser@bastion ~]$ oc rsh sit-kafka-cluster-broker-0
+sh-5.1$ nc -vz 10.176.10.213 2001
+Ncat: Version 7.92 ( https://nmap.org/ncat )
+Ncat: Connected to 10.176.10.213:2001.
+Ncat: 0 bytes sent, 0 bytes received in 0.02 seconds.
+sh-5.1$ nc -vz 10.176.10.213 2005
+Ncat: Version 7.92 ( https://nmap.org/ncat )
+Ncat: Connected to 10.176.10.213:2005.
+Ncat: 0 bytes sent, 0 bytes received in 0.01 seconds.
+sh-5.1$
+exit
+[osuser@bastion ~]$ oc get secret jfrog-pull-secret -n sit-kafka -o yaml | grep -i "auths\|registry" | head -5
+[osuser@bastion ~]$ oc get secret -n sit-kafka | grep microservices
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -i "imagePullSecret\|pullSecret"
+      imagePullSecrets:
+[osuser@bastion ~]$
