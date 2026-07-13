@@ -1,13 +1,9 @@
-oc get pods -n sit-kafka -o wide | grep broker
+# Check current connect image in DEV
+oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep "image:"
 
-oc exec sit-kafka-cluster-broker-0 -n sit-kafka -- \
-  bin/kafka-topics.sh \
-  --bootstrap-server localhost:9092 \
-  --list | grep -iE "neft|rtgs|mis"
+# Also check from the running pod
+oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka | grep "Image:"
 
-oc get pods -n sit-kafka | grep connect
-oc get kafkaconnect -n sit-kafka
+# Check what's in the DEV values.yaml for connect image
+helm get values epay-common -n dev-epay-common | grep -A5 "kafkaConnect"
 
-oc get kafkaconnector -n sit-kafka
-
-helm get values epay-common -n sit-epay-common | grep -A20 "kafkaConnect"
