@@ -1,5 +1,11 @@
-# Check if SIT uses same registry or different
-oc get secret -n sit-kafka | grep pull
-
-# Check what registry SIT currently uses
-helm get values epay-common -n sit-epay-common | grep -iE "imageRegistry|imagePull|registry"
+[osuser@bastion ~]$ oc get secret -n sit-kafka | grep pull
+jfrog-pull-secret                                    kubernetes.io/dockerconfigjson        1      67d
+[osuser@bastion ~]$ helm get values epay-common -n sit-epay-common | grep -iE "imageRegistry|imagePull|registry"
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
+    image: registry.sit.epay.sbi:8443/ubi9/pivotal-gemfire/vmware-gemfire:10.1.2
+    image: registry.sit.epay.sbi:8443/ubi9/gemfire-management-console/gemfire-management-console:latest
+  imagePullSecrets: microservices-sit-pull-secret
+  imageRegistry: registry.dev.epay.sbi:8443
+    image: epaynonprod-registry-quay-quay-enterprise.apps.sit.epay.sbi/redhatdefultimage/debeziumconnect:01
+    imagePullSecrets:
+[osuser@bastion ~]$
