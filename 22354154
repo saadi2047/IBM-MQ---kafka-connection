@@ -47,7 +47,255 @@ int-kafka-cluster-controller-5                       1/1     Running   0        
 int-kafka-cluster-cruise-control-7558ff4cdc-kn6p2    1/1     Running   368 (4d14h ago)   172d
 int-kafka-cluster-entity-operator-79699cdd59-z47jk   2/2     Running   5 (172d ago)      172d
 [osuser@bastion ~]$
+[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink mis-mq-source mis-mq-sink; do
+>   echo "=== $c ==="
+>   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
+>     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool
+> done
+=== neft-mq-source ===
+{
+    "name": "neft-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+=== neft-mq-sink ===
+{
+    "name": "neft-mq-sink",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "sink"
+}
+=== mis-mq-source ===
+{
+    "name": "mis-mq-source",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "source"
+}
+=== mis-mq-sink ===
+{
+    "name": "mis-mq-sink",
+    "connector": {
+        "state": "RUNNING",
+        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+    },
+    "tasks": [
+        {
+            "id": 0,
+            "state": "RUNNING",
+            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
+        }
+    ],
+    "type": "sink"
+}
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.inbound.kafka.topic \
+>   --from-beginning \
+>   --property print.timestamp=true \
+>   --max-messages 100
+CreateTime:1782800369651        SBIEPY|HDFCH01076995101|HDFC0002441|30-Jun-26|10.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782800837618        SBIEPY|HDFCH01076995102|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782801156426        SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782802298565        SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782802304541        SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782802514726        SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782803497119        SBIEPY|HDFCH01076995103|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782804114414        SBIEPY|HDFCH01076995104|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782804727853        SBIEPY|HDFCH01076995104|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782817759413        SBIEPY|HDFCH01076995105|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782818874303        SBIEPY|HDFCH01076995106|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782819324917        SBIEPY|HDFCH01076995107|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782819916136        SBIEPY|HDFCH01076995108|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782823228436        SBIEPY|HDFCH01076990111|HDFC0002441|30-Jun-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782892021784        SBIEPY|HDFCH01076990111|HDFC0002441|01-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1782896637662        SBIEPY|HDFCH01076990112|HDFC0002441|01-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1783062514224        SBIEPY|HDFCH01076996721|HDFC0002441|03-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1783064373749        SBIEPY|HDFCH01076994381|HDFC0002441|03-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1783334630360        SBIEPY|HDFCH01076993521|HDFC0002441|03-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1783334630361        SBIEPY|HDFCH01076994361|HDFC0002441|03-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1783340927508        SBIEPY|HDFCH01076995701|HDFC0002441|03-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1783341262882        SBIEPY|HDFCH01076995704|HDFC0002441|03-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1783342046856        SBIEPY|HDFCH01076994731|HDFC0002441|03-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1783666501185        SBIEPY|HDFCH01076914031|HDFC0002441|10-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1783683121823        SBIEPY|HDFCH01076914032|HDFC0002441|10-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+CreateTime:1783921468667        SBIEPY|HDFCH01076914033|HDFC0002441|10-Jul-26|1.00|NE003PWIIRBRMPVMQZZ0
+CreateTime:1783494628811        SBIEPY|HDFCH01076994031|HDFC0002441|08-Jul-26|1.00|NE003W66QZRQMOX5ENAY
+^Z
+[1]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.inbound.kafka.topic --from-beginning --property print.timestamp=true --max-messages 100
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.outbound.kafka.topic \
+>   --from-beginning \
+>   --property print.timestamp=true \
+>   --max-messages 100
+CreateTime:1783062514469        SBIEPY|HDFCH01076996721|HDFC0002441|03-Jul-26|Y|NA
+CreateTime:1783064373870        SBIEPY|HDFCH01076994381|HDFC0002441|03-Jul-26|Y|NA
+CreateTime:1783334630527        SBIEPY|HDFCH01076993521|HDFC0002441|03-Jul-26|N|NEFT/RTGS Invalid input date format
+CreateTime:1783334630633        SBIEPY|HDFCH01076994361|HDFC0002441|03-Jul-26|N|NEFT/RTGS Invalid input date format
+CreateTime:1783340927666        SBIEPY|HDFCH01076995701|HDFC0002441|03-Jul-26|N|NEFT/RTGS Invalid input date format
+CreateTime:1783341263077        SBIEPY|HDFCH01076995704|HDFC0002441|03-Jul-26|N|NEFT/RTGS Invalid input date format
+CreateTime:1783342046903        SBIEPY|HDFCH01076994731|HDFC0002441|03-Jul-26|N|NEFT/RTGS Invalid input date format
+CreateTime:1783494629121        SBIEPY|HDFCH01076994031|HDFC0002441|08-Jul-26|Y|NA
+CreateTime:1783666501653        SBIEPY|HDFCH01076914031|HDFC0002441|10-Jul-26|N|NEFT/RTGS Payment already made. Duplicate request received.
+CreateTime:1783683122003        SBIEPY|HDFCH01076914032|HDFC0002441|10-Jul-26|N|Invalid NEFT/RTGS Request
+CreateTime:1783921470953        SBIEPY|HDFCH01076914033|HDFC0002441|10-Jul-26|Y|NA
+^Z
+[2]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.outbound.kafka.topic --from-beginning --property print.timestamp=true --max-messages 100
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.mis.inbound.kafka.topic \
+>   --offset latest \
+>   --partition 0
+^Z
+[3]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.mis.inbound.kafka.topic --offset latest --partition 0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka --   bin/kafka-console-consumer.sh   --bootstrap-server localhost:9092   --topic neft.mis.inbound.kafka.topic   --offset latest   --partition 0
+^Z
+[4]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.mis.inbound.kafka.topic --offset latest --partition 0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka --   bin/kafka-console-consumer.sh   --bootstrap-server localhost:9092   --topic neft.mis.inbound.kafka.topic   --offset latest   --partition 0
+^Z
+[5]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.mis.inbound.kafka.topic --offset latest --partition 0
+[osuser@bastion ~]$
 
+
+Overview
+Topics
+neft.mis.inbound.kafka.topic
+neft.mis.inbound.kafka.topic
+
+Messages 
+
+Partitions 
+1
+
+Consumer Groups 
+1
+
+Configuration 
+messages=latest retrieve=50
+This table has selectable rows. It can be navigated by row using tab, and each row can be selected using space or enter.
+
+Offset
+
+Timestamp (UTC)
+Key	Headers	Value	Size 
+76
+Partition 0
+7/13/26, 5:56:14 AM	No data	No data	
+SBIEPAY_NEFT | HDFCH01076914033| RBIP202607106288694903| HDFC0002441| 50200070668991| RATNANJALI SKY LINE LLP| SBIN0011777| 2399990004372| NE003PWIIRBRMPVMQZZ0| SBIEPAY NEFT| 1| 10-Jul-26| 0001| 10-Jul-26| 10-Jul-26| | SBIEPYNE003PWIIRBRMPVMQZZ0
+483 B
+75
+Partition 0
+7/8/26, 7:15:08 AM	No data	No data	
+SBIEPAY_NEFT | HDFCH01076994031| RBIP202607086288694901| HDFC0002441| 50200070668991| RATNANJALI SKY LINE LLP| SBIN0011777| 2399990004372| NE003W66QZRQMOX5ENAY| SBIEPAY NEFT| 1| 08-Jul-26| 0001| 08-Jul-26| 08-Jul-26| | SBIEPYNE003W66QZRQMOX5ENAY
+483 B
+74
+Partition 0
+7/6/26, 10:43:50 AM	No data	No data	
+Binary or non-UTF-8 encoded data cannot be displayed
+791 B
+73
+Partition 0
+7/1/26, 9:23:12 AM	No data	No data	
+vxczvxvx
+7 B
+72
+Partition 0
+6/30/26, 10:35:53 AM	No data	No data	
+HI IPH
+5 B
+71
+Partition 0
+6/30/26, 10:35:47 AM	No data	No data	
+HI data
+6 B
+
+
+-----------------------------------------------
+
+Overview
+Topics
+neft.mis.outbound.kafka.topic
+neft.mis.outbound.kafka.topic
+
+Messages 
+
+Partitions 
+1
+
+Consumer Groups 
+1
+
+Configuration 
+messages=latest retrieve=50
+This table has selectable rows. It can be navigated by row using tab, and each row can be selected using space or enter.
+
+Offset
+
+Timestamp (UTC)
+Key	Headers	Value	Size 
+541
+Partition 0
+7/13/26, 5:56:14 AM	
+SBIEPAY_Dealer_Mis
+No data	
+SBIEPAY_NEFT|HDFCH01076914033|HDFC0002441|10-Jul-26|Y|NA
+74 B
+540
+Partition 0
+7/8/26, 7:15:27 AM	
+SBIEPAY_Dealer_Mis
+No data	
+SBIEPAY_NEFT | HDFCH01076994031| HDFC0002441| 08-Jul-26|N|vanNo contains leading or trailing spaces. Please provide a valid value.
+209 B
+539
+Partition 0
+7/6/26, 10:43:50 AM	
+SBIEPAY_Dealer_Mis
+No data	
+Binary or non-UTF-8 encoded data cannot be displayed
+485 B
+538
+Partition 0
+6/30/26, 10:32:03 AM	No data	No data	
+testing message from kafka
+25 B
+537
+Partition 0
+6/30/26, 10:31:56 AM	No data	No data	
+saadi
+4 B
 ---------------------------
 
 Preparing truststore for Cruise Control
