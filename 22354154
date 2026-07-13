@@ -1,19 +1,43 @@
-# Check MIS inbound - all messages from beginning
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-console-consumer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic neft.mis.inbound.kafka.topic \
-  --from-beginning \
-  --max-messages 20
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.mis.inbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 20
+HI data
+HI IPH
+vxczvxvx
+RFH 4▒MQSTR   ▒ <mcd><Msd>jms_text</Msd></mcd>  ▒<jms><Dst>queue://SBI_NEFT/NeftMISCInboundQueue?destDescription=Queue+created+from+Queue+%27NeftMISCInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2730-Jun-2026+15%3A53%3A29%27</Dst><Tms>1783334441314</Tms><Dlv>2</Dlv></jms>   SBIEPAY_NEFT                       |          HDFCH01076993521|    RBIP202607036285863521|               HDFC0002441|            50200070668991|                           RATNANJALI SKY LINE LLP|               SBIN0011777|             2399990004372|      NE003W66QZRQMOX5ENAY|              SBIEPAY NEFT|                         1|                 03-Jul-26|                      0002|                 03-Jul-26|                 03-Jul-26|          |         SBIEPYNE003W66QZRQMOX5ENAY
+SBIEPAY_NEFT                       |          HDFCH01076994031|    RBIP202607086288694901|               HDFC0002441|            50200070668991|                           RATNANJALI SKY LINE LLP|               SBIN0011777|             2399990004372|      NE003W66QZRQMOX5ENAY|              SBIEPAY NEFT|                         1|                 08-Jul-26|                      0001|                 08-Jul-26|                 08-Jul-26|          |         SBIEPYNE003W66QZRQMOX5ENAY
+SBIEPAY_NEFT                       |          HDFCH01076914033|    RBIP202607106288694903|               HDFC0002441|            50200070668991|                           RATNANJALI SKY LINE LLP|               SBIN0011777|             2399990004372|      NE003PWIIRBRMPVMQZZ0|              SBIEPAY NEFT|                         1|                 10-Jul-26|                      0001|                 10-Jul-26|                 10-Jul-26|          |         SBIEPYNE003PWIIRBRMPVMQZZ0
+^Z
+[6]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.mis.inbound.kafka.topic --from-beginning --max-messages 20
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.mis.outbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 20
+saadi
+testing message from kafka
+RFH 4�MQSTR   � <mcd><Msd>jms_text</Msd></mcd>  �<jms><Dst>queue://SBI_NEFT/NeftMISCInboundQueue?destDescription=Queue+created+from+Queue+%27NeftMISCInboundQueue%27+on+Queue+Manager+%27SBI_NEFT%27+at+%2730-Jun-2026+15%3A53%3A29%27</Dst><Tms>1783334441314</Tms><Dlv>2</Dlv></jms>   SBIEPAY_NEFT                       |          HDFCH01076993521|               HDFC0002441|                 03-Jul-26|N|NEFT/RTGS Invalid IFSC code format
+SBIEPAY_NEFT                       |          HDFCH01076994031|               HDFC0002441|                 08-Jul-26|N|vanNo contains leading or trailing spaces. Please provide a valid value.
+SBIEPAY_NEFT|HDFCH01076914033|HDFC0002441|10-Jul-26|Y|NA
+^Z
+[7]+  Stopped                 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic neft.mis.outbound.kafka.topic --from-beginning --max-messages 20
+[osuser@bastion ~]$ oc logs dev-kafka-connect-mq-connect-2 -n dev-kafka --tail=30 | grep -iE "mis|NeftMISC|message|error"
+2026-07-13 09:15:54,940 INFO 172.16.8.245 - - [13/Jul/2026:09:15:54 +0000] "GET /connectors/mis-mq-sink/config HTTP/1.1" 200 541 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-1835]
+2026-07-13 09:15:54,942 INFO 172.16.8.245 - - [13/Jul/2026:09:15:54 +0000] "GET /connectors/mis-mq-sink/status HTTP/1.1" 200 291 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-1834]
+2026-07-13 09:15:54,943 INFO 172.16.8.245 - - [13/Jul/2026:09:15:54 +0000] "GET /connectors/mis-mq-source/config HTTP/1.1" 200 544 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-1835]
+2026-07-13 09:15:54,946 INFO 172.16.8.245 - - [13/Jul/2026:09:15:54 +0000] "GET /connectors/mis-mq-sink/status HTTP/1.1" 200 291 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-1835]
+2026-07-13 09:15:54,946 INFO 172.16.8.245 - - [13/Jul/2026:09:15:54 +0000] "GET /connectors/mis-mq-source/status HTTP/1.1" 200 295 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-1828]
+2026-07-13 09:15:54,946 INFO 172.16.8.245 - - [13/Jul/2026:09:15:54 +0000] "GET /connectors/mis-mq-sink/topics HTTP/1.1" 200 60 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-1833]
+2026-07-13 09:15:54,948 INFO 172.16.8.245 - - [13/Jul/2026:09:15:54 +0000] "GET /connectors/mis-mq-source/status HTTP/1.1" 200 295 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-1833]
+2026-07-13 09:15:54,949 INFO 172.16.8.245 - - [13/Jul/2026:09:15:54 +0000] "GET /connectors/mis-mq-source/topics HTTP/1.1" 200 61 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-1836]
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-console-consumer.sh \
+>   --bootstrap-server localhost:9092 \
+>   --topic neft.mis.inbound.kafka.topic \
+>   --from-beginning \
+>   --max-messages 20
 
-
-# Check MIS outbound - all messages from beginning
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-console-consumer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic neft.mis.outbound.kafka.topic \
-  --from-beginning \
-  --max-messages 20
-
-# Check mis-mq-source connector logs for any MQ activity
-oc logs dev-kafka-connect-mq-connect-2 -n dev-kafka --tail=30 | grep -iE "mis|NeftMISC|message|error"
