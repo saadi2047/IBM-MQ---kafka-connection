@@ -1,26 +1,19 @@
-[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink mis-mq-source mis-mq-sink; do
->   echo "=== $c ==="
->   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka -- \
->     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool | grep "state"
-> done
-=== neft-mq-source ===
-        "state": "RUNNING",
-            "state": "RUNNING",
-=== neft-mq-sink ===
-        "state": "RUNNING",
-            "state": "RUNNING",
-=== mis-mq-source ===
-        "state": "RUNNING",
-            "state": "RUNNING",
-=== mis-mq-sink ===
-        "state": "RUNNING",
-            "state": "RUNNING",
-[osuser@bastion ~]$ oc get pods -n dev-kafka -o wide | grep broker
-dev-kafka-cluster-broker-0                           1/1     Running   0                6d2h   172.16.8.14     worker1.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-broker-1                           1/1     Running   0                6d2h   172.16.14.154   worker2.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-broker-2                           1/1     Running   0                6d2h   172.16.17.92    worker3.dev.sbiepay.sbi   <none>           <none>
-[osuser@bastion ~]$ oc describe pod -n openshift-operators \
->   $(oc get pods -n openshift-operators | grep amq-streams-cluster | awk '{print $1}') | \
->   grep -E "Restart Count|Exit Code|Last State"
-    Restart Count:  0
-[osuser@bastion ~]$
+# Check MIS inbound - all messages from beginning
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.inbound.kafka.topic \
+  --from-beginning \
+  --max-messages 20
+
+
+# Check MIS outbound - all messages from beginning
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.outbound.kafka.topic \
+  --from-beginning \
+  --max-messages 20
+
+# Check mis-mq-source connector logs for any MQ activity
+oc logs dev-kafka-connect-mq-connect-2 -n dev-kafka --tail=30 | grep -iE "mis|NeftMISC|message|error"
