@@ -1,9 +1,12 @@
-oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A3 "imagePullSecrets"
-
-# Check if the image can be pulled using jfrog secret
-oc get secret jfrog-pull-secret -n sit-kafka -o jsonpath='{.data.\.dockerconfigjson}' | \
-  base64 -d | python3 -m json.tool | grep -i "registry\|server\|auth" | head -10
-
-# Check if microservices pull secret exists in sit-epay-common
-oc get secret -n sit-epay-common | grep -iE "pull|microservices|jfrog"
-
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep -A3 "imagePullSecrets"
+      imagePullSecrets:
+      - name: microservices-dev-pull-secret
+  tls:
+    trustedCertificates:
+[osuser@bastion ~]$ oc get secret jfrog-pull-secret -n sit-kafka -o jsonpath='{.data.\.dockerconfigjson}' | \
+>   base64 -d | python3 -m json.tool | grep -i "registry\|server\|auth" | head -10
+    "auths": {
+            "auth": "ZGV2c2Vjb3BzdXNlcjpleUoyWlhJaU9pSXlJaXdpZEhsd0lqb2lTbGRVSWl3aVlXeG5Jam9pVWxNeU5UWWlMQ0pyYVdRaU9pSnBOWEYwTmpKcFFsQXRkMlZEUkRVMWFta3pUakp1ZVdJNGNsVnBTVlZ3VG5WRGRtdFZjVUY2ZEVZd0luMC5leUp6ZFdJaU9pSnFabUZqUURBeGF6VTJhelZyYzI1cVltZDNNV2hsZUdwNWN6UXdNMk5qTDNWelpYSnpMMlJsZG5ObFkyOXdjM1Z6WlhJaUxDSnpZM0FpT2lKaGNIQnNhV1ZrTFhCbGNtMXBjM05wYjI1ekwzSnZiR1Z6T21sMFpYQmhlWEJuTFhOaWFXVndZWGt5T2x3aVZtbGxkMlZ5WENJc0lpd2lZWFZrSWpvaUtrQXFJaXdpYVhOeklqb2lhbVptWlVBd01XczFObXMxYTNOdWFtSm5kekZvWlhocWVYTTBNRE5qWXlJc0ltVjRjQ0k2TVRnd09EZzVOVFEzTkN3aWFXRjBJam94TnpjM016VTVORGMwTENKcWRHa2lPaUppT1dFNVpqZzFOUzAyWVRFeUxUUXhOakl0T0dGbE1pMDBNMkl5WmpJMlpXSmlNVGNpZlEuaG9oLXp5TUMwRnp1WEVoOXYyMHF6SHl6TVRxMWgwQXpoYzVmZEk2YXZWY1FxRjNoRU81cHFBY2pGaEI5RWk5ei1lZVBua1VCdzFfdEZsbWlkRVBqR0lqcnBYaW1CV1dVM1lBcjhoM2xUaWZodUtpY0RsTFdndVJZNEdsT0pmS2wteVV3MEFjVUhQQ3UxRUJ6LUIxNlNweU03VzliZ0J0VDRQenJMOG0tcG0tSTBtSW1KMHM3U3h0eGM3RkdJYVk1VVh4NHRoeVdOOEhYTm5jZkZpYU14bDJTd3ZOSFB2ZHhRRXZyZG9HenMteU92TzdXZkpBeVY4RGl5ZV9hREFKOW5JWU5aMXZ2QmR0Z3NiWVlhMVNGTU5aSUI2WHFGYlI0V0hXMXctQzVrZ1V3X0w1YVBpb0psblhyaGhQT1F0WFZ3WUlleDFWYjR2VURvb3I1WFdWeGFB"
+[osuser@bastion ~]$ oc get secret -n sit-epay-common | grep -iE "pull|microservices|jfrog"
+jfrog-pull-secret                       kubernetes.io/dockerconfigjson   1      67d
+[osuser@bastion ~]$
