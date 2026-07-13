@@ -1,9 +1,55 @@
-# Check current connect image in DEV
-oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep "image:"
-
-# Also check from the running pod
-oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka | grep "Image:"
-
-# Check what's in the DEV values.yaml for connect image
-helm get values epay-common -n dev-epay-common | grep -A5 "kafkaConnect"
-
+Last login: Mon Jul 13 14:59:48 2026 from 10.30.64.125
+[osuser@bastion ~]$ oc get pods -n sit-kafka -o wide | grep broker
+sit-kafka-cluster-broker-0                           1/1     Running   0                6d3h   172.16.24.19    worker1.sit.epay.sbi   <none>           <none>
+sit-kafka-cluster-broker-1                           1/1     Running   0                6d3h   172.16.29.43    worker3.sit.epay.sbi   <none>           <none>
+sit-kafka-cluster-broker-2                           1/1     Running   0                6d2h   172.16.26.234   worker2.sit.epay.sbi   <none>           <none>
+[osuser@bastion ~]$ oc exec sit-kafka-cluster-broker-0 -n sit-kafka -- \
+>   bin/kafka-topics.sh \
+>   --bootstrap-server localhost:9092 \
+>   --list | grep -iE "neft|rtgs|mis"
+neft.inbound.kafka.topic
+neft.mis.inbound.kafka.topic
+neft.outbound.kafka.topic
+rtgs.inbound.kafka.topic
+rtgs.mis.inbound.kafka.topic
+[osuser@bastion ~]$ oc get pods -n sit-kafka | grep connect
+[osuser@bastion ~]$ oc get kafkaconnect -n sit-kafka
+No resources found in sit-kafka namespace.
+[osuser@bastion ~]$ oc get kafkaconnector -n sit-kafka
+No resources found in sit-kafka namespace.
+[osuser@bastion ~]$ helm get values epay-common -n sit-epay-common | grep -A20 "kafkaConnect"
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
+  kafkaConnect:
+    bootstrapServers: sit-kafka-cluster-kafka-bootstrap.sit-kafka.svc.cluster.local:9093
+    config:
+      config:
+        storage:
+          topic: sit-connect-cluster-configs
+      group:
+        id: sit-connect-cluster
+      offset:
+        flush:
+          interval:
+            ms: 10000
+          timeout:
+            ms: 5000
+        storage:
+          topic: sit-connect-cluster-offsets
+      status:
+        storage:
+          topic: sit-connect-cluster-status
+    connectors:
+    - config:
+[osuser@bastion ~]$ oc get kafkaconnect dev-kafka-connect-mq -n dev-kafka -o yaml | grep "image:"
+  image: registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
+[osuser@bastion ~]$ oc describe pod dev-kafka-connect-mq-connect-0 -n dev-kafka | grep "Image:"
+    Image:         registry.dev.sbiepay.sbi:8443/library/kafka-connect-mq:v3
+[osuser@bastion ~]$ helm get values epay-common -n dev-epay-common | grep -A5 "kafkaConnect"
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/osuser/.kube/config
+  kafkaConnect:
+    bootstrapServers: dev-kafka-cluster-kafka-bootstrap.dev-kafka.svc.cluster.local:9093
+    config:
+      config:
+        storage:
+          topic: dev-kafka-connect-mq-configs
+[osuser@bastion ~]$
