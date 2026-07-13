@@ -155,3 +155,25 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
   --topic neft.mis.inbound.kafka.topic \
   --offset latest \
   --partition 0
+
+
+
+# Check MIS inbound - all messages from beginning
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.inbound.kafka.topic \
+  --from-beginning \
+  --max-messages 20
+
+
+# Check MIS outbound - all messages from beginning
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.outbound.kafka.topic \
+  --from-beginning \
+  --max-messages 20
+
+# Check mis-mq-source connector logs for any MQ activity
+oc logs dev-kafka-connect-mq-connect-2 -n dev-kafka --tail=30 | grep -iE "mis|NeftMISC|message|error"
