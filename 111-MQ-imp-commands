@@ -177,3 +177,11 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
 
 # Check mis-mq-source connector logs for any MQ activity
 oc logs dev-kafka-connect-mq-connect-2 -n dev-kafka --tail=30 | grep -iE "mis|NeftMISC|message|error"
+
+
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+  bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic neft.mis.inbound.kafka.topic \
+  --from-beginning \
+  --max-messages 20
