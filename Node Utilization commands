@@ -65,3 +65,14 @@ oc adm top nodes | { head -n 1; sort -k4 -h; }
 Sort Pods by Memory Across the Whole Cluster
 oc adm top pod -A --sort-by='memory'
 
+
+
+# Check all java processes on worker2.dev via pods
+oc adm top pod --all-namespaces 2>/dev/null | grep -f <(oc get pods --all-namespaces -o wide | grep worker2.dev.sbiepay.sbi | awk '{print $2}') | sort -k3 -rh
+
+
+# Check which pods are Java based (Spring Boot / Kafka JVM)
+oc get pods --all-namespaces -o wide | grep worker2.dev.sbiepay.sbi | grep -v "Completed\|Error\|Terminating" | awk '{print $1, $2}'
+
+# Exec into worker2.dev node and check java processes directly
+oc debug node/worker2.dev.sbiepay.sbi -- chroot /host ps aux | grep java | grep -v grep
