@@ -1,23 +1,19 @@
-[osuser@bastion ~]$ oc get pods -n dev-kafka -o wide | grep -E "broker|controller"
-dev-kafka-cluster-broker-0                           1/1     Running   0                7d      172.16.8.14     worker1.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-broker-1                           1/1     Running   0                7d      172.16.14.154   worker2.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-broker-2                           1/1     Running   0                7d      172.16.17.92    worker3.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-controller-3                       1/1     Running   0                38d     172.16.14.66    worker2.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-controller-4                       1/1     Running   0                26d     172.16.14.89    worker2.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-controller-5                       1/1     Running   0                10d     172.16.16.92    worker3.dev.sbiepay.sbi   <none>           <none>
-[osuser@bastion ~]$ oc get pods -n dev-kafka -o wide
-NAME                                                 READY   STATUS    RESTARTS         AGE     IP              NODE                      NOMINATED NODE   READINESS GATES
-dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0                10d     172.16.14.152   worker2.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-broker-0                           1/1     Running   0                7d      172.16.8.14     worker1.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-broker-1                           1/1     Running   0                7d      172.16.14.154   worker2.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-broker-2                           1/1     Running   0                7d      172.16.17.92    worker3.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-controller-3                       1/1     Running   0                38d     172.16.14.66    worker2.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-controller-4                       1/1     Running   0                26d     172.16.14.89    worker2.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-controller-5                       1/1     Running   0                10d     172.16.16.92    worker3.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-cruise-control-d949867dd-qmxmn     1/1     Running   5 (5d12h ago)    10d     172.16.14.151   worker2.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (105d ago)     117d    172.16.15.246   worker2.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7    1/1     Running   1 (5d12h ago)    6d22h   172.16.17.114   worker3.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-connect-mq-connect-0                       1/1     Running   10 (5d12h ago)   10d     172.16.16.93    worker3.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-connect-mq-connect-1                       1/1     Running   10 (5d12h ago)   19d     172.16.8.196    worker1.dev.sbiepay.sbi   <none>           <none>
-dev-kafka-connect-mq-connect-2                       1/1     Running   10 (5d12h ago)   21d     172.16.14.91    worker2.dev.sbiepay.sbi   <none>           <none>
-[osuser@bastion ~]$
+oc adm top pod -n dev-kafka
+
+oc get pods -n dev-kafka -o json | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+print(f'{'Pod':<55} {'CPU Req':<10} {'CPU Lim':<10} {'Mem Req':<10} {'Mem Lim':<10}')
+print('-'*95)
+for pod in data['items']:
+    name = pod['metadata']['name']
+    for c in pod['spec']['containers']:
+        res = c.get('resources', {})
+        req = res.get('requests', {})
+        lim = res.get('limits', {})
+        cpu_req = req.get('cpu', 'none')
+        cpu_lim = lim.get('cpu', 'none')
+        mem_req = req.get('memory', 'none')
+        mem_lim = lim.get('memory', 'none')
+        print(f'{name:<55} {cpu_req:<10} {cpu_lim:<10} {mem_req:<10} {mem_lim:<10}')
+"
