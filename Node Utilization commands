@@ -52,3 +52,16 @@ oc adm top pod --all-namespaces 2>/dev/null | awk 'NR>1 {
   for (ns in ns_mem) 
     printf "%s %dMi\n", ns, ns_mem[ns]
 }' | sort -k2 -rh | head -20
+
+
+------------------
+Sort by Raw Memory Usage (Descending)
+oc adm top nodes | { head -n 1; sort -k4 -hr; }
+
+Sort by Raw Memory Usage (Ascending)
+oc adm top nodes | { head -n 1; sort -k4 -h; }
+
+
+Sort Pods by Memory Across the Whole Cluster
+oc adm top pod -A --sort-by='memory'
+
