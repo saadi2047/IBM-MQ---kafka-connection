@@ -1,0 +1,31 @@
+current
+
+# Environment-level monitoring infrastructure####
+          summary: "DLQ Alert -- failed message received in DLQ or DLT topic"
+          summary: "DLQ Warning -- DLQ or DLT topic at 30% capacity"
+          summary: "DLQ Warning -- DLQ or DLT topic at 50% capacity"
+          summary: "URGENT -- DLQ or DLT topic at 80% capacity"
+          summary: "SLA Breach -- DLQ or DLT topic not cleared in 4 hours"
+          summary: "DLQ or DLT topic receiving high message rate"
+
+
+-----------------------------------------
+
+      # Pod anti-affinity to spread controllers across worker nodes
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: strimzi.io/pool-name
+                    operator: In
+                    values:
+                      - controller
+              topologyKey: kubernetes.io/hostname
+# Environment-level monitoring infrastructure
+          summary: "DLQ Alert -- failed message in {{ $labels.topic }}"
+          summary: "DLQ Warning -- {{ $labels.topic }} at 30% capacity"
+          summary: "DLQ Warning -- {{ $labels.topic }} at 50% capacity"
+          summary: "URGENT -- DLQ {{ $labels.topic }} at 80% capacity"
+          summary: "SLA Breach -- DLQ {{ $labels.topic }} not cleared in 4 hours"
+          summary: "DLQ high message rate on {{ $labels.topic }}"
