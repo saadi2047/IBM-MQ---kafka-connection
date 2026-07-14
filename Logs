@@ -1,2 +1,15 @@
-DEV Kafka — Complete Resource Table:
-PodCPU ReqCPU LimMem ReqMem LimCurrent CPUCurrent Memory% of Limitbroker-012 (KNP)24 (KNP)64Gi (KNP)128Gi (KNP)222m10,198Mi8%broker-112 (KNP)24 (KNP)64Gi (KNP)128Gi (KNP)1147m16,266Mi12%broker-212 (KNP)24 (KNP)64Gi (KNP)128Gi (KNP)911m15,580Mi12%controller-34 (KNP)8 (KNP)8Gi (KNP)16Gi (KNP)60m4,001Mi24%controller-44 (KNP)8 (KNP)8Gi (KNP)16Gi (KNP)79m4,449Mi27%controller-54 (KNP)8 (KNP)8Gi (KNP)16Gi (KNP)65m3,058Mi18%cruise-control122Gi4Gi12m2,237Mi54%entity-operatornonenonenonenone5m778Mi—kafka-exporter200m500m64Mi128Mi36m54Mi42%connect-0244Gi8Gi16m4,205Mi51%connect-1244Gi8Gi9m4,193Mi51%connect-2244Gi8Gi11m4,234Mi51%consolenonenonenonenone12m1,115Mi—
+Pod                                                     CPU-Req   CPU-Lim   Mem-Req   Mem-Lim    Current-CPU   Current-Mem   Mem%-of-Limit
+-------------------------------------------------------------------------------------------------------------------------------
+broker-0                                                12        24        64Gi      128Gi      222m          10,198Mi      8%
+broker-1                                                12        24        64Gi      128Gi      1147m         16,266Mi      12%
+broker-2                                                12        24        64Gi      128Gi      911m          15,580Mi      12%
+controller-3                                            4         8         8Gi       16Gi       60m           4,001Mi       24%
+controller-4                                            4         8         8Gi       16Gi       79m           4,449Mi       27%
+controller-5                                            4         8         8Gi       16Gi       65m           3,058Mi       18%
+cruise-control                                          1         2         2Gi       4Gi        12m           2,237Mi       54%
+connect-0                                               2         4         4Gi       8Gi        16m           4,205Mi       51%
+connect-1                                               2         4         4Gi       8Gi        9m            4,193Mi       51%
+connect-2                                               2         4         4Gi       8Gi        11m           4,234Mi       51%
+kafka-exporter                                          200m      500m      64Mi      128Mi      36m           54Mi          42%
+entity-operator                                         none      none      none      none       5m            778Mi         --
+console                                                 none      none      none      none       12m           1,115Mi       --
