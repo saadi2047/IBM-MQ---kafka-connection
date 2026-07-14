@@ -1,7 +1,21 @@
-oc get pods -n dev-kafka -o custom-columns=\
-"NAME:.metadata.name,\
-CPU-REQ:.spec.containers[0].resources.requests.cpu,\
-CPU-LIM:.spec.containers[0].resources.limits.cpu,\
-MEM-REQ:.spec.containers[0].resources.requests.memory,\
-MEM-LIM:.spec.containers[0].resources.limits.memory"
-
+[osuser@bastion ~]$ oc get pods -n dev-kafka -o custom-columns=\
+> "NAME:.metadata.name,\
+> CPU-REQ:.spec.containers[0].resources.requests.cpu,\
+> CPU-LIM:.spec.containers[0].resources.limits.cpu,\
+> MEM-REQ:.spec.containers[0].resources.requests.memory,\
+> MEM-LIM:.spec.containers[0].resources.limits.memory"
+NAME                                                 CPU-REQ   CPU-LIM   MEM-REQ   MEM-LIM
+dev-console-console-deployment-577c797ccf-8dz7g      <none>    <none>    <none>    <none>
+dev-kafka-cluster-broker-0                           <none>    <none>    <none>    <none>
+dev-kafka-cluster-broker-1                           <none>    <none>    <none>    <none>
+dev-kafka-cluster-broker-2                           <none>    <none>    <none>    <none>
+dev-kafka-cluster-controller-3                       <none>    <none>    <none>    <none>
+dev-kafka-cluster-controller-4                       <none>    <none>    <none>    <none>
+dev-kafka-cluster-controller-5                       <none>    <none>    <none>    <none>
+dev-kafka-cluster-cruise-control-d949867dd-qmxmn     1         2         2Gi       4Gi
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   <none>    <none>    <none>    <none>
+dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7    200m      500m      64Mi      128Mi
+dev-kafka-connect-mq-connect-0                       2         4         4Gi       8Gi
+dev-kafka-connect-mq-connect-1                       2         4         4Gi       8Gi
+dev-kafka-connect-mq-connect-2                       2         4         4Gi       8Gi
+[osuser@bastion ~]$
