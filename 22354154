@@ -1,71 +1,15 @@
-Last login: Mon Jul 13 18:53:44 2026 from 10.30.64.58
-[osuser@bastion ~]$ oc get pods -n dev-kafka
-NAME                                                 READY   STATUS    RESTARTS         AGE
-dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0                10d
-dev-kafka-cluster-broker-0                           1/1     Running   0                6d23h
-dev-kafka-cluster-broker-1                           1/1     Running   0                6d23h
-dev-kafka-cluster-broker-2                           1/1     Running   0                6d23h
-dev-kafka-cluster-controller-3                       1/1     Running   0                38d
-dev-kafka-cluster-controller-4                       1/1     Running   0                26d
-dev-kafka-cluster-controller-5                       1/1     Running   0                10d
-dev-kafka-cluster-cruise-control-d949867dd-qmxmn     1/1     Running   5 (5d10h ago)    10d
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (105d ago)     117d
-dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7    1/1     Running   1 (5d10h ago)    6d20h
-dev-kafka-connect-mq-connect-0                       1/1     Running   10 (5d10h ago)   10d
-dev-kafka-connect-mq-connect-1                       1/1     Running   10 (5d10h ago)   19d
-dev-kafka-connect-mq-connect-2                       1/1     Running   10 (5d10h ago)   21d
-[osuser@bastion ~]$ oc get pods -n sit-kafka
-NAME                                                 READY   STATUS    RESTARTS         AGE
-sit-console-console-deployment-594f7f5f7-2kkj7       2/2     Running   0                83d
-sit-kafka-cluster-broker-0                           1/1     Running   0                6d22h
-sit-kafka-cluster-broker-1                           1/1     Running   0                6d22h
-sit-kafka-cluster-broker-2                           1/1     Running   0                6d22h
-sit-kafka-cluster-controller-3                       1/1     Running   0                86d
-sit-kafka-cluster-controller-4                       1/1     Running   0                71d
-sit-kafka-cluster-controller-5                       1/1     Running   0                32d
-sit-kafka-cluster-cruise-control-f99978486-vb5dl     1/1     Running   59 (3d10h ago)   32d
-sit-kafka-cluster-entity-operator-67865b654f-ssvbm   2/2     Running   0                32d
-[osuser@bastion ~]$ oc get pods -n uat-kafka
-NAME                                                READY   STATUS    RESTARTS          AGE
-uat-console-console-deployment-5d4fb9b74-5n9k6      2/2     Running   3 (86d ago)       95d
-uat-kafka-cluster-broker-0                          1/1     Running   0                 53d
-uat-kafka-cluster-broker-1                          1/1     Running   0                 53d
-uat-kafka-cluster-broker-2                          1/1     Running   0                 172d
-uat-kafka-cluster-controller-3                      1/1     Running   0                 172d
-uat-kafka-cluster-controller-4                      1/1     Running   0                 172d
-uat-kafka-cluster-controller-5                      1/1     Running   0                 172d
-uat-kafka-cluster-cruise-control-85b7474f57-wkt48   1/1     Running   363 (5d10h ago)   172d
-uat-kafka-cluster-entity-operator-668845cdc-pzmh5   2/2     Running   0                 172d
-[osuser@bastion ~]$ oc get pods -n int-kafka
-NAME                                                 READY   STATUS    RESTARTS          AGE
-int-console-console-deployment-9c5d8fbc9-phnn5       2/2     Running   0                 83d
-int-kafka-cluster-broker-0                           1/1     Running   0                 53d
-int-kafka-cluster-broker-1                           1/1     Running   1 (6d22h ago)     172d
-int-kafka-cluster-broker-2                           1/1     Running   1 (6d22h ago)     53d
-int-kafka-cluster-controller-3                       1/1     Running   0                 172d
-int-kafka-cluster-controller-4                       1/1     Running   0                 172d
-int-kafka-cluster-controller-5                       1/1     Running   0                 172d
-int-kafka-cluster-cruise-control-7558ff4cdc-kn6p2    1/1     Running   368 (5d10h ago)   172d
-int-kafka-cluster-entity-operator-79699cdd59-z47jk   2/2     Running   5 (172d ago)      172d
+oc get pods --all-namespaces -o wide | grep worker2.dev | grep -v "Completed\|Terminating"
 
-[osuser@bastion ~]$ oc adm top node
-NAME                      CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
-infra1.dev.sbiepay.sbi    1039m        9%     14367Mi         22%
-infra2.dev.sbiepay.sbi    1029m        8%     10315Mi         16%
-infra3.dev.sbiepay.sbi    800m         6%     10857Mi         17%
-master1.dev.sbiepay.sbi   2815m        18%    34079Mi         53%
-master2.dev.sbiepay.sbi   1712m        11%    32372Mi         51%
-master3.dev.sbiepay.sbi   1688m        10%    33391Mi         52%
-worker1.dev.sbiepay.sbi   1165m        7%     30561Mi         48%
-worker1.integ.epay.sbi    2141m        13%    30081Mi         47%
-worker1.sit.epay.sbi      1116m        7%     28932Mi         45%
-worker1.uat.epay.sbi      2188m        14%    30982Mi         48%
-worker2.dev.sbiepay.sbi   3784m        24%    53304Mi         84%
-worker2.integ.epay.sbi    1497m        9%     21845Mi         34%
-worker2.sit.epay.sbi      2845m        18%    26775Mi         42%
-worker2.uat.epay.sbi      3096m        19%    39960Mi         63%
-worker3.dev.sbiepay.sbi   1684m        10%    36491Mi         57%
-worker3.integ.epay.sbi    811m         5%     23215Mi         36%
-worker3.sit.epay.sbi      963m         6%     22462Mi         35%
-worker3.uat.epay.sbi      2233m        14%    37755Mi         59%
-[osuser@bastion ~]$
+oc adm top pod --all-namespaces | grep worker2.dev 2>/dev/null | sort -k3 -rh | head -20
+
+# Check all pods on worker2.dev
+oc get pods --all-namespaces -o wide | grep worker2.dev.sbiepay.sbi | grep -v Completed
+
+# Check top memory consuming pods on worker2.dev
+oc adm top pod --all-namespaces --sort-by=memory | grep worker2.dev 2>/dev/null
+
+# Check node description - allocated resources
+oc describe node worker2.dev.sbiepay.sbi | grep -A20 "Allocated resources"
+
+# Check node conditions - any memory pressure
+oc describe node worker2.dev.sbiepay.sbi | grep -A5 "Conditions"
