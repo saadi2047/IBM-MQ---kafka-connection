@@ -1,31 +1,110 @@
-current
+[osuser@bastion ~]$ for ns in dev-kafka dev-cache dev-sbiepay dev-offline-jobs dev-frontend dev-notification dev-transaction dev-merchant; do   echo "=== $ns ===";   oc adm top pod -n $ns 2>/dev/null | sort -k3 -rh | head -5; done
+=== dev-kafka ===
+dev-kafka-cluster-broker-1                           954m         16291Mi
+dev-kafka-cluster-broker-2                           766m         15591Mi
+dev-kafka-cluster-broker-0                           530m         10209Mi
+dev-kafka-cluster-controller-4                       69m          4448Mi
+dev-kafka-connect-mq-connect-2                       10m          4234Mi
+=== dev-cache ===
+hazelcast-1             11m          765Mi
+hazelcast-0             13m          645Mi
+hazelcast-2             10m          629Mi
+hazelcast-mancenter-0   2m           64Mi
+NAME                    CPU(cores)   MEMORY(bytes)
+=== dev-sbiepay ===
+javasimulator-javautilityapisimulator-869c8dc78f-m9j2c   3m           915Mi
+epaytransactionservicedcms-597d994bdd-c294g              5m           913Mi
+epaycard-76846d6cbf-jdrrr                                7m           774Mi
+cdcadmin-admincdc-9498b4cdc-jsglm                        3m           71Mi
+payment-bincheck-68cbf4bb4d-tsf4b                        3m           69Mi
+=== dev-offline-jobs ===
+pooling-gatewaypooling-5bcc86f65d-c9mkt   48m          4036Mi
+NAME                                      CPU(cores)   MEMORY(bytes)
+=== dev-frontend ===
+transactionfe-transaction-frontend-7dcbf899f5-srlmm           3m           540Mi
+merchantsimulator-epaymerchantsimulater-56596847f7-6cwfg      2m           75Mi
+websitefe-epay-website-7bb8d945d7-6t2nw                       3m           69Mi
+merchant-int-epay-merchant-integration-doc-7d65ffb74d-z9nlj   3m           68Mi
+merchantfe-merchant-frontend-5c46dd4fb-9mm6d                  3m           59Mi
+=== dev-notification ===
+notify-notificationservice-69976446d6-qnq7b   4m           670Mi
+NAME                                          CPU(cores)   MEMORY(bytes)
+=== dev-transaction ===
+txn-job-transactionjobservice-584d8bbc98-rqs4d   7m           1538Mi
+txn-transactionservice-6f5f55f456-p6w46          91m          1262Mi
+payment-paymentservice-7f8c88fd8d-zkpq9          76m          1256Mi
+NAME                                             CPU(cores)   MEMORY(bytes)
+=== dev-merchant ===
+report-reportservice-6f776b75cc-g5fqz      65m          1243Mi
+merchant-merchantservice-ffbc58f68-n7zw2   46m          1040Mi
+report-reportservice-6455db6496-sfmvt      3m           66Mi
+NAME                                       CPU(cores)   MEMORY(bytes)
+[osuser@bastion ~]$ oc get pods -n dev-kafka -o wide
+NAME                                                 READY   STATUS    RESTARTS         AGE    IP              NODE                      NOMINATED NODE   READINESS GATES
+dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0                10d    172.16.14.152   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-0                           1/1     Running   0                7d4h   172.16.8.14     worker1.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-1                           1/1     Running   0                7d4h   172.16.14.154   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-2                           1/1     Running   0                7d4h   172.16.17.92    worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-controller-3                       1/1     Running   0                38d    172.16.14.66    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-controller-4                       1/1     Running   0                26d    172.16.14.89    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-controller-5                       1/1     Running   0                10d    172.16.16.92    worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-cruise-control-d949867dd-qmxmn     1/1     Running   5 (5d16h ago)    10d    172.16.14.151   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (105d ago)     117d   172.16.15.246   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7    1/1     Running   1 (5d16h ago)    7d1h   172.16.17.114   worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-connect-mq-connect-0                       1/1     Running   10 (5d16h ago)   10d    172.16.16.93    worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-connect-mq-connect-1                       1/1     Running   10 (5d16h ago)   19d    172.16.8.196    worker1.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-connect-mq-connect-2                       1/1     Running   10 (5d16h ago)   21d    172.16.14.91    worker2.dev.sbiepay.sbi   <none>           <none>
+[osuser@bastion ~]$ oc adm top pod | { head -n 1; sort -k4 -hr; }
+NAME                  CPU(cores)   MEMORY(bytes)
+node-resolver-xfch6   2m           3Mi
+node-resolver-wrmbf   0m           4Mi
+node-resolver-tntgj   0m           16Mi
+node-resolver-thq6t   0m           8Mi
+node-resolver-t6t9m   0m           8Mi
+node-resolver-rd6v2   0m           10Mi
+node-resolver-r2lrj   0m           10Mi
+node-resolver-m6rnn   0m           1Mi
+node-resolver-l4c5q   0m           13Mi
+node-resolver-hq7vx   0m           1Mi
+node-resolver-gxq69   0m           8Mi
+node-resolver-ghxzl   0m           8Mi
+node-resolver-fr2cg   0m           5Mi
+node-resolver-dqcvz   0m           5Mi
+node-resolver-d7ps2   0m           7Mi
+node-resolver-clqq4   0m           7Mi
+node-resolver-76td5   0m           5Mi
+node-resolver-6td96   2m           4Mi
+dns-default-zmnw2     3m           63Mi
+dns-default-zhlb6     4m           58Mi
+dns-default-qwqxd     3m           59Mi
+dns-default-q9ddv     3m           58Mi
+dns-default-mprrp     3m           65Mi
+dns-default-m4k9q     4m           62Mi
+dns-default-lbw5p     4m           56Mi
+dns-default-gzh82     3m           73Mi
+dns-default-gvncq     8m           58Mi
+dns-default-ggpjx     3m           61Mi
+dns-default-fxv6h     5m           68Mi
+dns-default-d4wrq     6m           61Mi
 
-# Environment-level monitoring infrastructure####
-          summary: "DLQ Alert -- failed message received in DLQ or DLT topic"
-          summary: "DLQ Warning -- DLQ or DLT topic at 30% capacity"
-          summary: "DLQ Warning -- DLQ or DLT topic at 50% capacity"
-          summary: "URGENT -- DLQ or DLT topic at 80% capacity"
-          summary: "SLA Breach -- DLQ or DLT topic not cleared in 4 hours"
-          summary: "DLQ or DLT topic receiving high message rate"
-
-
------------------------------------------
-
-      # Pod anti-affinity to spread controllers across worker nodes
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: strimzi.io/pool-name
-                    operator: In
-                    values:
-                      - controller
-              topologyKey: kubernetes.io/hostname
-# Environment-level monitoring infrastructure
-          summary: "DLQ Alert -- failed message in {{ $labels.topic }}"
-          summary: "DLQ Warning -- {{ $labels.topic }} at 30% capacity"
-          summary: "DLQ Warning -- {{ $labels.topic }} at 50% capacity"
-          summary: "URGENT -- DLQ {{ $labels.topic }} at 80% capacity"
-          summary: "SLA Breach -- DLQ {{ $labels.topic }} not cleared in 4 hours"
-          summary: "DLQ high message rate on {{ $labels.topic }}"
+[osuser@bastion ~]$ oc adm top nodes | { head -n 1; sort -k4 -hr; }
+NAME                      CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
+worker2.dev.sbiepay.sbi   3380m        21%    52849Mi         83%
+worker2.uat.epay.sbi      3667m        23%    40201Mi         63%
+worker3.uat.epay.sbi      1996m        12%    37914Mi         59%
+worker3.dev.sbiepay.sbi   2610m        16%    36498Mi         57%
+master1.dev.sbiepay.sbi   2432m        15%    35021Mi         55%
+master3.dev.sbiepay.sbi   1965m        12%    32257Mi         51%
+worker1.uat.epay.sbi      1704m        10%    31016Mi         49%
+master2.dev.sbiepay.sbi   1211m        7%     30599Mi         48%
+worker1.sit.epay.sbi      868m         5%     30290Mi         47%
+worker1.integ.epay.sbi    3802m        24%    29996Mi         47%
+worker1.dev.sbiepay.sbi   3046m        19%    28808Mi         45%
+worker2.sit.epay.sbi      2285m        14%    26779Mi         42%
+worker3.integ.epay.sbi    844m         5%     24971Mi         39%
+worker3.sit.epay.sbi      1354m        8%     21401Mi         33%
+worker2.integ.epay.sbi    1008m        6%     19530Mi         30%
+infra3.dev.sbiepay.sbi    1144m        9%     11016Mi         17%
+infra2.dev.sbiepay.sbi    1345m        11%    10696Mi         16%
+         4%     14302Mi         22%
+[osuser@bastion ~]$
