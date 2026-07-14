@@ -1,40 +1,123 @@
-Let me get the actual task-level error rather than guess — the `READY` blank just means the task failed, but the trace tells us whether it's still the JSON error or something new.
-
-Run this to see the current failure:
-
-```
-oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
-  curl -s http://localhost:8083/connectors/neft-mq-sink/status | python3 -m json.tool
-```
-
-While you grab that, here's the most likely reason the restart didn't fix it, and how to confirm.
-
-The restart annotation alone often isn't enough here, for two reasons:
-
-First — did the new config actually reach the workers? The converter change is a *worker-level* config, which only takes effect when the **pods restart**, not when you annotate the connector. Annotating restarts the connector task, but if the pods are still running the old worker config (no `key.converter` default), the task restarts into the same broken converter and fails again. Confirm the pods rolled after your sync:
-
-```
-oc get pods -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq \
-  -o custom-columns=NAME:.metadata.name,AGE:.metadata.creationTimestamp
-```
-
-If the pods are older than your config change, they didn't pick it up. Force it:
-
-```
-oc delete pod -n dev-kafka -l strimzi.io/cluster=dev-kafka-connect-mq
-```
-
-Verify the worker default actually landed:
-
-```
-oc exec -n dev-kafka dev-kafka-connect-mq-connect-0 -- \
-  cat /tmp/strimzi-connect.properties | grep -iE "key.converter|value.converter|plugin.path"
-```
-
-You should see `key.converter=org.apache.kafka.connect.storage.StringConverter`. If it's absent or still shows a JSON converter, the chart change didn't sync — check `oc get kafkaconnect dev-kafka-connect-mq -o jsonpath='{.spec.config.key\.converter}'`.
-
-Second — even with the right converter now, the **poisoned message is still sitting at the consumer offset**. The sink's consumer group still points at the test message (`SOP-TEST-BY-SAADI-NEFT-SINK`) that failed. On restart the task re-reads from the same offset. But here's the thing: with `key.converter: StringConverter` and `value.converter: ByteArrayConverter` now active, that plain-string message should parse fine (string key, byte value) — so a clean pod restart *should* clear it. If it still fails after the pods rolled with the new converter, the trace will show whether it's the same JSON error (config didn't land) or the message genuinely can't be consumed.
-
-So the order is: confirm pods rolled with the new config → if not, delete pods → verify the converter is in `strimzi-connect.properties` → then the task should recover on its own (or annotate once more).
-
-Paste the `neft-mq-sink/status` output and the `strimzi-connect.properties | grep converter` output. Those two tell us definitively whether it's "config didn't reach the worker" or "a specific message still failing" — and the fix differs for each.
+[osuser@bastion ~]$ oc adm top pod hazelcast-mancenter-0 -n dev-cache
+NAME                    CPU(cores)   MEMORY(bytes)
+hazelcast-mancenter-0   3m           67Mi
+[osuser@bastion ~]$ oc adm top pod cdcadmin-admincdc-9498b4cdc-jsglm -n dev-sbiepay
+NAME                                CPU(cores)   MEMORY(bytes)
+cdcadmin-admincdc-9498b4cdc-jsglm   2m           70Mi
+[osuser@bastion ~]$ oc adm top pod payment-bincheck-68cbf4bb4d-tsf4b -n dev-sbiepay
+NAME                                CPU(cores)   MEMORY(bytes)
+payment-bincheck-68cbf4bb4d-tsf4b   3m           71Mi
+[osuser@bastion ~]$ oc describe pod hazelcast-0 -n dev-cache | grep -E "Limits|Requests|Restart|Status"
+Status:           Running
+    Restart Count:  0
+    Limits:
+    Requests:
+    Restart Count:  0
+    Restart Count:  0
+    Limits:
+    Requests:
+  Type                        Status
+[osuser@bastion ~]$ oc describe pod hazelcast-1 -n dev-cache | grep -E "Limits|Requests|Restart|Status"
+Status:           Running
+    Restart Count:  0
+    Limits:
+    Requests:
+    Restart Count:  0
+    Restart Count:  0
+    Limits:
+    Requests:
+  Type                        Status
+[osuser@bastion ~]$ oc describe pod hazelcast-2 -n dev-cache | grep -E "Limits|Requests|Restart|Status"
+Status:           Running
+    Restart Count:  0
+    Limits:
+    Requests:
+    Restart Count:  0
+    Restart Count:  0
+    Limits:
+    Requests:
+  Type                        Status
+[osuser@bastion ~]$ oc describe pod hazelcast-mancenter-0 -n dev-cache | grep -E "Limits|Requests|Restart|Exit Code|Last State"
+      Exit Code:    0
+    Restart Count:  0
+    Limits:
+    Requests:
+    Last State:     Terminated
+      Exit Code:    1
+    Restart Count:  31930
+    Restart Count:  0
+    Limits:
+    Requests:
+[osuser@bastion ~]$ oc adm top pod -n dev-sbiepay
+NAME                                                     CPU(cores)   MEMORY(bytes)
+cdcadmin-admincdc-9498b4cdc-jsglm                        3m           70Mi
+epaycard-76846d6cbf-jdrrr                                7m           775Mi
+epaytransactionservicedcms-597d994bdd-c294g              5m           914Mi
+javasimulator-javautilityapisimulator-869c8dc78f-m9j2c   4m           916Mi
+payment-bincheck-68cbf4bb4d-tsf4b                        3m           71Mi
+[osuser@bastion ~]$ oc adm top pod -n dev-cache
+NAME                    CPU(cores)   MEMORY(bytes)
+hazelcast-0             11m          645Mi
+hazelcast-1             10m          767Mi
+hazelcast-2             11m          628Mi
+hazelcast-mancenter-0   2m           67Mi
+[osuser@bastion ~]$ oc adm top pod -n dev-kafka
+NAME                                                 CPU(cores)   MEMORY(bytes)
+dev-console-console-deployment-577c797ccf-8dz7g      7m           1106Mi
+dev-kafka-cluster-broker-0                           179m         12308Mi
+dev-kafka-cluster-broker-1                           533m         16259Mi
+dev-kafka-cluster-broker-2                           732m         15577Mi
+dev-kafka-cluster-controller-3                       59m          4001Mi
+dev-kafka-cluster-controller-4                       55m          4449Mi
+dev-kafka-cluster-controller-5                       75m          3058Mi
+dev-kafka-cluster-cruise-control-d949867dd-qmxmn     12m          2237Mi
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   4m           778Mi
+dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7    34m          54Mi
+dev-kafka-connect-mq-connect-0                       12m          4205Mi
+dev-kafka-connect-mq-connect-1                       9m           4193Mi
+dev-kafka-connect-mq-connect-2                       11m          4235Mi
+[osuser@bastion ~]$ oc adm top pod -n dev-notification
+NAME                                          CPU(cores)   MEMORY(bytes)
+notify-notificationservice-69976446d6-qnq7b   4m           669Mi
+[osuser@bastion ~]$ oc adm top pod -n dev-offline-jobs
+NAME                                      CPU(cores)   MEMORY(bytes)
+pooling-gatewaypooling-5bcc86f65d-c9mkt   52m          4036Mi
+[osuser@bastion ~]$ oc adm top pod -n dev-frontend
+NAME                                                          CPU(cores)   MEMORY(bytes)
+merchant-int-epay-merchant-integration-doc-7d65ffb74d-z9nlj   5m           68Mi
+merchantfe-merchant-frontend-7f86447f79-dlfmv                 4m           68Mi
+merchantsimulator-epaymerchantsimulater-56596847f7-6cwfg      4m           79Mi
+transactionfe-transaction-frontend-579759d477-gs7wx           4m           543Mi
+websitefe-epay-website-7bb8d945d7-6t2nw                       3m           69Mi
+[osuser@bastion ~]$ oc adm top pod --all-namespaces --sort-by=memory 2>/dev/null | head -30
+NAMESPACE                                          NAME                                                             CPU(cores)   MEMORY(bytes)
+dev-kafka                                          dev-kafka-cluster-broker-1                                       842m         16261Mi
+openshift-kube-apiserver                           kube-apiserver-master1.dev.sbiepay.sbi                           582m         15623Mi
+dev-kafka                                          dev-kafka-cluster-broker-2                                       783m         15578Mi
+openshift-kube-apiserver                           kube-apiserver-master3.dev.sbiepay.sbi                           544m         15456Mi
+openshift-kube-apiserver                           kube-apiserver-master2.dev.sbiepay.sbi                           273m         15361Mi
+int-kafka                                          int-kafka-cluster-broker-0                                       275m         14913Mi
+uat-kafka                                          uat-kafka-cluster-broker-0                                       357m         13751Mi
+uat-kafka                                          uat-kafka-cluster-broker-1                                       384m         12791Mi
+dev-kafka                                          dev-kafka-cluster-broker-0                                       379m         12308Mi
+uat-kafka                                          uat-kafka-cluster-broker-2                                       188m         11250Mi
+sit-kafka                                          sit-kafka-cluster-broker-2                                       382m         9281Mi
+sit-kafka                                          sit-kafka-cluster-broker-1                                       140m         7097Mi
+int-kafka                                          int-kafka-cluster-broker-2                                       191m         6767Mi
+sit-kafka                                          sit-kafka-cluster-broker-0                                       254m         6574Mi
+quay-enterprise                                    dev-registry-quay-app-68454486b5-rsqt7                           525m         5935Mi
+quay-enterprise                                    dev-registry-quay-app-68454486b5-chnzq                           141m         5922Mi
+openshift-monitoring                               prometheus-k8s-1                                                 437m         5368Mi
+openshift-monitoring                               prometheus-k8s-0                                                 396m         5081Mi
+openshift-logging                                  logging-loki-ingester-1                                          53m          4563Mi
+int-kafka                                          int-kafka-cluster-broker-1                                       101m         4496Mi
+dev-kafka                                          dev-kafka-cluster-controller-4                                   110m         4449Mi
+dev-kafka                                          dev-kafka-connect-mq-connect-2                                   14m          4235Mi
+dev-kafka                                          dev-kafka-connect-mq-connect-0                                   13m          4205Mi
+dev-kafka                                          dev-kafka-connect-mq-connect-1                                   10m          4193Mi
+dev-offline-jobs                                   pooling-gatewaypooling-5bcc86f65d-c9mkt                          59m          4036Mi
+dev-kafka                                          dev-kafka-cluster-controller-3                                   77m          4001Mi
+openshift-logging                                  logging-loki-ingester-0                                          50m          3656Mi
+dev-kafka                                          dev-kafka-cluster-controller-5                                   66m          3058Mi
+openshift-etcd                                     etcd-master3.dev.sbiepay.sbi                                     294m         2403Mi
+[osuser@bastion ~]$
