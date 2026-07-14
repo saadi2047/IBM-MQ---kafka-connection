@@ -17,3 +17,19 @@ console                                                 none      none      none
 
 
 oc get pods -n dev-kafka -o wide --no-headers | awk '{printf "%-55s %-20s\n", $1, $7}'
+
+[osuser@bastion ~]$ oc get pods -n dev-kafka -o wide --no-headers | awk '{printf "%-55s %-20s\n", $1, $7}'
+dev-console-console-deployment-577c797ccf-8dz7g         worker2.dev.sbiepay.sbi
+dev-kafka-cluster-broker-0                              worker1.dev.sbiepay.sbi
+dev-kafka-cluster-broker-1                              worker2.dev.sbiepay.sbi
+dev-kafka-cluster-broker-2                              worker3.dev.sbiepay.sbi
+dev-kafka-cluster-controller-3                          worker2.dev.sbiepay.sbi
+dev-kafka-cluster-controller-4                          worker2.dev.sbiepay.sbi
+dev-kafka-cluster-controller-5                          worker3.dev.sbiepay.sbi
+dev-kafka-cluster-cruise-control-d949867dd-qmxmn        10d
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk      117d
+dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7       6d22h
+dev-kafka-connect-mq-connect-0                          10d
+dev-kafka-connect-mq-connect-1                          19d
+dev-kafka-connect-mq-connect-2                          21d
+[osuser@bastion ~]$
