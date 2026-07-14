@@ -1,35 +1,15 @@
-Pod                                                     CPU-Req   CPU-Lim   Mem-Req   Mem-Lim    Current-CPU   Current-Mem   Mem%-of-Limit
--------------------------------------------------------------------------------------------------------------------------------
-broker-0                                                12        24        64Gi      128Gi      222m          10,198Mi      8%
-broker-1                                                12        24        64Gi      128Gi      1147m         16,266Mi      12%
-broker-2                                                12        24        64Gi      128Gi      911m          15,580Mi      12%
-controller-3                                            4         8         8Gi       16Gi       60m           4,001Mi       24%
-controller-4                                            4         8         8Gi       16Gi       79m           4,449Mi       27%
-controller-5                                            4         8         8Gi       16Gi       65m           3,058Mi       18%
-cruise-control                                          1         2         2Gi       4Gi        12m           2,237Mi       54%
-connect-0                                               2         4         4Gi       8Gi        16m           4,205Mi       51%
-connect-1                                               2         4         4Gi       8Gi        9m            4,193Mi       51%
-connect-2                                               2         4         4Gi       8Gi        11m           4,234Mi       51%
-kafka-exporter                                          200m      500m      64Mi      128Mi      36m           54Mi          42%
-entity-operator                                         none      none      none      none       5m            778Mi         --
-console                                                 none      none      none      none       12m           1,115Mi       --
-
-
-
-oc get pods -n dev-kafka -o wide --no-headers | awk '{printf "%-55s %-20s\n", $1, $7}'
-
-[osuser@bastion ~]$ oc get pods -n dev-kafka -o wide --no-headers | awk '{printf "%-55s %-20s\n", $1, $7}'
-dev-console-console-deployment-577c797ccf-8dz7g         worker2.dev.sbiepay.sbi
-dev-kafka-cluster-broker-0                              worker1.dev.sbiepay.sbi
-dev-kafka-cluster-broker-1                              worker2.dev.sbiepay.sbi
-dev-kafka-cluster-broker-2                              worker3.dev.sbiepay.sbi
-dev-kafka-cluster-controller-3                          worker2.dev.sbiepay.sbi
-dev-kafka-cluster-controller-4                          worker2.dev.sbiepay.sbi
-dev-kafka-cluster-controller-5                          worker3.dev.sbiepay.sbi
-dev-kafka-cluster-cruise-control-d949867dd-qmxmn        10d
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk      117d
-dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7       6d22h
-dev-kafka-connect-mq-connect-0                          10d
-dev-kafka-connect-mq-connect-1                          19d
-dev-kafka-connect-mq-connect-2                          21d
-[osuser@bastion ~]$
+Pod                                                     CPU-Req   CPU-Lim   Mem-Req   Mem-Lim    Current-CPU   Current-Mem   Mem%-of-Limit   Node
+---------------------------------------------------------------------------------------------------------------------------------------------------
+broker-0                                                12        24        64Gi      128Gi      222m          10,198Mi      8%              worker1.dev
+broker-1                                                12        24        64Gi      128Gi      1147m         16,266Mi      12%             worker2.dev
+broker-2                                                12        24        64Gi      128Gi      911m          15,580Mi      12%             worker3.dev
+controller-3                                            4         8         8Gi       16Gi       60m           4,001Mi       24%             worker2.dev
+controller-4                                            4         8         8Gi       16Gi       79m           4,449Mi       27%             worker2.dev
+controller-5                                            4         8         8Gi       16Gi       65m           3,058Mi       18%             worker3.dev
+cruise-control                                          1         2         2Gi       4Gi        12m           2,237Mi       54%             worker2.dev
+connect-0                                               2         4         4Gi       8Gi        16m           4,205Mi       51%             worker3.dev
+connect-1                                               2         4         4Gi       8Gi        9m            4,193Mi       51%             worker1.dev
+connect-2                                               2         4         4Gi       8Gi        11m           4,234Mi       51%             worker2.dev
+kafka-exporter                                          200m      500m      64Mi      128Mi      36m           54Mi          42%             worker3.dev
+entity-operator                                         none      none      none      none       5m            778Mi         --              worker2.dev
+console                                                 none      none      none      none       12m           1,115Mi       --              worker2.dev
