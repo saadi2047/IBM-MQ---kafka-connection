@@ -1,25 +1,23 @@
-# Check broker-1 pod CPU in detail
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- top -bn1 | head -20
-
-
-# Check partition leadership count per broker
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-topics.sh \
-  --bootstrap-server localhost:9092 \
-  --describe | grep "Leader: 1" | wc -l
-
-# Check leader count for all brokers
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-topics.sh \
-  --bootstrap-server localhost:9092 \
-  --describe | grep -oP "Leader: \K\d+" | sort | uniq -c | sort -rn
-
-# Check broker-1 JVM thread dump - what's consuming CPU
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  bin/kafka-run-class.sh kafka.tools.JmxTool \
-  --object-name kafka.server:type=BrokerTopicMetrics,name=MessagesInPerSec \
-  --jmx-url service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi \
-  --date-format "yyyy-MM-dd HH:mm:ss" \
-  --attributes OneMinuteRate 2>/dev/null | tail -5
-
-
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- top -bn1 | head -20
+time="2026-07-14T11:22:52Z" level=error msg="exec failed: unable to start container process: exec: \"top\": executable file not found in $PATH"
+command terminated with exit code 255
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-topics.sh \
+>   --bootstrap-server localhost:9092 \
+>   --describe | grep "Leader: 1" | wc -l
+246
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-topics.sh \
+>   --bootstrap-server localhost:9092 \
+>   --describe | grep -oP "Leader: \K\d+" | sort | uniq -c | sort -rn
+    256 2
+    246 1
+    226 0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   bin/kafka-run-class.sh kafka.tools.JmxTool \
+>   --object-name kafka.server:type=BrokerTopicMetrics,name=MessagesInPerSec \
+>   --jmx-url service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi \
+>   --date-format "yyyy-MM-dd HH:mm:ss" \
+>   --attributes OneMinuteRate 2>/dev/null | tail -5
+WARNING: The 'kafka.tools' package is deprecated and will change to 'org.apache.kafka.tools' in the next major release.
+[osuser@bastion ~]$
