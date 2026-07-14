@@ -1,1 +1,6 @@
-oc get pods -n dev-kafka -l strimzi.io/pool-name=controller
+[osuser@bastion ~]$ oc get pods -n dev-kafka -l strimzi.io/pool-name=controller
+NAME                             READY   STATUS    RESTARTS   AGE
+dev-kafka-cluster-controller-3   1/1     Running   0          38d
+dev-kafka-cluster-controller-4   1/1     Running   0          26d
+dev-kafka-cluster-controller-5   1/1     Running   0          10d
+[osuser@bastion ~]$
