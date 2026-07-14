@@ -21,3 +21,29 @@ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
 # Check broker-1 open file descriptors - heavy I/O?
 oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
   ls /proc/1/fd | wc -l
+
+
+# 1. Check broker-1 CPU via proc stats directly
+oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+  cat /proc/1/stat | awk '{print "CPU user:", $14, "CPU sys:", $15}'
+
+
+# 2. Compare network across all 3 brokers
+for b in 0 1 2; do
+  echo "=== broker-$b ==="
+  oc exec dev-kafka-cluster-broker-$b -n dev-kafka -- \
+    cat /proc/net/dev | grep eth0
+done
+
+
+# 3. Check broker-1 open file descriptors
+oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+  ls /proc/1/fd | wc -l
+
+# 4. Check broker-1 memory and thread count
+oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+  cat /proc/1/status | grep -E "Threads|VmRSS|VmPeak|VmSwap"
+
+# 5. Check Kafka metrics via Prometheus endpoint (no JMX needed)
+oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+  curl -s http://localhost:9404/metrics | grep -E "kafka_server_brokertopicmetrics_messagesin|kafka_server_brokertopicmetrics_bytesin|kafka_network_requestmetrics_requestspersec" | grep -v "^#" | head -20
