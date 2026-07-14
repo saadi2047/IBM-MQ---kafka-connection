@@ -1,15 +1,156 @@
-oc get pods --all-namespaces -o wide | grep worker2.dev | grep -v "Completed\|Terminating"
-
-oc adm top pod --all-namespaces | grep worker2.dev 2>/dev/null | sort -k3 -rh | head -20
-
-# Check all pods on worker2.dev
-oc get pods --all-namespaces -o wide | grep worker2.dev.sbiepay.sbi | grep -v Completed
-
-# Check top memory consuming pods on worker2.dev
-oc adm top pod --all-namespaces --sort-by=memory | grep worker2.dev 2>/dev/null
-
-# Check node description - allocated resources
-oc describe node worker2.dev.sbiepay.sbi | grep -A20 "Allocated resources"
-
-# Check node conditions - any memory pressure
-oc describe node worker2.dev.sbiepay.sbi | grep -A5 "Conditions"
+[osuser@bastion ~]$ oc adm top node
+NAME                      CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
+infra1.dev.sbiepay.sbi    775m         6%     14237Mi         22%
+infra2.dev.sbiepay.sbi    876m         7%     10404Mi         16%
+infra3.dev.sbiepay.sbi    707m         6%     10824Mi         17%
+master1.dev.sbiepay.sbi   2461m        15%    35321Mi         55%
+master2.dev.sbiepay.sbi   1954m        12%    31996Mi         50%
+master3.dev.sbiepay.sbi   1731m        11%    32275Mi         51%
+worker1.dev.sbiepay.sbi   1076m        6%     30628Mi         48%
+worker1.integ.epay.sbi    1585m        10%    30019Mi         47%
+worker1.sit.epay.sbi      3873m        24%    28956Mi         45%
+worker1.uat.epay.sbi      1987m        12%    30969Mi         48%
+worker2.dev.sbiepay.sbi   1938m        12%    52868Mi         83%
+worker2.integ.epay.sbi    976m         6%     21859Mi         34%
+worker2.sit.epay.sbi      2267m        14%    26787Mi         42%
+worker2.uat.epay.sbi      3046m        19%    39998Mi         63%
+worker3.dev.sbiepay.sbi   2201m        14%    36502Mi         57%
+worker3.integ.epay.sbi    876m         5%     23236Mi         36%
+worker3.sit.epay.sbi      1572m        10%    22460Mi         35%
+worker3.uat.epay.sbi      2440m        15%    37754Mi         59%
+[osuser@bastion ~]$ oc get pods -n int-kafka
+NAME                                                 READY   STATUS    RESTARTS          AGE
+int-console-console-deployment-9c5d8fbc9-phnn5       2/2     Running   0                 83d
+int-kafka-cluster-broker-0                           1/1     Running   0                 53d
+int-kafka-cluster-broker-1                           1/1     Running   1 (6d22h ago)     172d
+int-kafka-cluster-broker-2                           1/1     Running   1 (6d22h ago)     53d
+int-kafka-cluster-controller-3                       1/1     Running   0                 172d
+int-kafka-cluster-controller-4                       1/1     Running   0                 172d
+int-kafka-cluster-controller-5                       1/1     Running   0                 172d
+int-kafka-cluster-cruise-control-7558ff4cdc-kn6p2    1/1     Running   368 (5d11h ago)   172d
+int-kafka-cluster-entity-operator-79699cdd59-z47jk   2/2     Running   5 (172d ago)      172d
+[osuser@bastion ~]$ oc get pods --all-namespaces -o wide | grep worker2.dev | grep -v "Completed\|Terminating"
+default                                            telnetd-server-548746669-bhjhv                                    0/1     ErrImagePull                 0                   172d    172.16.14.14     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-cache                                          hazelcast-1                                                       2/2     Running                      0                   172d    172.16.14.33     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-cache                                          hazelcast-2                                                       2/2     Running                      0                   117d    172.16.14.3      worker2.dev.sbiepay.sbi   <none>           <none>
+dev-cache                                          hazelcast-mancenter-0                                             1/2     CrashLoopBackOff             31929 (64s ago)     117d    172.16.15.254    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-frontend                                       merchant-int-epay-merchant-integration-doc-7d65ffb74d-z9nlj       2/2     Running                      0                   19d     172.16.14.121    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-frontend                                       merchantsimulator-epaymerchantsimulater-56596847f7-6cwfg          2/2     Running                      0                   117d    172.16.15.252    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-console-console-deployment-577c797ccf-8dz7g                   2/2     Running                      0                   10d     172.16.14.152    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-cluster-broker-1                                        1/1     Running                      0                   6d23h   172.16.14.154    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-cluster-controller-3                                    1/1     Running                      0                   38d     172.16.14.66     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-cluster-controller-4                                    1/1     Running                      0                   26d     172.16.14.89     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-cluster-cruise-control-d949867dd-qmxmn                  1/1     Running                      5 (5d11h ago)       10d     172.16.14.151    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk                2/2     Running                      1 (105d ago)        117d    172.16.15.246    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-connect-mq-connect-2                                    1/1     Running                      10 (5d11h ago)      21d     172.16.14.91     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-notification                                   notify-notificationservice-69976446d6-qnq7b                       2/2     Running                      0                   117d    172.16.15.249    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-offline-jobs                                   pooling-gatewaypooling-5bcc86f65d-c9mkt                           2/2     Running                      0                   117d    172.16.15.244    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-offline-jobs                                   telnetd-server-7c48585c9-xwbdh                                    1/2     ImagePullBackOff             0                   172d    172.16.14.22     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-sbiepay                                        cdcadmin-admincdc-9498b4cdc-jsglm                                 1/2     CrashLoopBackOff             29925 (4m11s ago)   117d    172.16.15.247    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-sbiepay                                        epaycard-76846d6cbf-jdrrr                                         2/2     Running                      0                   172d    172.16.14.30     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-sbiepay                                        epaytransactionservicedcms-597d994bdd-c294g                       2/2     Running                      0                   172d    172.16.14.12     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-sbiepay                                        javasimulator-javautilityapisimulator-869c8dc78f-m9j2c            2/2     Running                      0                   117d    172.16.15.250    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-sbiepay                                        payment-bincheck-68cbf4bb4d-tsf4b                                 1/2     CrashLoopBackOff             31655 (17s ago)     117d    172.16.15.248    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-spark                                          ops-operationsservice-647d745655-w6cfd                            1/2     ImagePullBackOff             0                   172d    172.16.14.19     worker2.dev.sbiepay.sbi   <none>           <none>
+devops-admin                                       telnet-server-6ddc69dbdf-744t9                                    2/2     Running                      0                   172d    172.16.14.26     worker2.dev.sbiepay.sbi   <none>           <none>
+dynatrace                                          dynatrace-oneagent-csi-driver-69xmd                               4/4     Running                      0                   6d23h   172.16.14.155    worker2.dev.sbiepay.sbi   <none>           <none>
+istio-cni                                          istio-cni-node-xmsgj                                              1/1     Running                      1                   205d    172.16.15.241    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-cluster-csi-drivers                      vmware-vsphere-csi-driver-node-5cz7x                              3/3     Running                      4 (86d ago)         172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-cluster-node-tuning-operator             tuned-zm9kn                                                       1/1     Running                      1                   173d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-cluster-observability-operator           logging-84c857cbc-7jg27                                           1/1     Running                      0                   172d    172.16.14.5      worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-distributed-tracing                      jaeger-operator-6b559f95bd-vr9hn                                  2/2     Running                      27 (49d ago)        172d    172.16.14.6      worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-dns                                      dns-default-fr2bm                                                 2/2     Running                      0                   20h     172.16.14.156    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-dns                                      node-resolver-76td5                                               1/1     Running                      1                   172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-image-registry                           node-ca-b5mdf                                                     1/1     Running                      2                   173d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-ingress-canary                           ingress-canary-kwpmk                                              1/1     Running                      1                   173d    172.16.14.141    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-insights                                 insights-runtime-extractor-xrmk8                                  3/3     Running                      9 (86d ago)         173d    172.16.14.140    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-logging                                  collector-tsfqp                                                   1/1     Running                      0                   21d     172.16.14.94     worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-logging                                  logging-zlf2t                                                     1/1     Running                      0                   21d     172.16.14.95     worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-logging                                  splunk-integration-siem-xg5wt                                     1/1     Running                      0                   21d     172.16.14.93     worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker2.dev.sbiepay.sbi                      1/1     Running                      0                   172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-machine-config-operator                  machine-config-daemon-6xlcm                                       2/2     Running                      4 (86d ago)         172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-monitoring                               node-exporter-sbl2b                                               2/2     Running                      2                   173d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-multus                                   multus-additional-cni-plugins-6ftr6                               1/1     Running                      1                   172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-multus                                   multus-h48md                                                      1/1     Running                      2                   172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-multus                                   network-metrics-daemon-22kl6                                      2/2     Running                      2                   172d    172.16.14.143    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-network-diagnostics                      network-check-target-lncd8                                        1/1     Running                      1                   172d    172.16.14.145    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-network-operator                         iptables-alerter-xwvfw                                            1/1     Running                      9 (49d ago)         172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-operators                                servicemesh-operator3-888bb864c-dhccz                             1/1     Running                      42 (49d ago)        172d    172.16.14.16     worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-ovn-kubernetes                           ovnkube-node-bf6fr                                                8/8     Running                      8                   172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+sit-istio-system                                   istiod-sit-istio-78668cdc99-ft6bl                                 1/1     Running                      0                   172d    172.16.14.37     worker2.dev.sbiepay.sbi   <none>           <none>
+telnet                                             telnet-server-6ddc69dbdf-4kv28                                    2/2     Running                      0                   117d    172.16.15.251    worker2.dev.sbiepay.sbi   <none>           <none>
+trident                                            trident-node-linux-fd9w5                                          2/2     Running                      31 (172d ago)       234d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+[osuser@bastion ~]$ oc adm top pod --all-namespaces | grep worker2.dev 2>/dev/null | sort -k3 -rh | head -20
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker2.dev.sbiepay.sbi                     1m           31Mi
+[osuser@bastion ~]$ oc get pods --all-namespaces -o wide | grep worker2.dev.sbiepay.sbi | grep -v Completed
+default                                            telnetd-server-548746669-bhjhv                                    0/1     ImagePullBackOff             0                   172d    172.16.14.14     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-cache                                          hazelcast-1                                                       2/2     Running                      0                   172d    172.16.14.33     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-cache                                          hazelcast-2                                                       2/2     Running                      0                   117d    172.16.14.3      worker2.dev.sbiepay.sbi   <none>           <none>
+dev-cache                                          hazelcast-mancenter-0                                             1/2     CrashLoopBackOff             31929 (79s ago)     117d    172.16.15.254    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-frontend                                       merchant-int-epay-merchant-integration-doc-7d65ffb74d-z9nlj       2/2     Running                      0                   19d     172.16.14.121    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-frontend                                       merchantsimulator-epaymerchantsimulater-56596847f7-6cwfg          2/2     Running                      0                   117d    172.16.15.252    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-console-console-deployment-577c797ccf-8dz7g                   2/2     Running                      0                   10d     172.16.14.152    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-cluster-broker-1                                        1/1     Running                      0                   6d23h   172.16.14.154    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-cluster-controller-3                                    1/1     Running                      0                   38d     172.16.14.66     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-cluster-controller-4                                    1/1     Running                      0                   26d     172.16.14.89     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-cluster-cruise-control-d949867dd-qmxmn                  1/1     Running                      5 (5d11h ago)       10d     172.16.14.151    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk                2/2     Running                      1 (105d ago)        117d    172.16.15.246    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka                                          dev-kafka-connect-mq-connect-2                                    1/1     Running                      10 (5d11h ago)      21d     172.16.14.91     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-notification                                   notify-notificationservice-69976446d6-qnq7b                       2/2     Running                      0                   117d    172.16.15.249    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-offline-jobs                                   pooling-gatewaypooling-5bcc86f65d-c9mkt                           2/2     Running                      0                   117d    172.16.15.244    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-offline-jobs                                   telnetd-server-7c48585c9-xwbdh                                    1/2     ImagePullBackOff             0                   172d    172.16.14.22     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-sbiepay                                        cdcadmin-admincdc-9498b4cdc-jsglm                                 1/2     CrashLoopBackOff             29925 (4m26s ago)   117d    172.16.15.247    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-sbiepay                                        epaycard-76846d6cbf-jdrrr                                         2/2     Running                      0                   172d    172.16.14.30     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-sbiepay                                        epaytransactionservicedcms-597d994bdd-c294g                       2/2     Running                      0                   172d    172.16.14.12     worker2.dev.sbiepay.sbi   <none>           <none>
+dev-sbiepay                                        javasimulator-javautilityapisimulator-869c8dc78f-m9j2c            2/2     Running                      0                   117d    172.16.15.250    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-sbiepay                                        payment-bincheck-68cbf4bb4d-tsf4b                                 1/2     CrashLoopBackOff             31655 (32s ago)     117d    172.16.15.248    worker2.dev.sbiepay.sbi   <none>           <none>
+dev-spark                                          ops-operationsservice-647d745655-w6cfd                            1/2     ImagePullBackOff             0                   172d    172.16.14.19     worker2.dev.sbiepay.sbi   <none>           <none>
+devops-admin                                       telnet-server-6ddc69dbdf-744t9                                    2/2     Running                      0                   172d    172.16.14.26     worker2.dev.sbiepay.sbi   <none>           <none>
+dynatrace                                          dynatrace-oneagent-csi-driver-69xmd                               4/4     Running                      0                   6d23h   172.16.14.155    worker2.dev.sbiepay.sbi   <none>           <none>
+istio-cni                                          istio-cni-node-xmsgj                                              1/1     Running                      1                   205d    172.16.15.241    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-cluster-csi-drivers                      vmware-vsphere-csi-driver-node-5cz7x                              3/3     Running                      4 (86d ago)         172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-cluster-node-tuning-operator             tuned-zm9kn                                                       1/1     Running                      1                   173d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-cluster-observability-operator           logging-84c857cbc-7jg27                                           1/1     Running                      0                   172d    172.16.14.5      worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-distributed-tracing                      jaeger-operator-6b559f95bd-vr9hn                                  2/2     Running                      27 (49d ago)        172d    172.16.14.6      worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-dns                                      dns-default-fr2bm                                                 2/2     Running                      0                   20h     172.16.14.156    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-dns                                      node-resolver-76td5                                               1/1     Running                      1                   172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-image-registry                           node-ca-b5mdf                                                     1/1     Running                      2                   173d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-ingress-canary                           ingress-canary-kwpmk                                              1/1     Running                      1                   173d    172.16.14.141    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-insights                                 insights-runtime-extractor-xrmk8                                  3/3     Running                      9 (86d ago)         173d    172.16.14.140    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-logging                                  collector-tsfqp                                                   1/1     Running                      0                   21d     172.16.14.94     worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-logging                                  logging-zlf2t                                                     1/1     Running                      0                   21d     172.16.14.95     worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-logging                                  splunk-integration-siem-xg5wt                                     1/1     Running                      0                   21d     172.16.14.93     worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker2.dev.sbiepay.sbi                      1/1     Running                      0                   172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-machine-config-operator                  machine-config-daemon-6xlcm                                       2/2     Running                      4 (86d ago)         172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-monitoring                               node-exporter-sbl2b                                               2/2     Running                      2                   173d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-multus                                   multus-additional-cni-plugins-6ftr6                               1/1     Running                      1                   172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-multus                                   multus-h48md                                                      1/1     Running                      2                   172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-multus                                   network-metrics-daemon-22kl6                                      2/2     Running                      2                   172d    172.16.14.143    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-network-diagnostics                      network-check-target-lncd8                                        1/1     Running                      1                   172d    172.16.14.145    worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-network-operator                         iptables-alerter-xwvfw                                            1/1     Running                      9 (49d ago)         172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-operators                                servicemesh-operator3-888bb864c-dhccz                             1/1     Running                      42 (49d ago)        172d    172.16.14.16     worker2.dev.sbiepay.sbi   <none>           <none>
+openshift-ovn-kubernetes                           ovnkube-node-bf6fr                                                8/8     Running                      8                   172d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+sit-istio-system                                   istiod-sit-istio-78668cdc99-ft6bl                                 1/1     Running                      0                   172d    172.16.14.37     worker2.dev.sbiepay.sbi   <none>           <none>
+telnet                                             telnet-server-6ddc69dbdf-4kv28                                    2/2     Running                      0                   117d    172.16.15.251    worker2.dev.sbiepay.sbi   <none>           <none>
+trident                                            trident-node-linux-fd9w5                                          2/2     Running                      31 (172d ago)       234d    10.177.142.142   worker2.dev.sbiepay.sbi   <none>           <none>
+[osuser@bastion ~]$ oc adm top pod --all-namespaces --sort-by=memory | grep worker2.dev 2>/dev/null
+openshift-machine-config-operator                  kube-rbac-proxy-crio-worker2.dev.sbiepay.sbi                     1m           31Mi
+[osuser@bastion ~]$ oc describe node worker2.dev.sbiepay.sbi | grep -A20 "Allocated resources"
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests       Limits
+  --------           --------       ------
+  cpu                7569m (48%)    57100m (368%)
+  memory             14011Mi (22%)  36128Mi (57%)
+  ephemeral-storage  0 (0%)         0 (0%)
+  hugepages-1Gi      0 (0%)         0 (0%)
+  hugepages-2Mi      0 (0%)         0 (0%)
+Events:              <none>
+[osuser@bastion ~]$ oc describe node worker2.dev.sbiepay.sbi | grep -A5 "Conditions"
+Conditions:
+  Type             Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----             ------  -----------------                 ------------------                ------                       -------
+  MemoryPressure   False   Tue, 14 Jul 2026 11:35:02 +0530   Sun, 19 Apr 2026 00:02:53 +0530   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure     False   Tue, 14 Jul 2026 11:35:02 +0530   Sun, 19 Apr 2026 00:02:53 +0530   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure      False   Tue, 14 Jul 2026 11:35:02 +0530   Sun, 19 Apr 2026 00:02:53 +0530   KubeletHasSufficientPID      kubelet has sufficient PID available
+[osuser@bastion ~]$
