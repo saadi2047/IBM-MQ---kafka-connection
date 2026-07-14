@@ -1,33 +1,28 @@
-# Check bytes in/out per broker via kafka-broker-api-versions
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
-  bin/kafka-log-dirs.sh \
-  --bootstrap-server localhost:9092 \
-  --broker-list 1 \
-  --topic-list "" 2>/dev/null | python3 -c "
-import json,sys
-data=json.loads(sys.stdin.read().split('\n',1)[1])
-total=sum(p['size'] for b in data['brokers'] for ld in b['logDirs'] for t in ld['topics'] for p in t['partitions'])
-print(f'broker-1 total log size: {total/1024/1024/1024:.2f} GB')
-" 2>/dev/null
-
-# Check if broker-1 is doing heavy replication (fetch requests)
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  bin/kafka-run-class.sh kafka.tools.JmxTool \
-  --object-name kafka.server:type=BrokerTopicMetrics,name=BytesInPerSec \
-  --jmx-url service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi \
-  --attributes OneMinuteRate,FiveMinuteRate \
-  --date-format "yyyy-MM-dd HH:mm:ss" 2>/dev/null | tail -3
-
-
-# Check GC activity - maybe broker-1 is doing heavy GC
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  bin/kafka-run-class.sh kafka.tools.JmxTool \
-  --object-name java.lang:type=GarbageCollector,name=G1 Young Generation \
-  --jmx-url service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi \
-  --attributes CollectionCount,CollectionTime \
-  --date-format "yyyy-MM-dd HH:mm:ss" 2>/dev/null | tail -3
-
-
-# Simpler - just check network traffic on broker-1
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  cat /proc/net/dev | grep eth0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
+>   bin/kafka-log-dirs.sh \
+>   --bootstrap-server localhost:9092 \
+>   --broker-list 1 \
+>   --topic-list "" 2>/dev/null | python3 -c "
+> import json,sys
+> data=json.loads(sys.stdin.read().split('\n',1)[1])
+> total=sum(p['size'] for b in data['brokers'] for ld in b['logDirs'] for t in ld['topics'] for p in t['partitions'])
+> print(f'broker-1 total log size: {total/1024/1024/1024:.2f} GB')
+> " 2>/dev/null
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   bin/kafka-run-class.sh kafka.tools.JmxTool \
+>   --object-name kafka.server:type=BrokerTopicMetrics,name=BytesInPerSec \
+>   --jmx-url service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi \
+>   --attributes OneMinuteRate,FiveMinuteRate \
+>   --date-format "yyyy-MM-dd HH:mm:ss" 2>/dev/null | tail -3
+WARNING: The 'kafka.tools' package is deprecated and will change to 'org.apache.kafka.tools' in the next major release.
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   bin/kafka-run-class.sh kafka.tools.JmxTool \
+>   --object-name java.lang:type=GarbageCollector,name=G1 Young Generation \
+>   --jmx-url service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi \
+>   --attributes CollectionCount,CollectionTime \
+>   --date-format "yyyy-MM-dd HH:mm:ss" 2>/dev/null | tail -3
+WARNING: The 'kafka.tools' package is deprecated and will change to 'org.apache.kafka.tools' in the next major release.
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   cat /proc/net/dev | grep eth0
+  eth0: 262902504940 1389026900    0    0    0     0          0         0 305834622746 1376058064    0    0    0     0       0          0
+[osuser@bastion ~]$
