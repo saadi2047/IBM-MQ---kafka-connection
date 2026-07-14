@@ -13,3 +13,7 @@ connect-2                                               2         4         4Gi 
 kafka-exporter                                          200m      500m      64Mi      128Mi      36m           54Mi          42%
 entity-operator                                         none      none      none      none       5m            778Mi         --
 console                                                 none      none      none      none       12m           1,115Mi       --
+
+
+
+oc get pods -n dev-kafka -o wide --no-headers | awk '{printf "%-55s %-20s\n", $1, $7}'
