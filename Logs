@@ -1,67 +1,7 @@
-[osuser@bastion ~]$ oc adm top pod -n dev-kafka
-NAME                                                 CPU(cores)   MEMORY(bytes)
-dev-console-console-deployment-577c797ccf-8dz7g      12m          1115Mi
-dev-kafka-cluster-broker-0                           222m         10198Mi
-dev-kafka-cluster-broker-1                           1147m        16266Mi
-dev-kafka-cluster-broker-2                           911m         15580Mi
-dev-kafka-cluster-controller-3                       60m          4001Mi
-dev-kafka-cluster-controller-4                       79m          4449Mi
-dev-kafka-cluster-controller-5                       65m          3058Mi
-dev-kafka-cluster-cruise-control-d949867dd-qmxmn     12m          2237Mi
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   5m           778Mi
-dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7    36m          54Mi
-dev-kafka-connect-mq-connect-0                       16m          4205Mi
-dev-kafka-connect-mq-connect-1                       9m           4193Mi
-dev-kafka-connect-mq-connect-2                       11m          4234Mi
-[osuser@bastion ~]$ oc get pods -n dev-kafka -o json | python3 -c "
-> import json, sys
-> data = json.load(sys.stdin)
-> print(f'{'Pod':<55} {'CPU Req':<10} {'CPU Lim':<10} {'Mem Req':<10} {'Mem Lim':<10}')
-> print('-'*95)
-> for pod in data['items']:
->     name = pod['metadata']['name']
->     for c in pod['spec']['containers']:
->         res = c.get('resources', {})
->         req = res.get('requests', {})
->         lim = res.get('limits', {})
->         cpu_req = req.get('cpu', 'none')
->         cpu_lim = lim.get('cpu', 'none')
->         mem_req = req.get('memory', 'none')
->         mem_lim = lim.get('memory', 'none')
->         print(f'{name:<55} {cpu_req:<10} {cpu_lim:<10} {mem_req:<10} {mem_lim:<10}')
-> "
-  File "<string>", line 4
-    print(f'{'Pod':<55} {'CPU Req':<10} {'CPU Lim':<10} {'Mem Req':<10} {'Mem Lim':<10}')
-                ^
-SyntaxError: invalid syntax
-[osuser@bastion ~]$ oc get pods -n dev-kafka -o json | python3 << 'EOF'
-> import json, sys
-> data = json.load(sys.stdin)
-> print("{:<55} {:<12} {:<12} {:<12} {:<12}".format("Pod", "CPU-Req", "CPU-Lim", "Mem-Req", "Mem-Lim"))
-> print("-" * 103)
-> for pod in data['items']:
->     name = pod['metadata']['name']
->     for c in pod['spec']['containers']:
->         res = c.get('resources', {})
->         req = res.get('requests', {})
->         lim = res.get('limits', {})
->         print("{:<55} {:<12} {:<12} {:<12} {:<12}".format(
->             name,
->             req.get('cpu', 'none'),
->             lim.get('cpu', 'none'),
->             req.get('memory', 'none'),
->             lim.get('memory', 'none')
->         ))
-> EOF
-Traceback (most recent call last):
-  File "<stdin>", line 2, in <module>
-  File "/usr/lib64/python3.6/json/__init__.py", line 299, in load
-    parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
-  File "/usr/lib64/python3.6/json/__init__.py", line 354, in loads
-    return _default_decoder.decode(s)
-  File "/usr/lib64/python3.6/json/decoder.py", line 339, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-  File "/usr/lib64/python3.6/json/decoder.py", line 357, in raw_decode
-    raise JSONDecodeError("Expecting value", s, err.value) from None
-json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
-[osuser@bastion ~]$
+oc get pods -n dev-kafka -o custom-columns=\
+"NAME:.metadata.name,\
+CPU-REQ:.spec.containers[0].resources.requests.cpu,\
+CPU-LIM:.spec.containers[0].resources.limits.cpu,\
+MEM-REQ:.spec.containers[0].resources.requests.memory,\
+MEM-LIM:.spec.containers[0].resources.limits.memory"
+
