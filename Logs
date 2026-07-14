@@ -1,21 +1,2 @@
-[osuser@bastion ~]$ oc get pods -n dev-kafka -o custom-columns=\
-> "NAME:.metadata.name,\
-> CPU-REQ:.spec.containers[0].resources.requests.cpu,\
-> CPU-LIM:.spec.containers[0].resources.limits.cpu,\
-> MEM-REQ:.spec.containers[0].resources.requests.memory,\
-> MEM-LIM:.spec.containers[0].resources.limits.memory"
-NAME                                                 CPU-REQ   CPU-LIM   MEM-REQ   MEM-LIM
-dev-console-console-deployment-577c797ccf-8dz7g      <none>    <none>    <none>    <none>
-dev-kafka-cluster-broker-0                           <none>    <none>    <none>    <none>
-dev-kafka-cluster-broker-1                           <none>    <none>    <none>    <none>
-dev-kafka-cluster-broker-2                           <none>    <none>    <none>    <none>
-dev-kafka-cluster-controller-3                       <none>    <none>    <none>    <none>
-dev-kafka-cluster-controller-4                       <none>    <none>    <none>    <none>
-dev-kafka-cluster-controller-5                       <none>    <none>    <none>    <none>
-dev-kafka-cluster-cruise-control-d949867dd-qmxmn     1         2         2Gi       4Gi
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   <none>    <none>    <none>    <none>
-dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7    200m      500m      64Mi      128Mi
-dev-kafka-connect-mq-connect-0                       2         4         4Gi       8Gi
-dev-kafka-connect-mq-connect-1                       2         4         4Gi       8Gi
-dev-kafka-connect-mq-connect-2                       2         4         4Gi       8Gi
-[osuser@bastion ~]$
+DEV Kafka — Complete Resource Table:
+PodCPU ReqCPU LimMem ReqMem LimCurrent CPUCurrent Memory% of Limitbroker-012 (KNP)24 (KNP)64Gi (KNP)128Gi (KNP)222m10,198Mi8%broker-112 (KNP)24 (KNP)64Gi (KNP)128Gi (KNP)1147m16,266Mi12%broker-212 (KNP)24 (KNP)64Gi (KNP)128Gi (KNP)911m15,580Mi12%controller-34 (KNP)8 (KNP)8Gi (KNP)16Gi (KNP)60m4,001Mi24%controller-44 (KNP)8 (KNP)8Gi (KNP)16Gi (KNP)79m4,449Mi27%controller-54 (KNP)8 (KNP)8Gi (KNP)16Gi (KNP)65m3,058Mi18%cruise-control122Gi4Gi12m2,237Mi54%entity-operatornonenonenonenone5m778Mi—kafka-exporter200m500m64Mi128Mi36m54Mi42%connect-0244Gi8Gi16m4,205Mi51%connect-1244Gi8Gi9m4,193Mi51%connect-2244Gi8Gi11m4,234Mi51%consolenonenonenonenone12m1,115Mi—
