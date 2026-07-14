@@ -1,28 +1,23 @@
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
->   bin/kafka-log-dirs.sh \
->   --bootstrap-server localhost:9092 \
->   --broker-list 1 \
->   --topic-list "" 2>/dev/null | python3 -c "
-> import json,sys
-> data=json.loads(sys.stdin.read().split('\n',1)[1])
-> total=sum(p['size'] for b in data['brokers'] for ld in b['logDirs'] for t in ld['topics'] for p in t['partitions'])
-> print(f'broker-1 total log size: {total/1024/1024/1024:.2f} GB')
-> " 2>/dev/null
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
->   bin/kafka-run-class.sh kafka.tools.JmxTool \
->   --object-name kafka.server:type=BrokerTopicMetrics,name=BytesInPerSec \
->   --jmx-url service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi \
->   --attributes OneMinuteRate,FiveMinuteRate \
->   --date-format "yyyy-MM-dd HH:mm:ss" 2>/dev/null | tail -3
-WARNING: The 'kafka.tools' package is deprecated and will change to 'org.apache.kafka.tools' in the next major release.
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
->   bin/kafka-run-class.sh kafka.tools.JmxTool \
->   --object-name java.lang:type=GarbageCollector,name=G1 Young Generation \
->   --jmx-url service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi \
->   --attributes CollectionCount,CollectionTime \
->   --date-format "yyyy-MM-dd HH:mm:ss" 2>/dev/null | tail -3
-WARNING: The 'kafka.tools' package is deprecated and will change to 'org.apache.kafka.tools' in the next major release.
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
->   cat /proc/net/dev | grep eth0
-  eth0: 262902504940 1389026900    0    0    0     0          0         0 305834622746 1376058064    0    0    0     0       0          0
-[osuser@bastion ~]$
+# Compare network on all 3 brokers
+for b in 0 1 2; do
+  echo "=== broker-$b ==="
+  oc exec dev-kafka-cluster-broker-$b -n dev-kafka -- \
+    cat /proc/net/dev | grep eth0
+done
+
+
+# Check broker-1 CPU via proc
+oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+  cat /proc/loadavg
+
+
+# Check how many threads broker-1 is running
+oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+  ls /proc/$(cat /proc/1/status | grep PPid | awk '{print $2}')/task | wc -l 2>/dev/null || \
+oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+  cat /proc/1/status | grep -E "Threads|VmRSS|VmPeak"
+
+
+# Check broker-1 open file descriptors - heavy I/O?
+oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+  ls /proc/1/fd | wc -l
