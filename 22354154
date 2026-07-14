@@ -28,3 +28,27 @@ oc adm top pod -n dev-frontend
 
 # Top memory consumers across all namespaces on worker2.dev
 oc adm top pod --all-namespaces --sort-by=memory 2>/dev/null | head -30
+
+
+# Top 30 memory consumers across entire cluster
+oc adm top pod --all-namespaces --sort-by=memory 2>/dev/null | head -30
+
+
+# worker2.dev specific - all pods with memory
+oc adm top pod --all-namespaces 2>/dev/null | grep -f <(oc get pods --all-namespaces -o wide | grep worker2.dev.sbiepay.sbi | awk '{print $2}')
+
+
+# Per namespace breakdown on worker2.dev
+for ns in dev-kafka dev-cache dev-sbiepay dev-offline-jobs dev-frontend dev-notification dev-transaction dev-merchant; do
+  echo "=== $ns ==="
+  oc adm top pod -n $ns 2>/dev/null | sort -k3 -rh | head -5
+done
+
+# Check all namespaces total memory usage
+oc adm top pod --all-namespaces 2>/dev/null | awk 'NR>1 {
+  split($3, a, "Mi"); 
+  ns_mem[$1] += a[1]
+} END {
+  for (ns in ns_mem) 
+    printf "%s %dMi\n", ns, ns_mem[ns]
+}' | sort -k2 -rh | head -20
