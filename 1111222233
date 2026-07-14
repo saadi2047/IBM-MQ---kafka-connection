@@ -1,49 +1,70 @@
-# Compare network on all 3 brokers
-for b in 0 1 2; do
-  echo "=== broker-$b ==="
-  oc exec dev-kafka-cluster-broker-$b -n dev-kafka -- \
-    cat /proc/net/dev | grep eth0
-done
-
-
-# Check broker-1 CPU via proc
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  cat /proc/loadavg
-
-
-# Check how many threads broker-1 is running
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  ls /proc/$(cat /proc/1/status | grep PPid | awk '{print $2}')/task | wc -l 2>/dev/null || \
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  cat /proc/1/status | grep -E "Threads|VmRSS|VmPeak"
-
-
-# Check broker-1 open file descriptors - heavy I/O?
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  ls /proc/1/fd | wc -l
-
-
-# 1. Check broker-1 CPU via proc stats directly
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  cat /proc/1/stat | awk '{print "CPU user:", $14, "CPU sys:", $15}'
-
-
-# 2. Compare network across all 3 brokers
-for b in 0 1 2; do
-  echo "=== broker-$b ==="
-  oc exec dev-kafka-cluster-broker-$b -n dev-kafka -- \
-    cat /proc/net/dev | grep eth0
-done
-
-
-# 3. Check broker-1 open file descriptors
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  ls /proc/1/fd | wc -l
-
-# 4. Check broker-1 memory and thread count
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  cat /proc/1/status | grep -E "Threads|VmRSS|VmPeak|VmSwap"
-
-# 5. Check Kafka metrics via Prometheus endpoint (no JMX needed)
-oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
-  curl -s http://localhost:9404/metrics | grep -E "kafka_server_brokertopicmetrics_messagesin|kafka_server_brokertopicmetrics_bytesin|kafka_network_requestmetrics_requestspersec" | grep -v "^#" | head -20
+[osuser@bastion ~]$ for b in 0 1 2; do
+>   echo "=== broker-$b ==="
+>   oc exec dev-kafka-cluster-broker-$b -n dev-kafka -- \
+>     cat /proc/net/dev | grep eth0
+> done
+=== broker-0 ===
+  eth0: 206188889007 804483860    0    0    0     0          0         0 110693261072 638985038    0    0    0     0       0          0
+=== broker-1 ===
+  eth0: 262977585873 1389421240    0    0    0     0          0         0 305921357846 1376443317    0    0    0     0       0          0
+=== broker-2 ===
+  eth0: 220897317679 1118271547    0    0    0     0          0         0 251329370789 1089660382    0    0    0     0       0          0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   cat /proc/loadavg
+3.25 3.62 3.54 4/3124 1347286
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   ls /proc/$(cat /proc/1/status | grep PPid | awk '{print $2}')/task | wc -l 2>/dev/null || \
+> oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   cat /proc/1/status | grep -E "Threads|VmRSS|VmPeak"
+ls: cannot access '/proc/0/task': No such file or directory
+command terminated with exit code 2
+0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   ls /proc/1/fd | wc -l
+3
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   cat /proc/1/stat | awk '{print "CPU user:", $14, "CPU sys:", $15}'
+CPU user: 443 CPU sys: 949
+[osuser@bastion ~]$ for b in 0 1 2; do
+>   echo "=== broker-$b ==="
+>   oc exec dev-kafka-cluster-broker-$b -n dev-kafka -- \
+>     cat /proc/net/dev | grep eth0
+> done
+=== broker-0 ===
+  eth0: 206201870278 804534565    0    0    0     0          0         0 110701054188 639024899    0    0    0     0       0          0
+=== broker-1 ===
+  eth0: 262994177325 1389509551    0    0    0     0          0         0 305939914869 1376531345    0    0    0     0       0          0
+=== broker-2 ===
+  eth0: 220910810596 1118340125    0    0    0     0          0         0 251344027174 1089725550    0    0    0     0       0          0
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   ls /proc/1/fd | wc -l
+3
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   cat /proc/1/status | grep -E "Threads|VmRSS|VmPeak|VmSwap"
+VmPeak:     2648 kB
+VmRSS:      1280 kB
+VmSwap:        0 kB
+Threads:        1
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- \
+>   curl -s http://localhost:9404/metrics | grep -E "kafka_server_brokertopicmetrics_messagesin|kafka_server_brokertopicmetrics_bytesin|kafka_network_requestmetrics_requestspersec" | grep -v "^#" | head -20
+kafka_server_brokertopicmetrics_bytesin_total 5.0275862589E10
+kafka_server_brokertopicmetrics_bytesin_total{topic="__consumer_offsets"} 2.579516746E9
+kafka_server_brokertopicmetrics_bytesin_total{topic="dev-kafka-connect-mq-configs"} 1560.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="dev-kafka-connect-mq-offsets"} 875.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="local_transaction_push_verification_topic"} 119557.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="merchant_email_notification_topic"} 2968.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="merchant_sms_notification_topic"} 570.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="neft.inbound.kafka.topic"} 431.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="neft.outbound.kafka.topic"} 887.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="otherinb_offline_gateway_pooling_dev_other_inb"} 1483505.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="strimzi.cruisecontrol.metrics"} 1.7973172E7
+kafka_server_brokertopicmetrics_bytesin_total{topic="strimzi.cruisecontrol.modeltrainingsamples"} 272422.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="strimzi.cruisecontrol.partitionmetricsamples"} 2763651.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="transaction_push_verification_topic"} 7914.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="transaction_push_verification_topic_job"} 1077624.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="upibhimqr_offline_gateway_pooling_dev_upi_qr"} 375436.0
+kafka_server_brokertopicmetrics_bytesin_total{topic="upiself_offline_gateway_pooling_dev_upi_self"} 304477.0
+kafka_server_brokertopicmetrics_messagesin_total 4.04342479E8
+kafka_server_brokertopicmetrics_messagesin_total{topic="__consumer_offsets"} 1.9564807E7
+kafka_server_brokertopicmetrics_messagesin_total{topic="dev-kafka-connect-mq-configs"} 8.0
+[osuser@bastion ~]$
