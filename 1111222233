@@ -1,122 +1,24 @@
-[osuser@bastion ~]$ oc get pods -n dev-kafka
-NAME                                                 READY   STATUS    RESTARTS         AGE
-dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0                11d
-dev-kafka-cluster-broker-0                           1/1     Running   0                7d23h
-dev-kafka-cluster-broker-1                           1/1     Running   0                7d23h
-dev-kafka-cluster-broker-2                           1/1     Running   0                7d22h
-dev-kafka-cluster-controller-3                       1/1     Running   0                39d
-dev-kafka-cluster-controller-4                       1/1     Running   0                27d
-dev-kafka-cluster-controller-5                       1/1     Running   0                11d
-dev-kafka-cluster-cruise-control-d949867dd-qmxmn     1/1     Running   5 (6d10h ago)    11d
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (106d ago)     118d
-dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7    1/1     Running   1 (6d10h ago)    7d20h
-dev-kafka-connect-mq-connect-0                       1/1     Running   10 (6d10h ago)   11d
-dev-kafka-connect-mq-connect-1                       1/1     Running   10 (6d10h ago)   20d
-dev-kafka-connect-mq-connect-2                       1/1     Running   10 (6d10h ago)   22d
-[osuser@bastion ~]$ oc get pods -n sit-kafka
-NAME                                                 READY   STATUS    RESTARTS         AGE
-sit-console-console-deployment-594f7f5f7-2kkj7       2/2     Running   0                84d
-sit-kafka-cluster-broker-0                           1/1     Running   0                7d22h
-sit-kafka-cluster-broker-1                           1/1     Running   0                7d22h
-sit-kafka-cluster-broker-2                           1/1     Running   0                7d22h
-sit-kafka-cluster-controller-3                       1/1     Running   0                87d
-sit-kafka-cluster-controller-4                       1/1     Running   0                72d
-sit-kafka-cluster-controller-5                       1/1     Running   0                33d
-sit-kafka-cluster-cruise-control-f99978486-vb5dl     1/1     Running   59 (4d10h ago)   33d
-sit-kafka-cluster-entity-operator-67865b654f-ssvbm   2/2     Running   0                33d
-[osuser@bastion ~]$ oc get pods -n uat-kafka
-NAME                                                READY   STATUS    RESTARTS          AGE
-uat-console-console-deployment-5d4fb9b74-5n9k6      2/2     Running   3 (87d ago)       96d
-uat-kafka-cluster-broker-0                          1/1     Running   0                 54d
-uat-kafka-cluster-broker-1                          1/1     Running   0                 54d
-uat-kafka-cluster-broker-2                          1/1     Running   0                 173d
-uat-kafka-cluster-controller-3                      1/1     Running   0                 173d
-uat-kafka-cluster-controller-4                      1/1     Running   0                 173d
-uat-kafka-cluster-controller-5                      1/1     Running   0                 173d
-uat-kafka-cluster-cruise-control-85b7474f57-wkt48   1/1     Running   363 (6d10h ago)   173d
-uat-kafka-cluster-entity-operator-668845cdc-pzmh5   2/2     Running   0                 173d
-[osuser@bastion ~]$ oc get pods -n int-kafka
-NAME                                                 READY   STATUS    RESTARTS          AGE
-int-console-console-deployment-9c5d8fbc9-phnn5       2/2     Running   0                 84d
-int-kafka-cluster-broker-0                           1/1     Running   0                 54d
-int-kafka-cluster-broker-1                           1/1     Running   1 (7d22h ago)     173d
-int-kafka-cluster-broker-2                           1/1     Running   1 (7d22h ago)     54d
-int-kafka-cluster-controller-3                       1/1     Running   0                 173d
-int-kafka-cluster-controller-4                       1/1     Running   0                 173d
-int-kafka-cluster-controller-5                       1/1     Running   0                 173d
-int-kafka-cluster-cruise-control-7558ff4cdc-kn6p2    1/1     Running   368 (6d10h ago)   173d
-int-kafka-cluster-entity-operator-79699cdd59-z47jk   2/2     Running   5 (173d ago)      173d
-[osuser@bastion ~]$ oc adm top pods -n dev-kafka -l strimzi.io/pool-name=broker
-NAME                         CPU(cores)   MEMORY(bytes)
-dev-kafka-cluster-broker-0   456m         10263Mi
-dev-kafka-cluster-broker-1   1425m        17723Mi
-dev-kafka-cluster-broker-2   994m         15646Mi
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- ps aux | grep java
-time="2026-07-15T05:29:59Z" level=error msg="exec failed: unable to start container process: exec: \"ps\": executable file not found in $PATH"
-command terminated with exit code 255
-[osuser@bastion ~]$ for b in 0 1 2; do
->   echo "=== broker-$b ==="
->   oc exec dev-kafka-cluster-broker-$b -n dev-kafka -- cat /proc/loadavg
-> done
-=== broker-0 ===
-1.12 1.08 1.21 1/2575 1414774
-=== broker-1 ===
-4.13 3.67 3.27 1/3119 1490934
-=== broker-2 ===
-1.77 2.01 2.12 1/2415 1486992
-[osuser@bastion ~]$ oc adm top node
-NAME                      CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
-infra1.dev.sbiepay.sbi    987m         8%     14103Mi         22%
-infra2.dev.sbiepay.sbi    535m         4%     10784Mi         17%
-infra3.dev.sbiepay.sbi    599m         5%     10856Mi         17%
-master1.dev.sbiepay.sbi   2927m        18%    33353Mi         52%
-master2.dev.sbiepay.sbi   1371m        8%     31103Mi         49%
-master3.dev.sbiepay.sbi   2365m        15%    32056Mi         50%
-worker1.dev.sbiepay.sbi   1315m        8%     29721Mi         47%
-worker1.integ.epay.sbi    2468m        15%    30061Mi         47%
-worker1.sit.epay.sbi      914m         5%     30057Mi         47%
-worker1.uat.epay.sbi      1539m        9%     31314Mi         49%
-worker2.dev.sbiepay.sbi   2461m        15%    52482Mi         83%
-worker2.integ.epay.sbi    968m         6%     19541Mi         30%
-worker2.sit.epay.sbi      3595m        23%    27257Mi         43%
-worker2.uat.epay.sbi      2914m        18%    39914Mi         63%
-worker3.dev.sbiepay.sbi   2457m        15%    35878Mi         56%
-worker3.integ.epay.sbi    1074m        6%     25465Mi         40%
-worker3.sit.epay.sbi      1602m        10%    21544Mi         34%
-worker3.uat.epay.sbi      2483m        16%    38079Mi         60%
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- ls /proc | grep -E '^[0-9]+$'
-1
-1491223
-686
-[osuser@bastion ~]$ for p in 1 686 1491223; do
->   echo "=== PID $p ==="
->   oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- cat /proc/$p/cmdline 2>/dev/null | tr '\0' ' '
->   echo ""
-> done
-=== PID 1 ===
-/usr/bin/tini -w -e 143 -- /opt/kafka/bin/kafka-server-start.sh /tmp/strimzi.properties
-=== PID 686 ===
-java -Xms128M -server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:+ExplicitGCInvokesConcurrent -XX:MaxInlineLevel=15 -Djava.awt.headless=true -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dkafka.logs.dir=/opt/kafka -Dlog4j.configuration=file:/opt/kafka/custom-config/log4j.properties -cp /opt/kafka/bin/../libs/accessors-smart-2.5.2.redhat-00001.jar:/opt/kafka/bin/../libs/activation-1.1.1.redhat-5.jar:/opt/kafka/bin/../libs/animal-sniffer-annotations-1.23.0.redhat-00001.jar:/opt/kafka/bin/../libs/aopalliance-repackaged-2.6.1.redhat-00001.jar:/opt/kafka/bin/../libs/argparse4j-0.7.0.redhat-00004.jar:/opt/kafka/bin/../libs/audience-annotations-0.12.0.redhat-00001.jar:/opt/kafka/bin/../libs/caffeine-2.9.3.redhat-00003.jar:/opt/kafka/bin/../libs/commons-beanutils-1.11.0.redhat-00001.jar:/opt/kafka/bin/../libs/commons-cli-1.4.0.redhat-00003.jar:/opt/kafka/bin/../libs/commons-collections-3.2.2.redhat-2.jar:/opt/kafka/bin/../libs/commons-digester-2.1.0.redhat-00004.jar:/opt/kafka/bin/../libs/commons-io-2.15.1.redhat-00001.jar:/opt/kafka/bin/../libs/commons-lang-2.6.0.redhat-7.jar:/opt/kafka/bin/../libs/commons-lang3-3.18.0.redhat-00002.jar:/opt/kafka/bin/../libs/commons-logging-1.3.5.redhat-00001.jar:/opt/kafka/bin/../libs/commons-validator-1.7.0.redhat-00008.jar:/opt/kafka/bin/../libs/connect-api-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/connect-basic-auth-extension-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/connect-json-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/connect-mirror-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/connect-mirror-client-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/connect-runtime-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/connect-transforms-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/cruise-control-metrics-reporter-2.5.142.redhat-00021.jar:/opt/kafka/bin/../libs/error_prone_annotations-2.10.0.redhat-00001.jar:/opt/kafka/bin/../libs/failureaccess-1.0.1.redhat-00013.jar:/opt/kafka/bin/../libs/grpc-api-1.61.0.redhat-00004.jar:/opt/kafka/bin/../libs/grpc-context-1.61.0.redhat-00004.jar:/opt/kafka/bin/../libs/grpc-core-1.61.0.redhat-00004.jar:/opt/kafka/bin/../libs/grpc-netty-shaded-1.61.0.redhat-00004.jar:/opt/kafka/bin/../libs/grpc-stub-1.61.0.redhat-00004.jar:/opt/kafka/bin/../libs/grpc-util-1.61.0.redhat-00004.jar:/opt/kafka/bin/../libs/gson-2.10.1.redhat-00004.jar:/opt/kafka/bin/../libs/guava-32.1.3.jre-redhat-00001.jar:/opt/kafka/bin/../libs/hk2-api-2.6.1.redhat-00001.jar:/opt/kafka/bin/../libs/hk2-locator-2.6.1.redhat-00001.jar:/opt/kafka/bin/../libs/hk2-utils-2.6.1.redhat-00001.jar:/opt/kafka/bin/../libs/j2objc-annotations-2.8.0.redhat-00002.jar:/opt/kafka/bin/../libs/jackson-annotations-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jackson-core-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jackson-databind-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jackson-dataformat-csv-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jackson-dataformat-yaml-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jackson-datatype-jdk8-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jackson-datatype-jsr310-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jackson-jaxrs-base-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jackson-jaxrs-json-provider-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jackson-module-afterburner-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jackson-module-jaxb-annotations-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jackson-module-scala_2.13-2.16.2.redhat-00001.jar:/opt/kafka/bin/../libs/jakarta.activation-api-1.2.2.redhat-00003.jar:/opt/kafka/bin/../libs/jakarta.annotation-api-1.3.5.redhat-00004.jar:/opt/kafka/bin/../libs/jakarta.inject-2.6.1.redhat-00001.jar:/opt/kafka/bin/../libs/jakarta.validation-api-2.0.2.redhat-00002.jar:/opt/kafka/bin/../libs/jakarta.ws.rs-api-2.1.6.redhat-00001.jar:/opt/kafka/bin/../libs/jakarta.xml.bind-api-2.3.3.redhat-00003.jar:/opt/kafka/bin/../libs/javassist-3.29.2.GA-redhat-00003.jar:/opt/kafka/bin/../libs/javax.activation-api-1.2.0.redhat-00002.jar:/opt/kafka/bin/../libs/javax.annotation-api-1.3.2.redhat-00003.jar:/opt/kafka/bin/../libs/javax.servlet-api-3.1.0.redhat-1.jar:/opt/kafka/bin/../libs/javax.ws.rs-api-2.1.1.redhat-00004.jar:/opt/kafka/bin/../libs/jaxb-api-2.3.1.redhat-00002.jar:/opt/kafka/bin/../libs/jersey-client-2.39.1.redhat-00001.jar:/opt/kafka/bin/../libs/jersey-common-2.39.1.redhat-00001.jar:/opt/kafka/bin/../libs/jersey-container-servlet-2.39.1.redhat-00001.jar:/opt/kafka/bin/../libs/jersey-container-servlet-core-2.39.1.redhat-00001.jar:/opt/kafka/bin/../libs/jersey-hk2-2.39.1.redhat-00001.jar:/opt/kafka/bin/../libs/jersey-server-2.39.1.redhat-00001.jar:/opt/kafka/bin/../libs/jetty-client-9.4.57.v20241219-redhat-00001.jar:/opt/kafka/bin/../libs/jetty-continuation-9.4.57.v20241219-redhat-00001.jar:/opt/kafka/bin/../libs/jetty-http-9.4.57.v20241219-redhat-00001.jar:/opt/kafka/bin/../libs/jetty-io-9.4.57.v20241219-redhat-00001.jar:/opt/kafka/bin/../libs/jetty-security-9.4.57.v20241219-redhat-00001.jar:/opt/kafka/bin/../libs/jetty-server-9.4.57.v20241219-redhat-00001.jar:/opt/kafka/bin/../libs/jetty-servlet-9.4.57.v20241219-redhat-00001.jar:/opt/kafka/bin/../libs/jetty-servlets-9.4.57.v20241219-redhat-00001.jar:/opt/kafka/bin/../libs/jetty-util-9.4.57.v20241219-redhat-00001.jar:/opt/kafka/bin/../libs/jetty-util-ajax-9.4.57.v20241219-redhat-00001.jar:/opt/kafka/bin/../libs/jline-3.25.1.redhat-00001.jar:/opt/kafka/bin/../libs/jopt-simple-5.0.4.redhat-00002.jar:/opt/kafka/bin/../libs/jose4j-0.9.4.redhat-00001.jar:/opt/kafka/bin/../libs/json-path-2.9.0.redhat-00001.jar:/opt/kafka/bin/../libs/json-smart-2.5.2.redhat-00002.jar:/opt/kafka/bin/../libs/jsonevent-layout-1.7.0.redhat-00002.jar:/opt/kafka/bin/../libs/jsr305-3.0.2.redhat-00016.jar:/opt/kafka/bin/../libs/kafka-agent-3-0.46.1.redhat-00007.jar:/opt/kafka/bin/../libs/kafka-clients-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-group-coordinator-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-group-coordinator-api-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-kubernetes-config-provider-1.2.0.redhat-00004.jar:/opt/kafka/bin/../libs/kafka-metadata-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-oauth-client-0.16.2.redhat-00008.jar:/opt/kafka/bin/../libs/kafka-oauth-common-0.16.2.redhat-00008.jar:/opt/kafka/bin/../libs/kafka-oauth-keycloak-authorizer-0.16.2.redhat-00008.jar:/opt/kafka/bin/../libs/kafka-oauth-server-0.16.2.redhat-00008.jar:/opt/kafka/bin/../libs/kafka-oauth-server-plain-0.16.2.redhat-00008.jar:/opt/kafka/bin/../libs/kafka-quotas-plugin-0.3.1.redhat-00007.jar:/opt/kafka/bin/../libs/kafka-raft-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-server-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-server-common-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-shell-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-storage-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-storage-api-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-streams-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-streams-scala_2.13-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-tools-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-tools-api-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka-transaction-coordinator-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kafka_2.13-3.9.1.redhat-00003.jar:/opt/kafka/bin/../libs/kubernetes-client-6.13.4.redhat-00001.jar:/opt/kafka/bin/../libs/kubernetes-client-api-6.13.4.redhat-00001.jar:/opt/kafka/bin/../libs/kubernetes-httpclient-jdk-6.13.4.redhat-00001.jar:/opt/kafka/bin/../libs/kubernetes-model-apps-6.13.4.redhat-00001.jar:/opt/kafka/bin/../libs/kubernetes-model-batch-6.13.4.redhat-00001.jar:/opt/kafka/bin/../libs/kubernetes-model-certificates-6.13.4.redhat-00001.jar:/opt/kafka/bin/../libs/kubernetes-model-common-6.13.4.redhat-00001.jar:/opt/kafka/bin/../libs/kubernetes-model-core-6.13.4.redhat-00001.jar:/opt/kafka/bin/../libs/kubernetes-model-extensions-6.13.4.redhat-00001.jar:/opt/kafka/bin/../libs/listenablefuture-9999.0.0.empty-to-avoid-conflict-with-guava-redhat-00004.jar:/opt/kafka/bin/../libs/lz4-java-1.8.0.redhat-00010.jar:/opt/kafka/bin/../libs/maven-artifact-3.9.6.redhat-00003.jar:/opt/kafka/bin/../libs/metrics-core-2.2.0.redhat-00004.jar:/opt/kafka/bin/../libs/metrics-core-4.1.12.1-redhat-00002.jar:/opt/kafka/bin/../libs/netty-buffer-4.1.124.Final-redhat-00001.jar:/opt/kafka/bin/../libs/netty-codec-4.1.124.Final-redhat-00001.jar:/opt/kafka/bin/../libs/netty-common-4.1.124.Final-redhat-00001.jar:/opt/kafka/bin/../libs/netty-handler-4.1.124.Final-redhat-00001.jar:/opt/kafka/bin/../libs/netty-resolver-4.1.124.Final-redhat-00001.jar:/opt/kafka/bin/../libs/netty-transport-4.1.124.Final-redhat-00001.jar:/opt/kafka/bin/../libs/netty-transport-classes-epoll-4.1.124.Final-redhat-00001.jar:/opt/kafka/bin/../libs/netty-transport-native-epoll-4.1.124.Final-redhat-00001.jar:/opt/kafka/bin/../libs/netty-transport-native-unix-common-4.1.124.Final-redhat-00001.jar:/opt/kafka/bin/../libs/nimbus-jose-jwt-10.0.2.redhat-00002.jar:/opt/kafka/bin/../libs/opa-authorizer-1.5.1.redhat-00014.jar:/opt/kafka/bin/../libs/opentelemetry-api-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-api-events-1.34.1.alpha-redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-context-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-exporter-common-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-exporter-otlp-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-exporter-otlp-common-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-exporter-sender-grpc-managed-channel-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-exporter-sender-jdk-1.34.1.alpha-redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-extension-incubator-1.32.0.alpha-redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-instrumentation-api-1.32.0.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-instrumentation-api-semconv-1.32.0.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-kafka-clients-2.6-1.32.0.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-kafka-clients-common-1.32.0.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-proto-1.0.0.alpha-redhat-00002.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-common-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-extension-autoconfigure-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-extension-autoconfigure-spi-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-logs-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-metrics-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-sdk-trace-1.34.1.redhat-00001.jar:/opt/kafka/bin/../libs/opentelemetry-semconv-1.21.0.alpha-redhat-00001.jar:/opt/kafka/bin/../libs/osgi-resource-locator-1.0.3.redhat-00001.jar:/opt/kafka/bin/../libs/paranamer-2.8.0.redhat-00001.jar:/opt/kafka/bin/../libs/pcollections-4.0.1.redhat-00001.jar:/opt/kafka/bin/../libs/perfmark-api-0.26.0.redhat-00003.jar:/opt/kafka/bin/../libs/plexus-utils-3.5.1.redhat-00002.jar:/opt/kafka/bin/../libs/protobuf-java-3.25.5.redhat-00003.jar:/opt/kafka/bin/../libs/reflections-0.10.2.redhat-00001.jar:/opt/kafka/bin/../libs/reload4j-1.2.25.redhat-00002.jar:/opt/kafka/bin/../libs/rocksdbjni-7.9.2.redhat-00006.jar:/opt/kafka/bin/../libs/scala-collection-compat_2.13-2.10.0.redhat-00001.jar:/opt/kafka/bin/../libs/scala-java8-compat_2.13-1.0.2.redhat-00001.jar:/opt/kafka/bin/../libs/scala-library-2.13.14.redhat-00002.jar:/opt/kafka/bin/../libs/scala-logging_2.13-3.9.5.redhat-00001.jar:/opt/kafka/bin/../libs/scala-reflect-2.13.14.redhat-00002.jar:/opt/kafka/bin/../libs/slf4j-api-1.7.36.redhat-00006.jar:/opt/kafka/bin/../libs/slf4j-reload4j-1.7.36.redhat-00006.jar:/opt/kafka/bin/../libs/snakeyaml-2.2.0.redhat-00001.jar:/opt/kafka/bin/../libs/snakeyaml-engine-2.7.0.redhat-00006.jar:/opt/kafka/bin/../libs/snappy-java-1.1.10.5-redhat-00008.jar:/opt/kafka/bin/../libs/swagger-annotations-2.2.8.redhat-00001.jar:/opt/kafka/bin/../libs/tracing-agent-0.46.1.redhat-00007.jar:/opt/kafka/bin/../libs/zjsonpatch-0.3.0.redhat-00004.jar:/opt/kafka/bin/../libs/zookeeper-3.8.4.redhat-00020.jar:/opt/kafka/bin/../libs/zookeeper-jute-3.8.4.redhat-00020.jar:/opt/kafka/bin/../libs/zstd-jni-1.5.6.4-redhat-00003.jar -javaagent:/opt/prometheus-jmx-exporter/jmx_prometheus_javaagent-1.1.0.redhat-00001.jar=9404:/opt/kafka/custom-config/metrics-config.json -javaagent:/opt/kafka/libs/kafka-agent-3-0.46.1.redhat-00007.jar=/tmp/kafka-agent.properties kafka.Kafka /tmp/strimzi.properties
-=== PID 1491223 ===
+Subject: SBIePay 2.0 | NEFT / RTGS / MIS — End-to-End Message Flow Diagram (DEV)
 
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- cat /proc/<pid>/status | grep -E "Threads|VmRSS|VmPeak"
--bash: pid: No such file or directory
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- cat /proc/686/status | grep -E "Threads|VmRSS|VmPeak"
-VmPeak: 48642604 kB
-VmRSS:  17863028 kB
-Threads:        176
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- cat /proc/1491223/status | grep -E "Threads|VmRSS|VmPeak"
-cat: /proc/1491223/status: No such file or directory
-command terminated with exit code 1
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- cat /proc/1/status | grep -E "Threads|VmRSS|VmPeak"
-VmPeak:     2648 kB
-VmRSS:      1280 kB
-Threads:        1
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- cat /proc/1/stat | awk '{print "utime:", $14, "stime:", $15}'
-utime: 490 stime: 1046
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- cat /proc/1491223/stat | awk '{print "utime:", $14, "stime:", $15}'
-cat: /proc/1491223/stat: No such file or directory
-command terminated with exit code 1
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- cat /proc/686/stat | awk '{print "utime:", $14, "stime:", $15}'
-utime: 54494628 stime: 14319562
-[osuser@bastion ~]$
+Dear Team,
+
+Please find attached the end-to-end message flow diagram for the NEFT / RTGS / MIS integration between IBM MQ and Kafka on the DEV environment.
+
+The diagram covers the complete transaction lifecycle in two legs:
+
+Leg 1 - Dealer Validation (steps 1-11)
+Challan generated on SBIePay 2.0 with ATRN, request posted by IPH to NeftInboundQueue, picked up by the neft-mq-source connector and published to neft.inbound.kafka.topic. The application consumes, validates (VAN, amount, date, duplicate) and publishes the response to neft.outbound.kafka.topic, which the neft-mq-sink connector delivers back to NeftOutBoundQueue as the ACK to IPH.
+
+Leg 2 - MIS (steps 12-21)
+MIS is generated by IPH only on a successful Y|NA acknowledgement. On an N response the flow stops and no MIS is raised. The MIS request follows the same path via NeftMISCInboundQueue and the mis-mq-source / mis-mq-sink connector pair, concluding with the IPH audit moving from Pending CorpMisAck to MIS Received Ack and the transaction being marked successful.
+
+The RTGS flow is identical, using queue manager SBI_RTGS on port 2005 and the corresponding rtgs.* topics.
+
+Environment details, the connector inventory and the colour legend are included on the right-hand side of the diagram for reference. The MQ connectivity and Kafka platform details are as currently configured in the dev-kafka namespace.
+
+Request you to kindly review and share your feedback or any corrections.
+
+Thanks & Regards,
+Saadi M Muzzammil
+Kafka Admin | DevSecOps
+SBI ePay 2.0
