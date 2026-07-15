@@ -1,91 +1,11 @@
-[osuser@bastion ~]$ oc get pods -n dev-kafka
-NAME                                                 READY   STATUS    RESTARTS         AGE
-dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0                11d
-dev-kafka-cluster-broker-0                           1/1     Running   0                7d23h
-dev-kafka-cluster-broker-1                           1/1     Running   0                7d23h
-dev-kafka-cluster-broker-2                           1/1     Running   0                7d22h
-dev-kafka-cluster-controller-3                       1/1     Running   0                39d
-dev-kafka-cluster-controller-4                       1/1     Running   0                27d
-dev-kafka-cluster-controller-5                       1/1     Running   0                11d
-dev-kafka-cluster-cruise-control-d949867dd-qmxmn     1/1     Running   5 (6d10h ago)    11d
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (106d ago)     118d
-dev-kafka-cluster-kafka-exporter-85bc9d544f-jphl7    1/1     Running   1 (6d10h ago)    7d20h
-dev-kafka-connect-mq-connect-0                       1/1     Running   10 (6d10h ago)   11d
-dev-kafka-connect-mq-connect-1                       1/1     Running   10 (6d10h ago)   20d
-dev-kafka-connect-mq-connect-2                       1/1     Running   10 (6d10h ago)   22d
-[osuser@bastion ~]$ oc get pods -n sit-kafka
-NAME                                                 READY   STATUS    RESTARTS         AGE
-sit-console-console-deployment-594f7f5f7-2kkj7       2/2     Running   0                84d
-sit-kafka-cluster-broker-0                           1/1     Running   0                7d22h
-sit-kafka-cluster-broker-1                           1/1     Running   0                7d22h
-sit-kafka-cluster-broker-2                           1/1     Running   0                7d22h
-sit-kafka-cluster-controller-3                       1/1     Running   0                87d
-sit-kafka-cluster-controller-4                       1/1     Running   0                72d
-sit-kafka-cluster-controller-5                       1/1     Running   0                33d
-sit-kafka-cluster-cruise-control-f99978486-vb5dl     1/1     Running   59 (4d10h ago)   33d
-sit-kafka-cluster-entity-operator-67865b654f-ssvbm   2/2     Running   0                33d
-[osuser@bastion ~]$ oc get pods -n uat-kafka
-NAME                                                READY   STATUS    RESTARTS          AGE
-uat-console-console-deployment-5d4fb9b74-5n9k6      2/2     Running   3 (87d ago)       96d
-uat-kafka-cluster-broker-0                          1/1     Running   0                 54d
-uat-kafka-cluster-broker-1                          1/1     Running   0                 54d
-uat-kafka-cluster-broker-2                          1/1     Running   0                 173d
-uat-kafka-cluster-controller-3                      1/1     Running   0                 173d
-uat-kafka-cluster-controller-4                      1/1     Running   0                 173d
-uat-kafka-cluster-controller-5                      1/1     Running   0                 173d
-uat-kafka-cluster-cruise-control-85b7474f57-wkt48   1/1     Running   363 (6d10h ago)   173d
-uat-kafka-cluster-entity-operator-668845cdc-pzmh5   2/2     Running   0                 173d
-[osuser@bastion ~]$ oc get pods -n int-kafka
-NAME                                                 READY   STATUS    RESTARTS          AGE
-int-console-console-deployment-9c5d8fbc9-phnn5       2/2     Running   0                 84d
-int-kafka-cluster-broker-0                           1/1     Running   0                 54d
-int-kafka-cluster-broker-1                           1/1     Running   1 (7d22h ago)     173d
-int-kafka-cluster-broker-2                           1/1     Running   1 (7d22h ago)     54d
-int-kafka-cluster-controller-3                       1/1     Running   0                 173d
-int-kafka-cluster-controller-4                       1/1     Running   0                 173d
-int-kafka-cluster-controller-5                       1/1     Running   0                 173d
-int-kafka-cluster-cruise-control-7558ff4cdc-kn6p2    1/1     Running   368 (6d10h ago)   173d
-int-kafka-cluster-entity-operator-79699cdd59-z47jk   2/2     Running   5 (173d ago)      173d
-[osuser@bastion ~]$ oc adm top pods -n dev-kafka -l strimzi.io/pool-name=broker
-NAME                         CPU(cores)   MEMORY(bytes)
-dev-kafka-cluster-broker-0   456m         10263Mi
-dev-kafka-cluster-broker-1   1425m        17723Mi
-dev-kafka-cluster-broker-2   994m         15646Mi
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- ps aux | grep java
-time="2026-07-15T05:29:59Z" level=error msg="exec failed: unable to start container process: exec: \"ps\": executable file not found in $PATH"
-command terminated with exit code 255
-[osuser@bastion ~]$ for b in 0 1 2; do
->   echo "=== broker-$b ==="
->   oc exec dev-kafka-cluster-broker-$b -n dev-kafka -- cat /proc/loadavg
-> done
-=== broker-0 ===
-1.12 1.08 1.21 1/2575 1414774
-=== broker-1 ===
-4.13 3.67 3.27 1/3119 1490934
-=== broker-2 ===
-1.77 2.01 2.12 1/2415 1486992
-[osuser@bastion ~]$ oc adm top node
-NAME                      CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
-infra1.dev.sbiepay.sbi    987m         8%     14103Mi         22%
-infra2.dev.sbiepay.sbi    535m         4%     10784Mi         17%
-infra3.dev.sbiepay.sbi    599m         5%     10856Mi         17%
-master1.dev.sbiepay.sbi   2927m        18%    33353Mi         52%
-master2.dev.sbiepay.sbi   1371m        8%     31103Mi         49%
-master3.dev.sbiepay.sbi   2365m        15%    32056Mi         50%
-worker1.dev.sbiepay.sbi   1315m        8%     29721Mi         47%
-worker1.integ.epay.sbi    2468m        15%    30061Mi         47%
-worker1.sit.epay.sbi      914m         5%     30057Mi         47%
-worker1.uat.epay.sbi      1539m        9%     31314Mi         49%
-worker2.dev.sbiepay.sbi   2461m        15%    52482Mi         83%
-worker2.integ.epay.sbi    968m         6%     19541Mi         30%
-worker2.sit.epay.sbi      3595m        23%    27257Mi         43%
-worker2.uat.epay.sbi      2914m        18%    39914Mi         63%
-worker3.dev.sbiepay.sbi   2457m        15%    35878Mi         56%
-worker3.integ.epay.sbi    1074m        6%     25465Mi         40%
-worker3.sit.epay.sbi      1602m        10%    21544Mi         34%
-worker3.uat.epay.sbi      2483m        16%    38079Mi         60%
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- ls /proc | grep -E '^[0-9]+$'
-1
-1491223
-686
-[osuser@bastion ~]$
+for p in 1 686 1491223; do
+  echo "=== PID $p ==="
+  oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- cat /proc/$p/cmdline 2>/dev/null | tr '\0' ' '
+  echo ""
+done
+
+# Real memory/thread count for the JVM
+oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- cat /proc/<pid>/status | grep -E "Threads|VmRSS|VmPeak"
+
+# Live CPU consumption breakdown
+oc exec dev-kafka-cluster-broker-1 -n dev-kafka -- cat /proc/<pid>/stat | awk '{print "utime:", $14, "stime:", $15}'
