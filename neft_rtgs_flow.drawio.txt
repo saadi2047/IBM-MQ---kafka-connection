@@ -1,0 +1,249 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="NEFT-RTGS Flow" id="neft-flow-1">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Row 1: Customer, ePay, IPH -->
+        <mxCell id="cx" value="Cx" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="40" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="epay" value="ePay 2.0&#10;NEFT/RTGS" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="180" y="60" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="iph" value="IPH" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="440" y="50" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl-challan" value="Challan gen.&#10;ATRN" style="text;html=1;align=center;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="180" y="10" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl-dealer" value="Dealer validation" style="text;html=1;align=center;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="440" y="140" width="160" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;" edge="1" parent="1" source="cx" target="epay">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" value="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="130" y="75" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;" edge="1" parent="1" source="epay" target="iph">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="3" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="390" y="75" width="24" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Row 2: Queue in <- Connector Source <- Topic -->
+        <mxCell id="q-in" value="Queue&#10;in" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="440" y="240" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="conn-src" value="Connector&#10;Source" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="240" y="240" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="topic-in" value="Topic" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="240" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="iph" target="q-in">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="520" y="200"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="s4" value="4" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="500" y="195" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="q-in" target="conn-src">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="5" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="395" y="220" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="conn-src" target="topic-in">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" value="6" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="195" y="220" width="24" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Row 3: App consumes -> Topic (publish) <- Connector Sink <- Queue out -->
+        <mxCell id="s7" value="7" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="55" y="360" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="Consume&#10;App" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="topic-in" target="s7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="topic-pub" value="Topic" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="240" y="400" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="conn-sink" value="Connector&#10;Sink" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="440" y="400" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="q-out" value="Queue&#10;out" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="640" y="400" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s8" value="8" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="195" y="380" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="Publish" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="s7" target="topic-pub">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s9" value="9" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="395" y="380" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="Sink" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="topic-pub" target="conn-sink">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s10" value="10" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="595" y="380" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="conn-sink" target="q-out">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Decision diamond -->
+        <mxCell id="ack-diamond" value="Ack&#10;= ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="660" y="500" width="100" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s11a" value="11" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="765" y="480" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="Ack=Y/N" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="q-out" target="ack-diamond">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stop-box" value="Stops. No MIS.&#10;Invalid amount&#10;Invalid request&#10;Invalid date&#10;Duplicate" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="480" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="s11c" value="11c" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="860" y="600" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e11c" value="N" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;fontColor=#b85450;" edge="1" parent="1" source="ack-diamond" target="stop-box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ack-y" value="Ack = Y" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="620" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s11b" value="11b" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="630" y="640" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e11b" value="Y" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;fontColor=#3d8140;" edge="1" parent="1" source="ack-diamond" target="ack-y">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Leg 2: MIS -->
+        <mxCell id="corp-server" value="Corp.Server&#10;MIS gen." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="260" y="620" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s12" value="12" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="410" y="600" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ack-y" target="corp-server">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mis-q" value="MIS in&#10;Queue" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="40" y="620" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s13" value="13" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="195" y="600" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="corp-server" target="mis-q">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="k-conn1" value="K. Connector&#10;Source" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="740" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s14" value="14" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="95" y="700" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mis-q" target="k-conn1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="topic-mis" value="Topic&#10;MIS" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="860" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s15" value="15" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="95" y="820" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="k-conn1" target="topic-mis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="app-consume2" value="App&#10;Consume" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="260" y="860" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s16" value="16" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="195" y="880" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="topic-mis" target="app-consume2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="publish-topic" value="Publish&#10;Topic" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="460" y="860" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s17" value="17" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="415" y="880" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="app-consume2" target="publish-topic">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="k-conn2" value="K. Connector&#10;Sink" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="460" y="980" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s18" value="18" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="515" y="945" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="publish-topic" target="k-conn2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mis-out-q" value="Queue" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="260" y="980" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s19" value="19" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="415" y="1000" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e19" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="k-conn2" target="mis-out-q">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mis-connect" value="Connector" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="620" y="980" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ack" value="Ack" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="980" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s20" value="20" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="195" y="1000" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e20" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mis-out-q" target="ack">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="success" value="Successful" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="-160" y="980" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s21" value="21" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="10" y="1000" width="30" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e21" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ack" target="success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- IPH audit note -->
+        <mxCell id="iph-audit" value="14. IPH receive MIS Ack&#10;15. IPH audit: CorpMisAck &#8594; MIS Received Ack &#8594; Completed" style="text;html=1;align=left;fontSize=12;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1080" width="600" height="40" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
