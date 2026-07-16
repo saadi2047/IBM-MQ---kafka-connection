@@ -1,15 +1,19 @@
-Thank you for your prompt support.
+Subject: SBIePay2.0 integration with NEFT/RTGS
 
-The affected users are now able to access the JFrog Artifactory portal, and access token generation is working successfully for most of them.
+Dear Team,
 
-However, a few users are still facing login issues. These users require their MFA (Authenticator) device to be reset, as they are unable to complete the authentication process.
+RTGS dealer validation testing has started successfully on our end using the existing RTGSInboundQueue / RTGSOutBoundQueue setup.
 
-Please find the details of the affected users in the table below:
+Similar to the NEFT MIS queue setup, we now need to configure MIS flow validation for RTGS. Could you please share the following details:
 
+1. MIS Inbound Queue name and Queue Manager (for RTGS MIS messages coming from your side to us)
+2. MIS Outbound Queue name and Queue Manager (for RTGS MIS messages we will send back to you)
+3. Channel details for the same
 
+Once we receive these details, we will configure our Kafka side mapped to dedicated Kafka topics rtgs.mis.inbound.kafka.topic and rtgs.mis.outbound.kafka.topic.
 
-Additionally, as requested, we have included the registered email IDs of the affected users.
+Please let us know if any additional information is required from our end to proceed.
 
-Kindly reset the MFA devices for the above users so they can configure their Authenticator application and access JFrog successfully.
-
-Thank you for your support.
+Thanks & Regards,
+Saadi M Muzzammil | Kafka Admin
+https://epay.sbi.bank.in
