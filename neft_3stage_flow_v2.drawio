@@ -1,0 +1,166 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="NEFT Full Flow - 3 Stages" id="neft-3stage">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ============ TITLE ============ -->
+        <mxCell id="title" value="SBI ePay 2.0 &#8212; NEFT Full Flow: Challan Generation &#8594; Dealer Validation &#8594; MIS" style="text;html=1;fontSize=20;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="20" y="10" width="1100" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ============ STAGE 0 : CHALLAN GENERATION (swimlane) ============ -->
+        <mxCell id="stage0" value="STAGE 0 &#8212; Challan Generation &amp; NEFT Clearing (outside SBI ePay systems)" style="swimlane;html=1;startSize=30;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="60" width="1600" height="220" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s0-customer" value="Customer" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="stage0">
+          <mxGeometry x="20" y="60" width="40" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s0-merchant" value="Merchant&#10;(checkout)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="stage0">
+          <mxGeometry x="110" y="55" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s0-epay" value="ePay 2.0&#10;generates Challan + VAN&#10;(SBIEPY prefix, 23-char)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="stage0">
+          <mxGeometry x="290" y="45" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s0-branch" value="Bank Branch&#10;(SBI or non-SBI)&#10;Customer pays via NEFT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="stage0">
+          <mxGeometry x="540" y="45" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s0-rbi" value="RBI NEFT Clearing Centre&#10;Half-hourly batch settlement&#10;Routes by IFSC (net settlement)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="stage0">
+          <mxGeometry x="790" y="45" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s0-sbi" value="SBI&#10;receives inward credit" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="stage0">
+          <mxGeometry x="1060" y="55" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s0-iph" value="IPH&#10;reads VAN, recognizes SBIEPY&#10;prefix &#8594; routes to ePay 2.0 flow" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="stage0">
+          <mxGeometry x="1270" y="45" width="230" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s0-e1" value="1" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;" edge="1" parent="stage0" source="s0-customer" target="s0-merchant"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s0-e2" value="2 select NEFT" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage0" source="s0-merchant" target="s0-epay"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s0-e3" value="3 pay via NEFT" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage0" source="s0-branch" target="s0-rbi"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s0-e2b" value="challan handed to customer" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;dashed=1;fontColor=#999999;strokeColor=#999999;" edge="1" parent="stage0" source="s0-epay" target="s0-branch"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s0-e4" value="4 settle by IFSC" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage0" source="s0-rbi" target="s0-sbi"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s0-e5" value="5" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;" edge="1" parent="stage0" source="s0-sbi" target="s0-iph"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="s0-note" value="Note: RBI settles purely by IFSC &#8212; it has no awareness of &quot;ePay&quot; or &quot;SBIEPY&quot;. The VAN prefix is only read AFTER funds land at SBI, by IPH." style="text;html=1;fontSize=10;fontColor=#b85450;align=left;" vertex="1" parent="stage0">
+          <mxGeometry x="290" y="140" width="900" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ============ STAGE 1 : DEALER VALIDATION (swimlane) ============ -->
+        <mxCell id="stage1" value="STAGE 1 &#8212; Dealer Validation Block  (NeftInboundQueue / NeftOutBoundQueue &#8596; neft.inbound / neft.outbound topics)" style="swimlane;html=1;startSize=30;fillColor=#eaf3fb;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="300" width="1600" height="360" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s1-iph" value="IPH" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="stage1">
+          <mxGeometry x="20" y="40" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-qin" value="NeftInboundQueue&#10;SBI_NEFT : 2001" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="stage1">
+          <mxGeometry x="220" y="40" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-src" value="neft-mq-source&#10;Kafka Source Connector" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="stage1">
+          <mxGeometry x="460" y="40" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-topicin" value="neft.inbound.kafka.topic" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="stage1">
+          <mxGeometry x="700" y="40" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-app" value="ePay App&#10;payment-consumers group&#10;VALIDATE: VAN, amount, date, duplicate" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="stage1">
+          <mxGeometry x="960" y="30" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s1-e1" value="1" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;" edge="1" parent="stage1" source="s1-iph" target="s1-qin"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s1-e2" value="2 poll" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage1" source="s1-qin" target="s1-src"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s1-e3" value="3 publish" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage1" source="s1-src" target="s1-topicin"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s1-e4" value="4 consume" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage1" source="s1-topicin" target="s1-app"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="s1-topicout" value="neft.outbound.kafka.topic" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="stage1">
+          <mxGeometry x="960" y="160" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-sink" value="neft-mq-sink&#10;Kafka Sink Connector" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="stage1">
+          <mxGeometry x="700" y="160" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-qout" value="NeftOutBoundQueue" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="stage1">
+          <mxGeometry x="460" y="160" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-iph2" value="IPH&#10;receives ACK" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="stage1">
+          <mxGeometry x="220" y="160" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s1-e5" value="5 publish result" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage1" source="s1-app" target="s1-topicout"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s1-e6" value="6 consume" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage1" source="s1-topicout" target="s1-sink"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s1-e7" value="7 deliver" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage1" source="s1-sink" target="s1-qout"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s1-e8" value="8 ACK" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage1" source="s1-qout" target="s1-iph2"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="s1-gate" value="Ack&#10;= ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="stage1">
+          <mxGeometry x="240" y="250" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-e9" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="stage1" source="s1-iph2" target="s1-gate"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="s1-stop" value="STOP &#8212; No MIS&#10;N | Invalid amount&#10;N | Invalid request&#10;N | Invalid date&#10;N | Duplicate" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;fontSize=10;" vertex="1" parent="stage1">
+          <mxGeometry x="20" y="245" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-e10" value="N" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#b85450;" edge="1" parent="stage1" source="s1-gate" target="s1-stop"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="s1-goto2" value="Y | NA&#10;&#8595; proceed to Stage 2 (MIS)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="stage1">
+          <mxGeometry x="500" y="255" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-e11" value="Y" style="edgeStyle=orthogonalEdgeStyle;html=1;fontColor=#3d8140;" edge="1" parent="stage1" source="s1-gate" target="s1-goto2"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ============ STAGE 2 : MIS (swimlane) ============ -->
+        <mxCell id="stage2" value="STAGE 2 &#8212; MIS Block  (NeftMISCInboundQueue / NeftMISCOutBoundQueue &#8596; neft.mis.inbound / neft.mis.outbound topics) &#8212; triggers only after Stage 1 = Y|NA" style="swimlane;html=1;startSize=30;fillColor=#eafaf1;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="700" width="1600" height="380" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s2-corp" value="IPH&#10;CorporateMISOutputServer&#10;generates MIS" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="stage2">
+          <mxGeometry x="20" y="40" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-qin" value="NeftMISCInboundQueue&#10;SBI_NEFT : 2001" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="stage2">
+          <mxGeometry x="260" y="45" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-src" value="mis-mq-source&#10;Kafka Source Connector" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="stage2">
+          <mxGeometry x="520" y="45" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-topicin" value="neft.mis.inbound.kafka.topic" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="stage2">
+          <mxGeometry x="780" y="45" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-app" value="ePay App&#10;VALIDATE MIS" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="stage2">
+          <mxGeometry x="1060" y="45" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s2-e1" value="9 post MIS" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage2" source="s2-corp" target="s2-qin"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s2-e2" value="10 poll" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage2" source="s2-qin" target="s2-src"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s2-e3" value="11 publish" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage2" source="s2-src" target="s2-topicin"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s2-e4" value="12 consume" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage2" source="s2-topicin" target="s2-app"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="s2-topicout" value="neft.mis.outbound.kafka.topic" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="stage2">
+          <mxGeometry x="780" y="160" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-sink" value="mis-mq-sink&#10;Kafka Sink Connector" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="stage2">
+          <mxGeometry x="520" y="160" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-qout" value="NeftMISCOutBoundQueue" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="stage2">
+          <mxGeometry x="260" y="160" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-iph" value="IPH&#10;receives MIS ACK" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="stage2">
+          <mxGeometry x="20" y="160" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s2-e5" value="13 publish result" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage2" source="s2-app" target="s2-topicout"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s2-e6" value="14 consume" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage2" source="s2-topicout" target="s2-sink"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s2-e7" value="15 deliver" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage2" source="s2-sink" target="s2-qout"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s2-e8" value="16 MIS ACK" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="stage2" source="s2-qout" target="s2-iph"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="s2-audit" value="IPH Audit&#10;Pending CorpMisAck &#8594; MIS Received Ack &#8594; Completed" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="stage2">
+          <mxGeometry x="20" y="260" width="400" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-e9" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="stage2" source="s2-iph" target="s2-audit"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="s2-note" value="RTGS mirrors this exact 3-stage structure &#8212; swap SBI_NEFT:2001 &#8594; SBI_RTGS:2005 and neft.* &#8594; rtgs.* throughout." style="text;html=1;fontSize=10;fontColor=#666666;align=left;" vertex="1" parent="stage2">
+          <mxGeometry x="460" y="270" width="700" height="30" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
