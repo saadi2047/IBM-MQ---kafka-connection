@@ -1,20 +1,55 @@
-
-
-[osuser@bastion ~]$ oc get kafkaconnector rtgs-mq-source rtgs-mq-sink rtgs-mis-mq-source rtgs-mis-mq-sink -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": connector="}{.status.connectorStatus.connector.state}{" task="}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
-rtgs-mq-source: connector=RUNNING task=RUNNING
-rtgs-mq-sink: connector=RUNNING task=RUNNING
-rtgs-mis-mq-source: connector=RUNNING task=FAILED
-rtgs-mis-mq-sink: connector=RUNNING task=FAILED
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-get-offsets.sh --bootstrap-server localhost:9092 --topic rtgs.inbound.kafka.topic --time -1
-rtgs.inbound.kafka.topic:0:7
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic rtgs.inbound.kafka.topic --partition 0 --offset earliest --max-messages 20 --timeout-ms 10000
-
-RFH ,▒MQSTR   ▒ <mcd><Msd>jms_text</Msd></mcd>  ▒<jms><Dst>queue://SBI_RTGS/RTGSInboundQueue?destDescription=Queue+created+from+Queue+%27RTGSInboundQueue%27+on+Queue+Manager+%27SBI_RTGS%27+at+%2718-Jul-2026+14%3A40%3A44%27</Dst><Tms>1784540657825</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCR20260709114120008|HDFC0000082|09-Jul-26|11000000.00|NE0035M1DPLRM90PPLE3
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic rtgs.outbound.kafka.topic --partition 0 --offset earliest --max-messages 30 --timeout-ms 10000
-[2026-07-20 10:42:48,007] ERROR Error processing message, terminating consumer process:  (org.apache.kafka.tools.consumer.ConsoleConsumer)
-org.apache.kafka.common.errors.TimeoutException
-Processed a total of 1 messages
+[osuser@bastion ~]$ oc adm top node
+NAME                      CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
+infra1.dev.sbiepay.sbi    897m         7%     14298Mi         22%
+infra2.dev.sbiepay.sbi    1752m        15%    10606Mi         16%
+infra3.dev.sbiepay.sbi    1167m        10%    10780Mi         17%
+master1.dev.sbiepay.sbi   2894m        18%    35630Mi         56%
+master2.dev.sbiepay.sbi   1679m        10%    32378Mi         51%
+master3.dev.sbiepay.sbi   1512m        9%     31412Mi         49%
+worker1.dev.sbiepay.sbi   2837m        18%    27503Mi         43%
+worker1.integ.epay.sbi    4713m        30%    30341Mi         47%
+worker1.sit.epay.sbi      4589m        29%    31110Mi         49%
+worker1.uat.epay.sbi      1449m        9%     33483Mi         52%
+worker2.dev.sbiepay.sbi   2967m        19%    31584Mi         50%
+worker2.integ.epay.sbi    896m         5%     20523Mi         32%
+worker2.sit.epay.sbi      1270m        8%     26680Mi         42%
+worker2.uat.epay.sbi      3706m        23%    46973Mi         74%
+worker3.dev.sbiepay.sbi   388m         2%     13132Mi         20%
+worker3.integ.epay.sbi    886m         5%     24823Mi         39%
+worker3.sit.epay.sbi      723m         4%     20706Mi         32%
+worker3.uat.epay.sbi      1625m        10%    39447Mi         62%
+[osuser@bastion ~]$ oc adm top pod -n dev-kakfa
+No resources found in dev-kakfa namespace.
+[osuser@bastion ~]$ oc adm top pod -n dev-kaffa
+No resources found in dev-kaffa namespace.
+[osuser@bastion ~]$ oc adm top pod -n dev-kafka
+NAME                                                 CPU(cores)   MEMORY(bytes)
+dev-console-console-deployment-577c797ccf-8dz7g      4m           1104Mi
+dev-kafka-cluster-broker-0                           1061m        2294Mi
+dev-kafka-cluster-broker-1                           286m         2701Mi
+dev-kafka-cluster-broker-2                           325m         2705Mi
+dev-kafka-cluster-controller-3                       97m          505Mi
+dev-kafka-cluster-controller-4                       107m         474Mi
+dev-kafka-cluster-controller-5                       87m          503Mi
+dev-kafka-cluster-cruise-control-7678c88585-cgv6w    20m          1853Mi
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   7m           779Mi
+dev-kafka-connect-mq-connect-0                       11m          4236Mi
+dev-kafka-connect-mq-connect-1                       7m           4224Mi
+dev-kafka-connect-mq-connect-2                       8m           4271Mi
 [osuser@bastion ~]$
-[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic rtgs.outbound.kafka.topic --partition 0 --offset earliest --max-messages 30 --timeout-ms 10000
-RFH ,�MQSTR   � <mcd><Msd>jms_text</Msd></mcd>  �<jms><Dst>queue://SBI_RTGS/RTGSInboundQueue?destDescription=Queue+created+from+Queue+%27RTGSInboundQueue%27+on+Queue+Manager+%27SBI_RTGS%27+at+%2718-Jul-2026+14%3A40%3A44%27</Dst><Tms>1784540657825</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCR20260709114120008|HDFC0000082|09-Jul-26|N|Invalid VAN Number
-
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get pods -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS       AGE
+dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0              16d
+dev-kafka-cluster-broker-0                           1/1     Running   0              175m
+dev-kafka-cluster-broker-1                           1/1     Running   0              175m
+dev-kafka-cluster-broker-2                           1/1     Running   0              174m
+dev-kafka-cluster-controller-3                       1/1     Running   0              35m
+dev-kafka-cluster-controller-4                       1/1     Running   0              36m
+dev-kafka-cluster-controller-5                       1/1     Running   0              36m
+dev-kafka-cluster-cruise-control-7678c88585-cgv6w    1/1     Running   0              176m
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (111d ago)   123d
+dev-kafka-connect-mq-connect-0                       1/1     Running   10 (11d ago)   16d
+dev-kafka-connect-mq-connect-1                       1/1     Running   10 (11d ago)   25d
+dev-kafka-connect-mq-connect-2                       1/1     Running   10 (11d ago)   27d
+[osuser@bastion ~]$
