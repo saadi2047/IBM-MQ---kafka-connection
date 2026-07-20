@@ -1,4 +1,33 @@
-oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.spec.kafka.config.auto\.leader\.rebalance\.enable}{"\n"}'
-
-oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}{"\n"}'
-
+[osuser@bastion ~]$ oc get pods -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS       AGE
+dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0              16d
+dev-kafka-cluster-broker-0                           1/1     Running   0              4h5m
+dev-kafka-cluster-broker-1                           1/1     Running   0              4h4m
+dev-kafka-cluster-broker-2                           1/1     Running   0              4h3m
+dev-kafka-cluster-controller-3                       1/1     Running   0              104m
+dev-kafka-cluster-controller-4                       1/1     Running   0              106m
+dev-kafka-cluster-controller-5                       1/1     Running   0              105m
+dev-kafka-cluster-cruise-control-7678c88585-cgv6w    1/1     Running   0              4h5m
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (111d ago)   123d
+dev-kafka-connect-mq-connect-0                       1/1     Running   10 (11d ago)   16d
+dev-kafka-connect-mq-connect-1                       1/1     Running   10 (11d ago)   25d
+dev-kafka-connect-mq-connect-2                       1/1     Running   10 (11d ago)   28d
+[osuser@bastion ~]$ oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.spec.kafka.config.auto\.leader\.rebalance\.enable}{"\n"}'
+true
+[osuser@bastion ~]$ oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}{"\n"}'
+True
+[osuser@bastion ~]$ oc get pods -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS       AGE
+dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0              16d
+dev-kafka-cluster-broker-0                           1/1     Running   0              4h5m
+dev-kafka-cluster-broker-1                           1/1     Running   0              4h5m
+dev-kafka-cluster-broker-2                           1/1     Running   0              4h4m
+dev-kafka-cluster-controller-3                       1/1     Running   0              105m
+dev-kafka-cluster-controller-4                       1/1     Running   0              106m
+dev-kafka-cluster-controller-5                       1/1     Running   0              106m
+dev-kafka-cluster-cruise-control-7678c88585-cgv6w    1/1     Running   0              4h6m
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (111d ago)   123d
+dev-kafka-connect-mq-connect-0                       1/1     Running   10 (11d ago)   16d
+dev-kafka-connect-mq-connect-1                       1/1     Running   10 (11d ago)   25d
+dev-kafka-connect-mq-connect-2                       1/1     Running   10 (11d ago)   28d
+[osuser@bastion ~]$
