@@ -1,6 +1,56 @@
-oc get kafkaconnector rtgs-mq-source -n dev-kafka -o jsonpath='{.status.connectorStatus.tasks[0].trace}'
-
-oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/rtgs-mq-source/tasks/0/restart
-
-sleep 15
-oc get kafkaconnector rtgs-mq-source -n dev-kafka -o jsonpath='{.status.connectorStatus.tasks[0].state}'
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get kafkaconnector rtgs-mq-source -n dev-kafka -o jsonpath='{.status.connectorStatus.tasks[0].trace}'
+org.apache.kafka.connect.errors.ConnectException: com.ibm.msg.client.jms.DetailedJMSRuntimeException: JMSWMQ0018: Failed to connect to queue manager 'SBI_RTGS' with connection mode 'Client' and host name '10.176.10.213(2005)'.
+Check the queue manager is started and if running in client mode, check there is a listener running. Please see the linked exception for more information.
+        at com.ibm.eventstreams.connect.mqsource.MQSourceTask.start(MQSourceTask.java:207)
+        at com.ibm.eventstreams.connect.mqsource.MQSourceTask.start(MQSourceTask.java:158)
+        at org.apache.kafka.connect.runtime.AbstractWorkerSourceTask.initializeAndStart(AbstractWorkerSourceTask.java:279)
+        at org.apache.kafka.connect.runtime.WorkerTask.doStart(WorkerTask.java:176)
+        at org.apache.kafka.connect.runtime.WorkerTask.doRun(WorkerTask.java:225)
+        at org.apache.kafka.connect.runtime.WorkerTask.run(WorkerTask.java:281)
+        at org.apache.kafka.connect.runtime.AbstractWorkerSourceTask.run(AbstractWorkerSourceTask.java:79)
+        at org.apache.kafka.connect.runtime.isolation.Plugins.lambda$withClassLoader$1(Plugins.java:238)
+        at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+        at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+        at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+        at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+        at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: com.ibm.msg.client.jms.DetailedJMSRuntimeException: JMSWMQ0018: Failed to connect to queue manager 'SBI_RTGS' with connection mode 'Client' and host name '10.176.10.213(2005)'.
+Check the queue manager is started and if running in client mode, check there is a listener running. Please see the linked exception for more information.
+        at com.ibm.msg.client.jms.DetailedJMSException.getUnchecked(DetailedJMSException.java:268)
+        at com.ibm.msg.client.jms.internal.JmsErrorUtils.convertJMSException(JmsErrorUtils.java:173)
+        at com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl.createContext(JmsConnectionFactoryImpl.java:577)
+        at com.ibm.eventstreams.connect.mqsource.JMSWorker.connect(JMSWorker.java:216)
+        at com.ibm.eventstreams.connect.mqsource.MQSourceTask.start(MQSourceTask.java:184)
+        ... 12 more
+Caused by: com.ibm.mq.MQException: JMSCMQ0001: IBM MQ call failed with compcode '2' ('MQCC_FAILED') reason '2537' ('MQRC_CHANNEL_NOT_AVAILABLE').
+        at com.ibm.msg.client.wmq.common.internal.Reason.createException(Reason.java:217)
+        at com.ibm.msg.client.wmq.internal.WMQConnection.<init>(WMQConnection.java:506)
+        at com.ibm.msg.client.wmq.factories.WMQConnectionFactory.createV7ProviderConnection(WMQConnectionFactory.java:9351)
+        at com.ibm.msg.client.wmq.factories.WMQConnectionFactory.createProviderConnection(WMQConnectionFactory.java:8581)
+        at com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl._createConnection(JmsConnectionFactoryImpl.java:322)
+        at com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl.createContext(JmsConnectionFactoryImpl.java:543)
+        ... 14 more
+Caused by: com.ibm.mq.jmqi.JmqiException: CC=2;RC=2537;AMQ9204: Connection to host '10.176.10.213(2005)' rejected. [1=com.ibm.mq.jmqi.JmqiException[CC=2;RC=2537;AMQ9558: The remote channel 'SBIEPAY2.SVRCONN' on host '' is not currently available. [3=SBIEPAY2.SVRCONN]],3=10.176.10.213(2005),4=,5=RemoteConnection.analyseErrorSegment]
+        at com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.jmqiConnect(RemoteFAP.java:13911)
+        at com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.access$200(RemoteFAP.java:13340)
+        at com.ibm.mq.jmqi.remote.api.RemoteFAP.jmqiConnect(RemoteFAP.java:1544)
+        at com.ibm.mq.jmqi.remote.api.RemoteFAP.jmqiConnect(RemoteFAP.java:1413)
+        at com.ibm.mq.ese.jmqi.InterceptedJmqiImpl.jmqiConnect(InterceptedJmqiImpl.java:377)
+        at com.ibm.mq.ese.jmqi.ESEJMQI.jmqiConnect(ESEJMQI.java:562)
+        at com.ibm.msg.client.wmq.internal.WMQConnection.<init>(WMQConnection.java:438)
+        ... 18 more
+Caused by: com.ibm.mq.jmqi.JmqiException: CC=2;RC=2537;AMQ9558: The remote channel 'SBIEPAY2.SVRCONN' on host '' is not currently available. [3=SBIEPAY2.SVRCONN]
+        at com.ibm.mq.jmqi.remote.impl.RemoteConnection.analyseErrorSegment(RemoteConnection.java:4852)
+        at com.ibm.mq.jmqi.remote.impl.RemoteConnection.receiveTSH(RemoteConnection.java:3549)
+        at com.ibm.mq.jmqi.remote.impl.RemoteConnection.initSess(RemoteConnection.java:1421)
+        at com.ibm.mq.jmqi.remote.impl.RemoteConnection.connect(RemoteConnection.java:1009)
+        at com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getNewConnection(RemoteConnectionSpecification.java:691)
+        at com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getSessionFromNewConnection(RemoteConnectionSpecification.java:283)
+        at com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getSession(RemoteConnectionSpecification.java:170)
+        at com.ibm.mq.jmqi.remote.impl.RemoteConnectionPool.getSession(RemoteConnectionPool.java:128)
+        at com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.jmqiConnect(RemoteFAP.java:13575)
+        ... 24 more
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/rtgs-mq-source/tasks/0/restart
+[osuser@bastion ~]$ oc get kafkaconnector rtgs-mq-source -n dev-kafka -o jsonpath='{.status.connectorStatus.tasks[0].state}'
+FAI
