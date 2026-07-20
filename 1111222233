@@ -1,4 +1,9 @@
-min.insync.replicas: 2
+      config:
+        offsets.topic.replication.factor: 3
+        transaction.state.log.replication.factor: 3
+        transaction.state.log.min.isr: 2
+        default.replication.factor: 3
+        min.insync.replicas: 2
         auto.leader.rebalance.enable: "true"
         # PDF Recommendations - Additional config
         acks: "all"
