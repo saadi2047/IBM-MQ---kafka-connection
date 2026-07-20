@@ -1,9 +1,4 @@
-      config:
-        offsets.topic.replication.factor: 3
-        transaction.state.log.replication.factor: 3
-        transaction.state.log.min.isr: 2
-        default.replication.factor: 3
-        min.insync.replicas: 2
-        auto.leader.rebalance.enable: "true"
-        # PDF Recommendations - Additional config
-        acks: "all"
+oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.spec.kafka.config.auto\.leader\.rebalance\.enable}{"\n"}'
+
+oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}{"\n"}'
+
