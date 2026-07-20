@@ -1,1 +1,1 @@
-oc get kafkanodepool controller -n dev-kafka -o jsonpath='{.metadata.generation}'
+git log --oneline -3 -- dev/charts/epay_common/values.yaml
