@@ -1,41 +1,9 @@
-Dear Team,
+oc get kafkaconnector rtgs-mq-source rtgs-mq-sink -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": connector="}{.status.connectorStatus.connector.state}{" task="}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
 
-We have successfully initiated the RTGS transaction but are unable to push it to the SBIEPAY queue; please check the queue details and queue manager for any pending messages or connection errors.
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group connect-rtgs-mq-sink
 
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-get-offsets.sh --bootstrap-server localhost:9092 --topic rtgs.outbound.kafka.topic --time -1
 
+oc logs dev-kafka-connect-mq-connect-2 -n dev-kafka --tail=100 | grep -i "rtgs-mq-sink\|error\|exception"
 
-Thanks, and Regards.....
-Mahesh Kuwar
-IPHUAT - QA & SUPPORT TEAM
-
-022-27564133
-
-
-HTML5 Icon
-YONO: You Only Need One
-
-
-IPH UAT SUPPORT
-
-​
-Santosh Sahoo;​
-Siddhesh Rajaram Nikam;​
-PRABHAKAR THAKUR​
-​
-Amol Bhojane;​
-SAADI MOHAMMAD MUZZAMMIL;​
-sunadmin2 sbiepay;​
-Paresh Jambhulkar - AGM (PA);​
-SUMAN CHAKRAVARTHY S V, CM IPH DEV;​
-RITIMA ARORA;​
-​
-​
-​
-​
-​
-​​
-​
-​
-Dear Team,
-
-We have checked the IPH end, and it is currently up and running with no issues observed.
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payment-consumers | grep rtgs
