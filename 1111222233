@@ -1,8 +1,20 @@
-oc get kafkaconnector rtgs-mq-source rtgs-mq-sink rtgs-mis-mq-source rtgs-mis-mq-sink -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": connector="}{.status.connectorStatus.connector.state}{" task="}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
-
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-get-offsets.sh --bootstrap-server localhost:9092 --topic rtgs.inbound.kafka.topic --time -1
 
 
-oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic rtgs.inbound.kafka.topic --partition 0 --offset earliest --max-messages 20 --timeout-ms 10000
+[osuser@bastion ~]$ oc get kafkaconnector rtgs-mq-source rtgs-mq-sink rtgs-mis-mq-source rtgs-mis-mq-sink -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": connector="}{.status.connectorStatus.connector.state}{" task="}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
+rtgs-mq-source: connector=RUNNING task=RUNNING
+rtgs-mq-sink: connector=RUNNING task=RUNNING
+rtgs-mis-mq-source: connector=RUNNING task=FAILED
+rtgs-mis-mq-sink: connector=RUNNING task=FAILED
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-get-offsets.sh --bootstrap-server localhost:9092 --topic rtgs.inbound.kafka.topic --time -1
+rtgs.inbound.kafka.topic:0:7
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic rtgs.inbound.kafka.topic --partition 0 --offset earliest --max-messages 20 --timeout-ms 10000
 
+RFH ,▒MQSTR   ▒ <mcd><Msd>jms_text</Msd></mcd>  ▒<jms><Dst>queue://SBI_RTGS/RTGSInboundQueue?destDescription=Queue+created+from+Queue+%27RTGSInboundQueue%27+on+Queue+Manager+%27SBI_RTGS%27+at+%2718-Jul-2026+14%3A40%3A44%27</Dst><Tms>1784540657825</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCR20260709114120008|HDFC0000082|09-Jul-26|11000000.00|NE0035M1DPLRM90PPLE3
 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic rtgs.outbound.kafka.topic --partition 0 --offset earliest --max-messages 30 --timeout-ms 10000
+[2026-07-20 10:42:48,007] ERROR Error processing message, terminating consumer process:  (org.apache.kafka.tools.consumer.ConsoleConsumer)
+org.apache.kafka.common.errors.TimeoutException
+Processed a total of 1 messages
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic rtgs.outbound.kafka.topic --partition 0 --offset earliest --max-messages 30 --timeout-ms 10000
+RFH ,�MQSTR   � <mcd><Msd>jms_text</Msd></mcd>  �<jms><Dst>queue://SBI_RTGS/RTGSInboundQueue?destDescription=Queue+created+from+Queue+%27RTGSInboundQueue%27+on+Queue+Manager+%27SBI_RTGS%27+at+%2718-Jul-2026+14%3A40%3A44%27</Dst><Tms>1784540657825</Tms><Dlv>2</Dlv></jms>   SBIEPY|HDFCR20260709114120008|HDFC0000082|09-Jul-26|N|Invalid VAN Number
+
