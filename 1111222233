@@ -1,230 +1,298 @@
-2026-07-20T09:32:48.673006Z 00O [0KRunning with gitlab-runner 19.0.2 (02fcb2d7)[0;m
-2026-07-20T09:32:48.673038Z 00O [0K  on dc_runner_55 Wz1c0kGRX, system ID: s_300da9d7588c[0;m
-2026-07-20T09:32:48.673107Z 00O [0K[36;1mResolving secrets[0;m[0;m
-2026-07-20T09:32:48.673463Z 00O section_start:1784539968:prepare_executor
-2026-07-20T09:32:48.673467Z 00O+[0K[0K[36;1mPreparing the "docker" executor[0;m[0;m
-2026-07-20T09:32:48.787109Z 00O [0KUsing Docker executor with image artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 ...[0;m
-2026-07-20T09:32:48.787190Z 00O [0KUsing helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper:x86_64-v19.0.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v19.0.2 )[0;m
-2026-07-20T09:32:48.787203Z 00O [0KUsing effective pull policy of [if-not-present] for container artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper:x86_64-v19.0.2[0;m
-2026-07-20T09:32:48.792685Z 00O [0KUsing locally found image version due to "if-not-present" pull policy[0;m
-2026-07-20T09:32:48.792710Z 00O [0KUsing docker image sha256:367b33510658f246aa5bff686272dde897576eec01c436f0a0e4ce31a594815e for artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper:x86_64-v19.0.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper@sha256:660e3634504b66e0ae3ad165131d9fc3fd05b2ac31ebf332b7fa8d93f4ed9682 ...[0;m
-2026-07-20T09:32:49.478432Z 00O [0KUsing helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper:x86_64-v19.0.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v19.0.2 )[0;m
-2026-07-20T09:32:49.478463Z 00O [0KUsing effective pull policy of [if-not-present] for container artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper:x86_64-v19.0.2[0;m
-2026-07-20T09:32:49.481080Z 00O [0KUsing docker image sha256:367b33510658f246aa5bff686272dde897576eec01c436f0a0e4ce31a594815e for artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper:x86_64-v19.0.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper@sha256:660e3634504b66e0ae3ad165131d9fc3fd05b2ac31ebf332b7fa8d93f4ed9682 ...[0;m
-2026-07-20T09:32:49.481130Z 00O [0KUsing effective pull policy of [if-not-present] for container artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0[0;m
-2026-07-20T09:32:49.492107Z 00O [0KUsing locally found image version due to "if-not-present" pull policy[0;m
-2026-07-20T09:32:49.492137Z 00O [0KUsing docker image sha256:db06a3e48eaa4339a92d53be57a37a699ba188fed41652c6c3c6c07bb86cb6f0 for artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 with digest artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm@sha256:65605f26e63ed7624e4711cdd933caf6577f9d309f240d48a295f1d2c790c4d9 ...[0;m
-2026-07-20T09:32:49.492155Z 00O section_end:1784539969:prepare_executor
-2026-07-20T09:32:49.492156Z 00O+[0Ksection_start:1784539969:prepare_script
-2026-07-20T09:32:49.492413Z 00O+[0K[0K[36;1mPreparing environment[0;m[0;m
-2026-07-20T09:32:49.492448Z 00O [0KUsing helper image:  artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper:x86_64-v19.0.2  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v19.0.2 )[0;m
-2026-07-20T09:32:49.492466Z 00O [0KUsing effective pull policy of [if-not-present] for container artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper:x86_64-v19.0.2[0;m
-2026-07-20T09:32:49.494192Z 00O [0KUsing docker image sha256:367b33510658f246aa5bff686272dde897576eec01c436f0a0e4ce31a594815e for artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper:x86_64-v19.0.2 with digest artifactory.jfrog.sbi:443/dso-base-image/gitlab/gitlab-runner-helper@sha256:660e3634504b66e0ae3ad165131d9fc3fd05b2ac31ebf332b7fa8d93f4ed9682 ...[0;m
-2026-07-20T09:32:49.494217Z 00O [0KUsing effective pull policy of [if-not-present] for container sha256:367b33510658f246aa5bff686272dde897576eec01c436f0a0e4ce31a594815e[0;m
-2026-07-20T09:32:49.903061Z 01O Running on runner-wz1c0kgrx-project-2838-concurrent-0 via PE3DSOPGrunners4...
-2026-07-20T09:32:50.105701Z 00O section_end:1784539970:prepare_script
-2026-07-20T09:32:50.105724Z 00O+[0Ksection_start:1784539970:get_sources
-2026-07-20T09:32:50.107732Z 00O+[0K[0K[36;1mGetting source from Git repository[0;m[0;m
-2026-07-20T09:32:50.588504Z 01O [32;1mGitaly correlation ID: 01KXZDXW3R12HD936MEJTJB3QY[0;m
-2026-07-20T09:32:50.617002Z 01O [32;1mFetching changes...[0;m
-2026-07-20T09:32:50.642315Z 01O Initialized empty Git repository in /builds/itepaypg-sbiepay2/infra/devops/deployment/.git/
-2026-07-20T09:32:50.650935Z 01O [32;1mCreated fresh repository.[0;m
-2026-07-20T09:33:01.703496Z 01O [32;1mChecking out bee869f5 as detached HEAD (ref is main)...[0;m
-2026-07-20T09:33:02.628688Z 01O 
-2026-07-20T09:33:02.628706Z 01O [32;1mSkipping Git submodules setup[0;m
-2026-07-20T09:33:02.828846Z 00O section_end:1784539982:get_sources
-2026-07-20T09:33:02.828860Z 00O+[0Ksection_start:1784539982:step_script
-2026-07-20T09:33:02.831124Z 00O+[0K[0K[36;1mExecuting "step_script" stage of the job script[0;m[0;m
-2026-07-20T09:33:02.831159Z 00O [0KUsing effective pull policy of [if-not-present] for container artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0[0;m
-2026-07-20T09:33:02.833090Z 00O [0KUsing docker image sha256:db06a3e48eaa4339a92d53be57a37a699ba188fed41652c6c3c6c07bb86cb6f0 for artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm:1.0 with digest artifactory.jfrog.sbi:443/itepaypg-sbiepay2-docker-local/custom-ci/rhelgit-oc-helm@sha256:65605f26e63ed7624e4711cdd933caf6577f9d309f240d48a295f1d2c790c4d9 ...[0;m
-2026-07-20T09:33:03.246859Z 01O [32;1m$ set -eo pipefail # collapsed multi-line command[0;m
-2026-07-20T09:33:03.246877Z 01O Service=epay_common | ENV=dev | VERSION=
-2026-07-20T09:33:03.246878Z 01O [32;1m$ echo "RELEASE_NAME=$RELEASE_NAME" # collapsed multi-line command[0;m
-2026-07-20T09:33:03.246880Z 01O RELEASE_NAME=epay-common
-2026-07-20T09:33:03.246881Z 01O SERVICE_NAME=epay_common
-2026-07-20T09:33:03.246881Z 01O ENV=dev
-2026-07-20T09:33:03.499313Z 01O WARNING: Using insecure TLS client config. Setting this option is not supported!
-2026-07-20T09:33:03.499326Z 01O 
-2026-07-20T09:33:03.618707Z 01O Logged into "https://api.dev.sbiepay.sbi:6443" as "system:serviceaccount:dev-sbiepay:cicd-sa" using the token provided.
-2026-07-20T09:33:03.618723Z 01O 
-2026-07-20T09:33:03.959428Z 01O You have access to 192 projects, the list has been suppressed. You can list all projects with 'oc projects'
-2026-07-20T09:33:03.959444Z 01O 
-2026-07-20T09:33:03.959445Z 01O Using project "default".
-2026-07-20T09:33:03.998675Z 01O Welcome! See 'oc help' to get started.
-2026-07-20T09:33:09.452705Z 01O Synced dev/charts/epay_common/values.yaml to origin/main
-2026-07-20T09:33:09.459124Z 01O ℹ️  No top-level tag: key in values.yaml for epay_common — skipping tag check (common/shared chart)
-2026-07-20T09:34:45.255836Z 01O Release "epay-common" has been upgraded. Happy Helming!
-2026-07-20T09:34:45.255853Z 01O NAME: epay-common
-2026-07-20T09:34:45.255854Z 01O LAST DEPLOYED: Mon Jul 20 09:33:18 2026
-2026-07-20T09:34:45.255855Z 01O NAMESPACE: dev-epay-common
-2026-07-20T09:34:45.255856Z 01O STATUS: deployed
-2026-07-20T09:34:45.255857Z 01O REVISION: 81
-2026-07-20T09:34:45.255858Z 01O TEST SUITE: None
-2026-07-20T09:34:45.262081Z 01O ✅ Deployed epay_common with tag (none — common/shared chart) to dev
-2026-07-20T09:34:45.437155Z 00O section_end:1784540085:step_script
-2026-07-20T09:34:45.437169Z 00O+[0Ksection_start:1784540085:cleanup_file_variables
-2026-07-20T09:34:45.439512Z 00O+[0K[0K[36;1mCleaning up project directory and file based variables[0;m[0;m
-2026-07-20T09:34:45.967115Z 00O section_end:1784540085:cleanup_file_variables
-2026-07-20T09:34:45.967130Z 00O+[0K
-2026-07-20T09:34:46.257532Z 00O [32;1mJob succeeded[0;m
-
-
--------------------
-
-  - controller
-[osuser@bastion ~]$ oc get kafkanodepool controller -n dev-kafka -o jsonpath='{.metadata.generation}'
-2[osuser@bastion ~]$ git log --oneline -3 -- dev/charts/epay_common/values.yaml
-bash: git: command not found...
-[osuser@bastion ~]$ oc get kafkanodepool controller -n dev-kafka -o yaml
+{{- if .Values.kafka.enabled }}
+# Kafka Controller Node Pool (KRaft)
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaNodePool
 metadata:
+  name: {{ .Values.kafka.cluster.controller.name }}
+  namespace: {{ .Values.kafka.namespace }}
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.cluster.name }}
+    app.kubernetes.io/name: {{ .Values.kafka.cluster.controller.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: kafka-controller
+    environment: {{ .Values.global.environment }}
   annotations:
     argocd.argoproj.io/sync-wave: "8"
-    meta.helm.sh/release-name: epay-common
-    meta.helm.sh/release-namespace: dev-epay-common
-  creationTimestamp: "2025-11-11T09:58:35Z"
-  generation: 2
-  labels:
-    app.kubernetes.io/component: kafka-controller
-    app.kubernetes.io/instance: epay-common
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: controller
-    environment: dev
-    strimzi.io/cluster: dev-kafka-cluster
-  name: controller
-  namespace: dev-kafka
-  resourceVersion: "496872266"
-  uid: 0d449a5b-2388-4876-9352-4097f18b6ad2
 spec:
-  replicas: 3
+  replicas: {{ .Values.kafka.cluster.controller.replicas }}
   roles:
-  - controller
+  {{- range .Values.kafka.cluster.controller.roles }}
+  - {{ . }}
+  {{- end }}
   storage:
-    type: jbod
+    type: {{ .Values.kafka.cluster.controller.storage.type }}
     volumes:
-    - deleteClaim: false
-      id: 0
-      kraftMetadata: shared
-      size: 100Gi
-      type: persistent-claim
+    {{- range .Values.kafka.cluster.controller.storage.volumes }}
+    - id: {{ .id }}
+      type: {{ .type }}
+      size: {{ .size }}
+      {{- if .kraftMetadata }}
+      kraftMetadata: {{ .kraftMetadata }}
+      {{- end }}
+      deleteClaim: {{ .deleteClaim }}
+    {{- end }}
+  
+  # Pod template with affinity, tolerations, and resources
   template:
-    kafkaContainer: {}
     pod:
-      terminationGracePeriodSeconds: 120
-status:
-  clusterId: 3aEx1xmUSTWs8xSplBnYtA
-  conditions: []
-  labelSelector: strimzi.io/cluster=dev-kafka-cluster,strimzi.io/name=dev-kafka-cluster-kafka,strimzi.io/kind=Kafka,strimzi.io/pool-name=controller
-  nodeIds:
-  - 3
-  - 4
-  - 5
-  observedGeneration: 2
-  replicas: 3
-  roles:
-  - controller
-[osuser@bastion ~]$ oc get kafkanodepool controller -n dev-kafka -o yaml
+      {{- if .Values.kafka.cluster.controller.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.kafka.cluster.controller.terminationGracePeriodSeconds }}
+      {{- end }}
+      
+      {{- if .Values.kafka.cluster.controller.affinity }}
+      affinity:
+        {{- if .Values.kafka.cluster.controller.affinity.nodeAffinity }}
+        nodeAffinity:
+          {{- if .Values.kafka.cluster.controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            {{- range .Values.kafka.cluster.controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
+            - matchExpressions:
+              {{- range .matchExpressions }}
+              - key: {{ .key }}
+                operator: {{ .operator }}
+                {{- if .values }}
+                values:
+                {{- range .values }}
+                - {{ . | quote }}
+                {{- end }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      
+      {{- if .Values.kafka.cluster.controller.tolerations }}
+      tolerations:
+      {{- range .Values.kafka.cluster.controller.tolerations }}
+      - key: {{ .key | quote }}
+        operator: {{ .operator }}
+        {{- if .value }}
+        value: {{ .value | quote }}
+        {{- end }}
+        effect: {{ .effect }}
+        {{- if .tolerationSeconds }}
+        tolerationSeconds: {{ .tolerationSeconds }}
+        {{- end }}
+      {{- end }}
+      {{- end }}
+    
+    # Add resource specifications for controller containers
+    {{- if .Values.kafka.cluster.controller.resources }}
+    kafkaContainer:
+      resources:
+        {{- if .Values.kafka.cluster.controller.resources.requests }}
+        requests:
+          {{- if .Values.kafka.cluster.controller.resources.requests.memory }}
+          memory: {{ .Values.kafka.cluster.controller.resources.requests.memory }}
+          {{- end }}
+          {{- if .Values.kafka.cluster.controller.resources.requests.cpu }}
+          cpu: {{ .Values.kafka.cluster.controller.resources.requests.cpu }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.kafka.cluster.controller.resources.limits }}
+        limits:
+          {{- if .Values.kafka.cluster.controller.resources.limits.memory }}
+          memory: {{ .Values.kafka.cluster.controller.resources.limits.memory }}
+          {{- end }}
+          {{- if .Values.kafka.cluster.controller.resources.limits.cpu }}
+          cpu: {{ .Values.kafka.cluster.controller.resources.limits.cpu }}
+          {{- end }}
+        {{- end }}
+    {{- end }}
+
+---
+# Kafka Broker Node Pool (KRaft)
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaNodePool
 metadata:
+  name: {{ .Values.kafka.cluster.broker.name }}
+  namespace: {{ .Values.kafka.namespace }}
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.cluster.name }}
+    app.kubernetes.io/name: {{ .Values.kafka.cluster.broker.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: kafka-broker
+    environment: {{ .Values.global.environment }}
   annotations:
     argocd.argoproj.io/sync-wave: "8"
-    meta.helm.sh/release-name: epay-common
-    meta.helm.sh/release-namespace: dev-epay-common
-  creationTimestamp: "2025-11-11T09:58:35Z"
-  generation: 2
-  labels:
-    app.kubernetes.io/component: kafka-controller
-    app.kubernetes.io/instance: epay-common
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: controller
-    environment: dev
-    strimzi.io/cluster: dev-kafka-cluster
-  name: controller
-  namespace: dev-kafka
-  resourceVersion: "496872266"
-  uid: 0d449a5b-2388-4876-9352-4097f18b6ad2
 spec:
-  replicas: 3
+  replicas: {{ .Values.kafka.cluster.broker.replicas }}
   roles:
-  - controller
+  {{- range .Values.kafka.cluster.broker.roles }}
+  - {{ . }}
+  {{- end }}
   storage:
-    type: jbod
+    type: {{ .Values.kafka.cluster.broker.storage.type }}
     volumes:
-    - deleteClaim: false
-      id: 0
-      kraftMetadata: shared
-      size: 100Gi
-      type: persistent-claim
+    {{- range .Values.kafka.cluster.broker.storage.volumes }}
+    - id: {{ .id }}
+      type: {{ .type }}
+      size: {{ .size }}
+      {{- if .kraftMetadata }}
+      kraftMetadata: {{ .kraftMetadata }}
+      {{- end }}
+      deleteClaim: {{ .deleteClaim }}
+    {{- end }}
+  
+  # Pod template with affinity, tolerations, and resources
   template:
-    kafkaContainer: {}
     pod:
-      terminationGracePeriodSeconds: 120
-status:
-  clusterId: 3aEx1xmUSTWs8xSplBnYtA
-  conditions: []
-  labelSelector: strimzi.io/cluster=dev-kafka-cluster,strimzi.io/name=dev-kafka-cluster-kafka,strimzi.io/kind=Kafka,strimzi.io/pool-name=controller
-  nodeIds:
-  - 3
-  - 4
-  - 5
-  observedGeneration: 2
-  replicas: 3
-  roles:
-  - controller
-[osuser@bastion ~]$ oc get kafkanodepool controller -n dev-kafka -o yaml
+      {{- if .Values.kafka.cluster.broker.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.kafka.cluster.broker.terminationGracePeriodSeconds }}
+      {{- end }}
+      
+      {{- if .Values.kafka.cluster.broker.affinity }}
+      affinity:
+        {{- if .Values.kafka.cluster.broker.affinity.nodeAffinity }}
+        nodeAffinity:
+          {{- if .Values.kafka.cluster.broker.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            {{- range .Values.kafka.cluster.broker.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
+            - matchExpressions:
+              {{- range .matchExpressions }}
+              - key: {{ .key }}
+                operator: {{ .operator }}
+                {{- if .values }}
+                values:
+                {{- range .values }}
+                - {{ . | quote }}
+                {{- end }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      
+      {{- if .Values.kafka.cluster.broker.tolerations }}
+      tolerations:
+      {{- range .Values.kafka.cluster.broker.tolerations }}
+      - key: {{ .key | quote }}
+        operator: {{ .operator }}
+        {{- if .value }}
+        value: {{ .value | quote }}
+        {{- end }}
+        effect: {{ .effect }}
+        {{- if .tolerationSeconds }}
+        tolerationSeconds: {{ .tolerationSeconds }}
+        {{- end }}
+      {{- end }}
+      {{- end }}
+    
+    # Add resource specifications for broker containers
+    {{- if .Values.kafka.cluster.broker.resources }}
+    kafkaContainer:
+      resources:
+        {{- if .Values.kafka.cluster.broker.resources.requests }}
+        requests:
+          {{- if .Values.kafka.cluster.broker.resources.requests.memory }}
+          memory: {{ .Values.kafka.cluster.broker.resources.requests.memory }}
+          {{- end }}
+          {{- if .Values.kafka.cluster.broker.resources.requests.cpu }}
+          cpu: {{ .Values.kafka.cluster.broker.resources.requests.cpu }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.kafka.cluster.broker.resources.limits }}
+        limits:
+          {{- if .Values.kafka.cluster.broker.resources.limits.memory }}
+          memory: {{ .Values.kafka.cluster.broker.resources.limits.memory }}
+          {{- end }}
+          {{- if .Values.kafka.cluster.broker.resources.limits.cpu }}
+          cpu: {{ .Values.kafka.cluster.broker.resources.limits.cpu }}
+          {{- end }}
+        {{- end }}
+    {{- end }}
+
+---
+# Kafka Cluster (KRaft Mode)
 apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaNodePool
+kind: Kafka
 metadata:
-  annotations:
-    argocd.argoproj.io/sync-wave: "8"
-    meta.helm.sh/release-name: epay-common
-    meta.helm.sh/release-namespace: dev-epay-common
-  creationTimestamp: "2025-11-11T09:58:35Z"
-  generation: 2
+  name: {{ .Values.kafka.cluster.name }}
+  namespace: {{ .Values.kafka.namespace }}
   labels:
-    app.kubernetes.io/component: kafka-controller
-    app.kubernetes.io/instance: epay-common
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: controller
-    environment: dev
-    strimzi.io/cluster: dev-kafka-cluster
-  name: controller
-  namespace: dev-kafka
-  resourceVersion: "496872266"
-  uid: 0d449a5b-2388-4876-9352-4097f18b6ad2
+    app.kubernetes.io/name: {{ .Values.kafka.cluster.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: kafka-cluster
+    environment: {{ .Values.global.environment }}
+  annotations:
+    {{- range $key, $value := .Values.kafka.cluster.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    argocd.argoproj.io/sync-wave: "8"
 spec:
-  replicas: 3
-  roles:
-  - controller
-  storage:
-    type: jbod
-    volumes:
-    - deleteClaim: false
-      id: 0
-      kraftMetadata: shared
-      size: 100Gi
-      type: persistent-claim
-  template:
-    kafkaContainer: {}
-    pod:
-      terminationGracePeriodSeconds: 120
-status:
-  clusterId: 3aEx1xmUSTWs8xSplBnYtA
-  conditions: []
-  labelSelector: strimzi.io/cluster=dev-kafka-cluster,strimzi.io/name=dev-kafka-cluster-kafka,strimzi.io/kind=Kafka,strimzi.io/pool-name=controller
-  nodeIds:
-  - 3
-  - 4
-  - 5
-  observedGeneration: 2
-  replicas: 3
-  roles:
-  - controller
-[osuser@bastion ~]$
-[osuser@bastion ~]$ oc get kafkanodepool controller -n dev-kafka -o jsonpath='{.metadata.generation}'
-2[osuser@bastion ~]$
+  # Kafka configuration (KRaft mode with KafkaNodePools - no replicas/storage here)
+  kafka:
+    version: {{ .Values.kafka.cluster.version }}
+    metadataVersion: {{ .Values.kafka.cluster.metadataVersion }}
+    
+    # Listener configuration
+    listeners:
+    {{- range .Values.kafka.cluster.kafka.listeners }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      type: {{ .type }}
+      tls: {{ .tls }}
+      #authentication:
+      #type: scram-sha-512
+    {{- end }}
 
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+       # key: {{ .Values.kafka.metricsConfig.key }}
+        #name: {{ .Values.kafka.metricsConfig.name }}  
+          name: kafka-metrics
+          key: kafka-metrics-config.yaml
 
-
+    # Kafka broker configuration
+    config:
+      {{- range $key, $value := .Values.kafka.cluster.kafka.config }}
+      {{- if or (kindIs "float64" $value) (kindIs "int" $value) (kindIs "int64" $value) }}
+      {{ $key }}: {{ $value | int }}
+      {{- else }}
+      {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+  
+  # Entity Operator configuration
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+  
+  {{- if .Values.kafka.cruiseControl.enabled }}
+  # Cruise Control configuration for cluster rebalancing
+  cruiseControl:
+    resources:
+      {{- if .Values.kafka.cruiseControl.resources.requests }}
+      requests:
+        {{- if .Values.kafka.cruiseControl.resources.requests.memory }}
+        memory: {{ .Values.kafka.cruiseControl.resources.requests.memory }}
+        {{- end }}
+        {{- if .Values.kafka.cruiseControl.resources.requests.cpu }}
+        cpu: {{ .Values.kafka.cruiseControl.resources.requests.cpu }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.kafka.cruiseControl.resources.limits }}
+      limits:
+        {{- if .Values.kafka.cruiseControl.resources.limits.memory }}
+        memory: {{ .Values.kafka.cruiseControl.resources.limits.memory }}
+        {{- end }}
+        {{- if .Values.kafka.cruiseControl.resources.limits.cpu }}
+        cpu: {{ .Values.kafka.cruiseControl.resources.limits.cpu }}
+        {{- end }}
+      {{- end }}
+    config:
+      {{- range $key, $value := .Values.kafka.cruiseControl.config }}
+      {{- if or (kindIs "float64" $value) (kindIs "int" $value) (kindIs "int64" $value) }}
+      {{ $key }}: {{ $value | int }}
+      {{- else }}
+      {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+  {{- end }}
+{{- end }}
