@@ -199,3 +199,11 @@ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://lo
 oc get kafkaconnector -n dev-kafka -o custom-columns='NAME:.metadata.name,STATE:.status.connectorStatus.connector.state'
 
 oc get kafkaconnector neft-mq-source rtgs-mq-source rtgs-mis-mq-source rtgs-mis-mq-sink -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": "}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
+
+
+for i in 1 2 3 4 5; do
+  echo "=== Check $i: $(date) ==="
+  oc get kafkaconnector -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": "}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
+  echo ""
+  sleep 60
+done
