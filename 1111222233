@@ -1,33 +1,28 @@
-[osuser@bastion ~]$ oc get pods -n dev-kafka
-NAME                                                 READY   STATUS    RESTARTS       AGE
-dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0              16d
-dev-kafka-cluster-broker-0                           1/1     Running   0              4h5m
-dev-kafka-cluster-broker-1                           1/1     Running   0              4h4m
-dev-kafka-cluster-broker-2                           1/1     Running   0              4h3m
-dev-kafka-cluster-controller-3                       1/1     Running   0              104m
-dev-kafka-cluster-controller-4                       1/1     Running   0              106m
-dev-kafka-cluster-controller-5                       1/1     Running   0              105m
-dev-kafka-cluster-cruise-control-7678c88585-cgv6w    1/1     Running   0              4h5m
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (111d ago)   123d
-dev-kafka-connect-mq-connect-0                       1/1     Running   10 (11d ago)   16d
-dev-kafka-connect-mq-connect-1                       1/1     Running   10 (11d ago)   25d
-dev-kafka-connect-mq-connect-2                       1/1     Running   10 (11d ago)   28d
-[osuser@bastion ~]$ oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.spec.kafka.config.auto\.leader\.rebalance\.enable}{"\n"}'
-true
-[osuser@bastion ~]$ oc get kafka dev-kafka-cluster -n dev-kafka -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}{"\n"}'
-True
-[osuser@bastion ~]$ oc get pods -n dev-kafka
-NAME                                                 READY   STATUS    RESTARTS       AGE
-dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0              16d
-dev-kafka-cluster-broker-0                           1/1     Running   0              4h5m
-dev-kafka-cluster-broker-1                           1/1     Running   0              4h5m
-dev-kafka-cluster-broker-2                           1/1     Running   0              4h4m
-dev-kafka-cluster-controller-3                       1/1     Running   0              105m
-dev-kafka-cluster-controller-4                       1/1     Running   0              106m
-dev-kafka-cluster-controller-5                       1/1     Running   0              106m
-dev-kafka-cluster-cruise-control-7678c88585-cgv6w    1/1     Running   0              4h6m
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (111d ago)   123d
-dev-kafka-connect-mq-connect-0                       1/1     Running   10 (11d ago)   16d
-dev-kafka-connect-mq-connect-1                       1/1     Running   10 (11d ago)   25d
-dev-kafka-connect-mq-connect-2                       1/1     Running   10 (11d ago)   28d
+[osuser@bastion ~]$ for i in 1 2 3 4 5; do   echo "=== Check $i: $(date) ===";   oc get kafkaconnector -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": "}{.status.connectorStatus.tasks[0].state}{"\n"}{end}';   echo "";   sleep 60; done
+=== Check 1: Mon Jul 20 17:26:49 IST 2026 ===
+mis-mq-sink: RUNNING
+mis-mq-source: RUNNING
+neft-mq-sink: RUNNING
+neft-mq-source: FAILED
+rtgs-mis-mq-sink: FAILED
+rtgs-mis-mq-source: FAILED
+rtgs-mq-sink: RUNNING
+rtgs-mq-source: RUNNING
+
+^Z
+[3]+  Stopped                 sleep 60
+[osuser@bastion ~]$ oc get pods -o wide -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS       AGE    IP              NODE                      NOMINATED NODE   READINESS GATES
+dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0              16d    172.16.14.152   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-0                           1/1     Running   0              4h7m   172.16.9.102    worker1.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-1                           1/1     Running   0              4h6m   172.16.14.158   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-2                           1/1     Running   0              4h5m   172.16.14.159   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-controller-3                       1/1     Running   0              107m   172.16.14.163   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-controller-4                       1/1     Running   0              108m   172.16.9.119    worker1.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-controller-5                       1/1     Running   0              107m   172.16.16.98    worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-cruise-control-7678c88585-cgv6w    1/1     Running   0              4h7m   172.16.9.101    worker1.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (111d ago)   123d   172.16.15.246   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-connect-mq-connect-0                       1/1     Running   10 (11d ago)   16d    172.16.16.93    worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-connect-mq-connect-1                       1/1     Running   10 (11d ago)   25d    172.16.8.196    worker1.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-connect-mq-connect-2                       1/1     Running   10 (11d ago)   28d    172.16.14.91    worker2.dev.sbiepay.sbi   <none>           <none>
 [osuser@bastion ~]$
