@@ -185,6 +185,15 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
   --topic neft.mis.inbound.kafka.topic \
   --from-beginning \
   --max-messages 20
+-----------------------------------RTGS NEW MESSAGES---------------------------------
+oc get kafkaconnector rtgs-mq-source rtgs-mq-sink rtgs-mis-mq-source rtgs-mis-mq-sink -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": connector="}{.status.connectorStatus.connector.state}{" task="}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
+
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-get-offsets.sh --bootstrap-server localhost:9092 --topic rtgs.inbound.kafka.topic --time -1
+
+
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic rtgs.inbound.kafka.topic --partition 0 --offset earliest --max-messages 20 --timeout-ms 10000
+
+oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic rtgs.outbound.kafka.topic --partition 0 --offset earliest --max-messages 30 --timeout-ms 10000
 
 
 -------------------conector restart and health check---------------------------
