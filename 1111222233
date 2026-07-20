@@ -7,3 +7,32 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-get-offsets.sh --bo
 oc logs dev-kafka-connect-mq-connect-2 -n dev-kafka --tail=100 | grep -i "rtgs-mq-sink\|error\|exception"
 
 oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payment-consumers | grep rtgs
+
+
+[osuser@bastion ~]$ oc get kafkaconnector rtgs-mq-source rtgs-mq-sink -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": connector="}{.status.connectorStatus.connector.state}{" task="}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
+rtgs-mq-source: connector=RUNNING task=FAILED
+rtgs-mq-sink: connector=RUNNING task=RUNNING
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group connect-rtgs-mq-sink
+
+
+GROUP                TOPIC                     PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                            HOST            CLIENT-ID
+connect-rtgs-mq-sink rtgs.outbound.kafka.topic 0          25              25              0               connector-consumer-rtgs-mq-sink-0-fc173c37-0ac5-4b79-a6d1-749b0ceabf46 /172.16.14.91   connector-consumer-rtgs-mq-sink-0[osuser@bastion ~]$
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-get-offsets.sh --bootstrap-server localhost:9092 --topic rtgs.outbound.kafka.topic --time -1
+rtgs.outbound.kafka.topic:0:25
+[osuser@bastion ~]$ oc logs dev-kafka-connect-mq-connect-2 -n dev-kafka --tail=100 | grep -i "rtgs-mq-sink\|error\|exception"
+2026-07-20 10:07:55,058 INFO 172.16.8.245 - - [20/Jul/2026:10:07:55 +0000] "GET /connectors/rtgs-mq-sink/topics HTTP/1.1" 200 57 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4529]
+2026-07-20 10:09:54,800 INFO 172.16.8.245 - - [20/Jul/2026:10:09:54 +0000] "GET /connectors/rtgs-mq-sink/status HTTP/1.1" 200 292 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4545]
+2026-07-20 10:11:51,262 INFO [rtgs-mq-sink|task-0] [Consumer clientId=connector-consumer-rtgs-mq-sink-0, groupId=connect-rtgs-mq-sink] Node 2 was unable to process the fetch request with (sessionId=1055320353, epoch=8748): FETCH_SESSION_ID_NOT_FOUND. (org.apache.kafka.clients.FetchSessionHandler) [task-thread-rtgs-mq-sink-0]
+2026-07-20 10:13:28,240 INFO [rtgs-mq-sink|task-0] [Consumer clientId=connector-consumer-rtgs-mq-sink-0, groupId=connect-rtgs-mq-sink] Attempt to heartbeat failed since coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) is either not started or not valid (org.apache.kafka.clients.consumer.internals.ConsumerCoordinator) [task-thread-rtgs-mq-sink-0]
+2026-07-20 10:13:28,240 INFO [rtgs-mq-sink|task-0] [Consumer clientId=connector-consumer-rtgs-mq-sink-0, groupId=connect-rtgs-mq-sink] Group coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) is unavailable or invalid due to cause: error response NOT_COORDINATOR. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.clients.consumer.internals.ConsumerCoordinator) [task-thread-rtgs-mq-sink-0]
+2026-07-20 10:13:28,240 INFO [rtgs-mq-sink|task-0] [Consumer clientId=connector-consumer-rtgs-mq-sink-0, groupId=connect-rtgs-mq-sink] Requesting disconnect from last known coordinator dev-kafka-cluster-broker-2.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483645 rack: null) (org.apache.kafka.clients.consumer.internals.ConsumerCoordinator) [task-thread-rtgs-mq-sink-0]
+2026-07-20 10:13:28,240 INFO [rtgs-mq-sink|task-0] [Consumer clientId=connector-consumer-rtgs-mq-sink-0, groupId=connect-rtgs-mq-sink] Client requested disconnect from node 2147483645 (org.apache.kafka.clients.NetworkClient) [task-thread-rtgs-mq-sink-0]
+2026-07-20 10:13:28,241 INFO [rtgs-mq-sink|task-0] [Consumer clientId=connector-consumer-rtgs-mq-sink-0, groupId=connect-rtgs-mq-sink] Discovered group coordinator dev-kafka-cluster-broker-0.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483647 rack: null) (org.apache.kafka.clients.consumer.internals.ConsumerCoordinator) [task-thread-rtgs-mq-sink-0]
+2026-07-20 10:13:34,815 INFO [Worker clientId=connect-dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083, groupId=dev-kafka-connect-mq-cluster] Group coordinator dev-kafka-cluster-broker-1.dev-kafka-cluster-kafka-brokers.dev-kafka.svc:9093 (id: 2147483646 rack: null) is unavailable or invalid due to cause: error response NOT_COORDINATOR. isDisconnected: false. Rediscovery will be attempted. (org.apache.kafka.connect.runtime.distributed.WorkerCoordinator) [DistributedHerder-connect-dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083-1]
+2026-07-20 10:13:55,329 INFO 172.16.8.245 - - [20/Jul/2026:10:13:55 +0000] "GET /connectors/rtgs-mq-sink/config HTTP/1.1" 200 534 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4548]
+2026-07-20 10:13:55,332 INFO 172.16.8.245 - - [20/Jul/2026:10:13:55 +0000] "GET /connectors/rtgs-mq-sink/status HTTP/1.1" 200 292 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4539]
+2026-07-20 10:13:55,333 INFO 172.16.8.245 - - [20/Jul/2026:10:13:55 +0000] "GET /connectors/rtgs-mq-sink/status HTTP/1.1" 200 292 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4526]
+[osuser@bastion ~]$ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payment-consumers | grep rtgs
+payment-consumers rtgs.mis.inbound.kafka.topic               0          8               8               0               consumer-payment-consumers-3-1d087300-303d-4cc9-86a7-35330d5c3e7b /172.16.9.113   consumer-payment-consumers-3
+payment-consumers rtgs.inbound.kafka.topic                   0          6               6               0               consumer-payment-consumers-7-0f8bb4d3-1fac-422a-b1ba-1651a3f9b07a /172.16.9.113   consumer-payment-consumers-7
+[osuser@bastion ~]$
