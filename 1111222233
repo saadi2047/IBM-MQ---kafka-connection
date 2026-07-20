@@ -1,2 +1,145 @@
-oc get kafkanodepool broker -n dev-kafka -o yaml | grep -A 15 affinity
-
+[osuser@bastion ~]$ oc get pods -o wide -n dev-kafka
+NAME                                                 READY   STATUS    RESTARTS       AGE    IP              NODE                      NOMINATED NODE   READINESS GATES
+dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0              16d    172.16.14.152   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-0                           1/1     Running   0              4h7m   172.16.9.102    worker1.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-1                           1/1     Running   0              4h6m   172.16.14.158   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-broker-2                           1/1     Running   0              4h5m   172.16.14.159   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-controller-3                       1/1     Running   0              107m   172.16.14.163   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-controller-4                       1/1     Running   0              108m   172.16.9.119    worker1.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-controller-5                       1/1     Running   0              107m   172.16.16.98    worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-cruise-control-7678c88585-cgv6w    1/1     Running   0              4h7m   172.16.9.101    worker1.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (111d ago)   123d   172.16.15.246   worker2.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-connect-mq-connect-0                       1/1     Running   10 (11d ago)   16d    172.16.16.93    worker3.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-connect-mq-connect-1                       1/1     Running   10 (11d ago)   25d    172.16.8.196    worker1.dev.sbiepay.sbi   <none>           <none>
+dev-kafka-connect-mq-connect-2                       1/1     Running   10 (11d ago)   28d    172.16.14.91    worker2.dev.sbiepay.sbi   <none>           <none>
+[osuser@bastion ~]$ oc get kafkanodepool broker -n dev-kafka -o yaml | grep -A 15 affinity
+[osuser@bastion ~]$ oc get kafkanodepool broker -n dev-kafka -o yaml
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+  creationTimestamp: "2025-11-11T09:58:35Z"
+  generation: 5
+  labels:
+    app.kubernetes.io/component: kafka-broker
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: broker
+    environment: dev
+    strimzi.io/cluster: dev-kafka-cluster
+  name: broker
+  namespace: dev-kafka
+  resourceVersion: "889565421"
+  uid: db20832b-3ab6-4a92-8738-87d3dc248159
+spec:
+  replicas: 3
+  roles:
+  - broker
+  storage:
+    type: jbod
+    volumes:
+    - deleteClaim: false
+      id: 0
+      kraftMetadata: shared
+      size: 100Gi
+      type: persistent-claim
+    - deleteClaim: false
+      id: 1
+      size: 100Gi
+      type: persistent-claim
+  template:
+    kafkaContainer: {}
+    pod:
+      terminationGracePeriodSeconds: 120
+status:
+  clusterId: 3aEx1xmUSTWs8xSplBnYtA
+  conditions: []
+  labelSelector: strimzi.io/cluster=dev-kafka-cluster,strimzi.io/name=dev-kafka-cluster-kafka,strimzi.io/kind=Kafka,strimzi.io/pool-name=broker
+  nodeIds:
+  - 0
+  - 1
+  - 2
+  observedGeneration: 5
+  replicas: 3
+  roles:
+  - broker
+[osuser@bastion ~]$ oc get kafkanodepool controller -n dev-kafka -o yaml | grep -A 15 affinity
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: strimzi.io/pool-name
+                operator: In
+                values:
+                - controller
+            topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 120
+status:
+  clusterId: 3aEx1xmUSTWs8xSplBnYtA
+  conditions: []
+  labelSelector: strimzi.io/cluster=dev-kafka-cluster,strimzi.io/name=dev-kafka-cluster-kafka,strimzi.io/kind=Kafka,strimzi.io/pool-name=controller
+  nodeIds:
+[osuser@bastion ~]$ oc get kafkanodepool controller -n dev-kafka -o yaml
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+  creationTimestamp: "2025-11-11T09:58:35Z"
+  generation: 3
+  labels:
+    app.kubernetes.io/component: kafka-controller
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: controller
+    environment: dev
+    strimzi.io/cluster: dev-kafka-cluster
+  name: controller
+  namespace: dev-kafka
+  resourceVersion: "889770207"
+  uid: 0d449a5b-2388-4876-9352-4097f18b6ad2
+spec:
+  replicas: 3
+  roles:
+  - controller
+  storage:
+    type: jbod
+    volumes:
+    - deleteClaim: false
+      id: 0
+      kraftMetadata: shared
+      size: 100Gi
+      type: persistent-claim
+  template:
+    kafkaContainer: {}
+    pod:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: strimzi.io/pool-name
+                operator: In
+                values:
+                - controller
+            topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 120
+status:
+  clusterId: 3aEx1xmUSTWs8xSplBnYtA
+  conditions: []
+  labelSelector: strimzi.io/cluster=dev-kafka-cluster,strimzi.io/name=dev-kafka-cluster-kafka,strimzi.io/kind=Kafka,strimzi.io/pool-name=controller
+  nodeIds:
+  - 3
+  - 4
+  - 5
+  observedGeneration: 3
+  replicas: 3
+  roles:
+  - controller
+[osuser@bastion ~]$
