@@ -3,4 +3,24 @@ NAME                             READY   STATUS    RESTARTS   AGE     IP        
 dev-kafka-cluster-controller-3   1/1     Running   0          84s     172.16.14.163   worker2.dev.sbiepay.sbi   <none>           <none>
 dev-kafka-cluster-controller-4   1/1     Running   0          2m30s   172.16.9.119    worker1.dev.sbiepay.sbi   <none>           <none>
 dev-kafka-cluster-controller-5   1/1     Running   0          117s    172.16.16.98    worker3.dev.sbiepay.sbi   <none>           <none>
-[osuser@bastion
+[osuser@bastion ~]$ oc adm top node
+NAME                      CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
+infra1.dev.sbiepay.sbi    933m         8%     14521Mi         22%
+infra2.dev.sbiepay.sbi    798m         6%     11072Mi         17%
+infra3.dev.sbiepay.sbi    685m         5%     10902Mi         17%
+master1.dev.sbiepay.sbi   2763m        17%    34529Mi         54%
+master2.dev.sbiepay.sbi   2418m        15%    32014Mi         50%
+master3.dev.sbiepay.sbi   1818m        11%    33428Mi         52%
+worker1.dev.sbiepay.sbi   1509m        9%     26912Mi         42%
+worker1.integ.epay.sbi    2140m        13%    30329Mi         47%
+worker1.sit.epay.sbi      1204m        7%     30394Mi         48%
+worker1.uat.epay.sbi      1486m        9%     33448Mi         52%
+worker2.dev.sbiepay.sbi   3088m        19%    30650Mi         48%
+worker2.integ.epay.sbi    1012m        6%     20545Mi         32%
+worker2.sit.epay.sbi      1890m        12%    26685Mi         42%
+worker2.uat.epay.sbi      2982m        19%    46849Mi         74%
+worker3.dev.sbiepay.sbi   442m         2%     13022Mi         20%
+worker3.integ.epay.sbi    769m         4%     24762Mi         39%
+worker3.sit.epay.sbi      1175m        7%     20765Mi         32%
+worker3.uat.epay.sbi      2764m        17%    39363Mi         62%
+[osuser@bastion ~]$
