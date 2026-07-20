@@ -1,75 +1,17 @@
-[osuser@bastion ~]$ oc logs dev-kafka-connect-mq-connect-2 -n dev-kafka --tail=30 | grep -iE "mis|NeftMISC|message|error"
-2026-07-20 10:33:55,039 INFO 172.16.8.245 - - [20/Jul/2026:10:33:55 +0000] "GET /connectors/rtgs-mis-mq-sink/topics HTTP/1.1" 200 34 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4537]
-2026-07-20 10:35:54,987 INFO 172.16.8.245 - - [20/Jul/2026:10:35:54 +0000] "GET /connectors/mis-mq-sink/config HTTP/1.1" 200 541 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4556]
-2026-07-20 10:35:54,990 INFO 172.16.8.245 - - [20/Jul/2026:10:35:54 +0000] "GET /connectors/mis-mq-source/status HTTP/1.1" 200 295 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4545]
-2026-07-20 10:35:54,992 INFO 172.16.8.245 - - [20/Jul/2026:10:35:54 +0000] "GET /connectors/mis-mq-sink/status HTTP/1.1" 200 291 "-" "Java-http-client/17.0.16" 3 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4557]
-2026-07-20 10:35:54,993 INFO 172.16.8.245 - - [20/Jul/2026:10:35:54 +0000] "GET /connectors/rtgs-mis-mq-source/status HTTP/1.1" 200 5443 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4545]
-2026-07-20 10:35:54,995 INFO 172.16.8.245 - - [20/Jul/2026:10:35:54 +0000] "GET /connectors/rtgs-mis-mq-sink/topics HTTP/1.1" 200 34 "-" "Java-http-client/17.0.16" 0 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4537]
-2026-07-20 10:35:54,998 INFO 172.16.8.245 - - [20/Jul/2026:10:35:54 +0000] "GET /connectors/rtgs-mis-mq-source/topics HTTP/1.1" 200 36 "-" "Java-http-client/17.0.16" 1 (org.apache.kafka.connect.runtime.rest.RestServer) [qtp1707595525-4545]
-[osuser@bastion ~]$ for c in neft-mq-source neft-mq-sink rtgs-mq-source rtgs-mq-sink; do   echo "=== $c ===";   oc exec dev-kafka-connect-mq-connect-1 -n dev-kafka --     curl -s http://localhost:8083/connectors/$c/status | python3 -m json.tool; done
-=== neft-mq-source ===
-{
-    "name": "neft-mq-source",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "FAILED",
-            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083",
-            "trace": "org.apache.kafka.connect.errors.ConnectException: com.ibm.msg.client.jms.DetailedJMSRuntimeException: JMSWMQ0018: Failed to connect to queue manager 'SBI_NEFT' with connection mode 'Client' and host name '10.176.10.213(2001)'.\nCheck the queue manager is started and if running in client mode, check there is a listener running. Please see the linked exception for more information.\n\tat com.ibm.eventstreams.connect.mqsource.MQSourceTask.start(MQSourceTask.java:207)\n\tat com.ibm.eventstreams.connect.mqsource.MQSourceTask.start(MQSourceTask.java:158)\n\tat org.apache.kafka.connect.runtime.AbstractWorkerSourceTask.initializeAndStart(AbstractWorkerSourceTask.java:279)\n\tat org.apache.kafka.connect.runtime.WorkerTask.doStart(WorkerTask.java:176)\n\tat org.apache.kafka.connect.runtime.WorkerTask.doRun(WorkerTask.java:225)\n\tat org.apache.kafka.connect.runtime.WorkerTask.run(WorkerTask.java:281)\n\tat org.apache.kafka.connect.runtime.AbstractWorkerSourceTask.run(AbstractWorkerSourceTask.java:79)\n\tat org.apache.kafka.connect.runtime.isolation.Plugins.lambda$withClassLoader$1(Plugins.java:238)\n\tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\tat java.base/java.lang.Thread.run(Thread.java:840)\nCaused by: com.ibm.msg.client.jms.DetailedJMSRuntimeException: JMSWMQ0018: Failed to connect to queue manager 'SBI_NEFT' with connection mode 'Client' and host name '10.176.10.213(2001)'.\nCheck the queue manager is started and if running in client mode, check there is a listener running. Please see the linked exception for more information.\n\tat com.ibm.msg.client.jms.DetailedJMSException.getUnchecked(DetailedJMSException.java:268)\n\tat com.ibm.msg.client.jms.internal.JmsErrorUtils.convertJMSException(JmsErrorUtils.java:173)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl.createContext(JmsConnectionFactoryImpl.java:577)\n\tat com.ibm.eventstreams.connect.mqsource.JMSWorker.connect(JMSWorker.java:216)\n\tat com.ibm.eventstreams.connect.mqsource.MQSourceTask.start(MQSourceTask.java:184)\n\t... 12 more\nCaused by: com.ibm.mq.MQException: JMSCMQ0001: IBM MQ call failed with compcode '2' ('MQCC_FAILED') reason '2537' ('MQRC_CHANNEL_NOT_AVAILABLE').\n\tat com.ibm.msg.client.wmq.common.internal.Reason.createException(Reason.java:217)\n\tat com.ibm.msg.client.wmq.internal.WMQConnection.<init>(WMQConnection.java:506)\n\tat com.ibm.msg.client.wmq.factories.WMQConnectionFactory.createV7ProviderConnection(WMQConnectionFactory.java:9351)\n\tat com.ibm.msg.client.wmq.factories.WMQConnectionFactory.createProviderConnection(WMQConnectionFactory.java:8581)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl._createConnection(JmsConnectionFactoryImpl.java:322)\n\tat com.ibm.msg.client.jms.admin.JmsConnectionFactoryImpl.createContext(JmsConnectionFactoryImpl.java:543)\n\t... 14 more\nCaused by: com.ibm.mq.jmqi.JmqiException: CC=2;RC=2537;AMQ9204: Connection to host '10.176.10.213(2001)' rejected. [1=com.ibm.mq.jmqi.JmqiException[CC=2;RC=2537;AMQ9558: The remote channel 'SBIEPAY2.SVRCONN' on host '' is not currently available. [3=SBIEPAY2.SVRCONN]],3=10.176.10.213(2001),4=,5=RemoteConnection.analyseErrorSegment]\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.jmqiConnect(RemoteFAP.java:13911)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.access$200(RemoteFAP.java:13340)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP.jmqiConnect(RemoteFAP.java:1544)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP.jmqiConnect(RemoteFAP.java:1413)\n\tat com.ibm.mq.ese.jmqi.InterceptedJmqiImpl.jmqiConnect(InterceptedJmqiImpl.java:377)\n\tat com.ibm.mq.ese.jmqi.ESEJMQI.jmqiConnect(ESEJMQI.java:562)\n\tat com.ibm.msg.client.wmq.internal.WMQConnection.<init>(WMQConnection.java:438)\n\t... 18 more\nCaused by: com.ibm.mq.jmqi.JmqiException: CC=2;RC=2537;AMQ9558: The remote channel 'SBIEPAY2.SVRCONN' on host '' is not currently available. [3=SBIEPAY2.SVRCONN]\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnection.analyseErrorSegment(RemoteConnection.java:4852)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnection.receiveTSH(RemoteConnection.java:3549)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnection.initSess(RemoteConnection.java:1421)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnection.connect(RemoteConnection.java:1009)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getNewConnection(RemoteConnectionSpecification.java:691)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getSessionFromNewConnection(RemoteConnectionSpecification.java:283)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionSpecification.getSession(RemoteConnectionSpecification.java:170)\n\tat com.ibm.mq.jmqi.remote.impl.RemoteConnectionPool.getSession(RemoteConnectionPool.java:128)\n\tat com.ibm.mq.jmqi.remote.api.RemoteFAP$Connector.jmqiConnect(RemoteFAP.java:13575)\n\t... 24 more\n"
-        }
-    ],
-    "type": "source"
-}
-=== neft-mq-sink ===
-{
-    "name": "neft-mq-sink",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-0.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "sink"
-}
-=== rtgs-mq-source ===
-{
-    "name": "rtgs-mq-source",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-1.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "source"
-}
-=== rtgs-mq-sink ===
-{
-    "name": "rtgs-mq-sink",
-    "connector": {
-        "state": "RUNNING",
-        "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-    },
-    "tasks": [
-        {
-            "id": 0,
-            "state": "RUNNING",
-            "worker_id": "dev-kafka-connect-mq-connect-2.dev-kafka-connect-mq-connect.dev-kafka.svc:8083"
-        }
-    ],
-    "type": "sink"
-}
-[osuser@bastion ~]$
+[osuser@bastion ~]$ for i in 1 2 3 4 5; do
+>   echo "=== Check $i: $(date) ==="
+>   oc get kafkaconnector -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": "}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
+>   echo ""
+>   sleep 60
+> done
+=== Check 1: Mon Jul 20 16:09:44 IST 2026 ===
+mis-mq-sink: RUNNING
+mis-mq-source: RUNNING
+neft-mq-sink: RUNNING
+neft-mq-source: FAILED
+rtgs-mis-mq-sink: FAILED
+rtgs-mis-mq-source: FAILED
+rtgs-mq-sink: RUNNING
+rtgs-mq-source: RUNNING
+
+
