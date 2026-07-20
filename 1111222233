@@ -1,298 +1,69 @@
-{{- if .Values.kafka.enabled }}
-# Kafka Controller Node Pool (KRaft)
+[osuser@bastion ~]$ oc get kafkaconnector -n dev-kafka -o custom-columns='NAME:.metadata.name,STATE:.status.connectorStatus.connector.state'                                                                                                 NAME                 STATE
+mis-mq-sink          RUNNING
+mis-mq-source        RUNNING
+neft-mq-sink         RUNNING
+neft-mq-source       RUNNING
+rtgs-mis-mq-sink     RUNNING
+rtgs-mis-mq-source   RUNNING
+rtgs-mq-sink         RUNNING
+rtgs-mq-source       RUNNING
+[osuser@bastion ~]$ oc get kafkanodepool controller -n dev-kafka -o yaml
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaNodePool
 metadata:
-  name: {{ .Values.kafka.cluster.controller.name }}
-  namespace: {{ .Values.kafka.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+    meta.helm.sh/release-name: epay-common
+    meta.helm.sh/release-namespace: dev-epay-common
+  creationTimestamp: "2025-11-11T09:58:35Z"
+  generation: 3
   labels:
-    strimzi.io/cluster: {{ .Values.kafka.cluster.name }}
-    app.kubernetes.io/name: {{ .Values.kafka.cluster.controller.name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: kafka-controller
-    environment: {{ .Values.global.environment }}
-  annotations:
-    argocd.argoproj.io/sync-wave: "8"
+    app.kubernetes.io/instance: epay-common
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: controller
+    environment: dev
+    strimzi.io/cluster: dev-kafka-cluster
+  name: controller
+  namespace: dev-kafka
+  resourceVersion: "889770207"
+  uid: 0d449a5b-2388-4876-9352-4097f18b6ad2
 spec:
-  replicas: {{ .Values.kafka.cluster.controller.replicas }}
+  replicas: 3
   roles:
-  {{- range .Values.kafka.cluster.controller.roles }}
-  - {{ . }}
-  {{- end }}
+  - controller
   storage:
-    type: {{ .Values.kafka.cluster.controller.storage.type }}
+    type: jbod
     volumes:
-    {{- range .Values.kafka.cluster.controller.storage.volumes }}
-    - id: {{ .id }}
-      type: {{ .type }}
-      size: {{ .size }}
-      {{- if .kraftMetadata }}
-      kraftMetadata: {{ .kraftMetadata }}
-      {{- end }}
-      deleteClaim: {{ .deleteClaim }}
-    {{- end }}
-  
-  # Pod template with affinity, tolerations, and resources
+    - deleteClaim: false
+      id: 0
+      kraftMetadata: shared
+      size: 100Gi
+      type: persistent-claim
   template:
+    kafkaContainer: {}
     pod:
-      {{- if .Values.kafka.cluster.controller.terminationGracePeriodSeconds }}
-      terminationGracePeriodSeconds: {{ .Values.kafka.cluster.controller.terminationGracePeriodSeconds }}
-      {{- end }}
-      
-      {{- if .Values.kafka.cluster.controller.affinity }}
       affinity:
-        {{- if .Values.kafka.cluster.controller.affinity.nodeAffinity }}
-        nodeAffinity:
-          {{- if .Values.kafka.cluster.controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution }}
+        podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            {{- range .Values.kafka.cluster.controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
-            - matchExpressions:
-              {{- range .matchExpressions }}
-              - key: {{ .key }}
-                operator: {{ .operator }}
-                {{- if .values }}
+          - labelSelector:
+              matchExpressions:
+              - key: strimzi.io/pool-name
+                operator: In
                 values:
-                {{- range .values }}
-                - {{ . | quote }}
-                {{- end }}
-                {{- end }}
-              {{- end }}
-            {{- end }}
-          {{- end }}
-        {{- end }}
-      {{- end }}
-      
-      {{- if .Values.kafka.cluster.controller.tolerations }}
-      tolerations:
-      {{- range .Values.kafka.cluster.controller.tolerations }}
-      - key: {{ .key | quote }}
-        operator: {{ .operator }}
-        {{- if .value }}
-        value: {{ .value | quote }}
-        {{- end }}
-        effect: {{ .effect }}
-        {{- if .tolerationSeconds }}
-        tolerationSeconds: {{ .tolerationSeconds }}
-        {{- end }}
-      {{- end }}
-      {{- end }}
-    
-    # Add resource specifications for controller containers
-    {{- if .Values.kafka.cluster.controller.resources }}
-    kafkaContainer:
-      resources:
-        {{- if .Values.kafka.cluster.controller.resources.requests }}
-        requests:
-          {{- if .Values.kafka.cluster.controller.resources.requests.memory }}
-          memory: {{ .Values.kafka.cluster.controller.resources.requests.memory }}
-          {{- end }}
-          {{- if .Values.kafka.cluster.controller.resources.requests.cpu }}
-          cpu: {{ .Values.kafka.cluster.controller.resources.requests.cpu }}
-          {{- end }}
-        {{- end }}
-        {{- if .Values.kafka.cluster.controller.resources.limits }}
-        limits:
-          {{- if .Values.kafka.cluster.controller.resources.limits.memory }}
-          memory: {{ .Values.kafka.cluster.controller.resources.limits.memory }}
-          {{- end }}
-          {{- if .Values.kafka.cluster.controller.resources.limits.cpu }}
-          cpu: {{ .Values.kafka.cluster.controller.resources.limits.cpu }}
-          {{- end }}
-        {{- end }}
-    {{- end }}
-
----
-# Kafka Broker Node Pool (KRaft)
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaNodePool
-metadata:
-  name: {{ .Values.kafka.cluster.broker.name }}
-  namespace: {{ .Values.kafka.namespace }}
-  labels:
-    strimzi.io/cluster: {{ .Values.kafka.cluster.name }}
-    app.kubernetes.io/name: {{ .Values.kafka.cluster.broker.name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: kafka-broker
-    environment: {{ .Values.global.environment }}
-  annotations:
-    argocd.argoproj.io/sync-wave: "8"
-spec:
-  replicas: {{ .Values.kafka.cluster.broker.replicas }}
+                - controller
+            topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 120
+status:
+  clusterId: 3aEx1xmUSTWs8xSplBnYtA
+  conditions: []
+  labelSelector: strimzi.io/cluster=dev-kafka-cluster,strimzi.io/name=dev-kafka-cluster-kafka,strimzi.io/kind=Kafka,strimzi.io/pool-name=controller
+  nodeIds:
+  - 3
+  - 4
+  - 5
+  observedGeneration: 3
+  replicas: 3
   roles:
-  {{- range .Values.kafka.cluster.broker.roles }}
-  - {{ . }}
-  {{- end }}
-  storage:
-    type: {{ .Values.kafka.cluster.broker.storage.type }}
-    volumes:
-    {{- range .Values.kafka.cluster.broker.storage.volumes }}
-    - id: {{ .id }}
-      type: {{ .type }}
-      size: {{ .size }}
-      {{- if .kraftMetadata }}
-      kraftMetadata: {{ .kraftMetadata }}
-      {{- end }}
-      deleteClaim: {{ .deleteClaim }}
-    {{- end }}
-  
-  # Pod template with affinity, tolerations, and resources
-  template:
-    pod:
-      {{- if .Values.kafka.cluster.broker.terminationGracePeriodSeconds }}
-      terminationGracePeriodSeconds: {{ .Values.kafka.cluster.broker.terminationGracePeriodSeconds }}
-      {{- end }}
-      
-      {{- if .Values.kafka.cluster.broker.affinity }}
-      affinity:
-        {{- if .Values.kafka.cluster.broker.affinity.nodeAffinity }}
-        nodeAffinity:
-          {{- if .Values.kafka.cluster.broker.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution }}
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            {{- range .Values.kafka.cluster.broker.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
-            - matchExpressions:
-              {{- range .matchExpressions }}
-              - key: {{ .key }}
-                operator: {{ .operator }}
-                {{- if .values }}
-                values:
-                {{- range .values }}
-                - {{ . | quote }}
-                {{- end }}
-                {{- end }}
-              {{- end }}
-            {{- end }}
-          {{- end }}
-        {{- end }}
-      {{- end }}
-      
-      {{- if .Values.kafka.cluster.broker.tolerations }}
-      tolerations:
-      {{- range .Values.kafka.cluster.broker.tolerations }}
-      - key: {{ .key | quote }}
-        operator: {{ .operator }}
-        {{- if .value }}
-        value: {{ .value | quote }}
-        {{- end }}
-        effect: {{ .effect }}
-        {{- if .tolerationSeconds }}
-        tolerationSeconds: {{ .tolerationSeconds }}
-        {{- end }}
-      {{- end }}
-      {{- end }}
-    
-    # Add resource specifications for broker containers
-    {{- if .Values.kafka.cluster.broker.resources }}
-    kafkaContainer:
-      resources:
-        {{- if .Values.kafka.cluster.broker.resources.requests }}
-        requests:
-          {{- if .Values.kafka.cluster.broker.resources.requests.memory }}
-          memory: {{ .Values.kafka.cluster.broker.resources.requests.memory }}
-          {{- end }}
-          {{- if .Values.kafka.cluster.broker.resources.requests.cpu }}
-          cpu: {{ .Values.kafka.cluster.broker.resources.requests.cpu }}
-          {{- end }}
-        {{- end }}
-        {{- if .Values.kafka.cluster.broker.resources.limits }}
-        limits:
-          {{- if .Values.kafka.cluster.broker.resources.limits.memory }}
-          memory: {{ .Values.kafka.cluster.broker.resources.limits.memory }}
-          {{- end }}
-          {{- if .Values.kafka.cluster.broker.resources.limits.cpu }}
-          cpu: {{ .Values.kafka.cluster.broker.resources.limits.cpu }}
-          {{- end }}
-        {{- end }}
-    {{- end }}
-
----
-# Kafka Cluster (KRaft Mode)
-apiVersion: kafka.strimzi.io/v1beta2
-kind: Kafka
-metadata:
-  name: {{ .Values.kafka.cluster.name }}
-  namespace: {{ .Values.kafka.namespace }}
-  labels:
-    app.kubernetes.io/name: {{ .Values.kafka.cluster.name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: kafka-cluster
-    environment: {{ .Values.global.environment }}
-  annotations:
-    {{- range $key, $value := .Values.kafka.cluster.annotations }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
-    argocd.argoproj.io/sync-wave: "8"
-spec:
-  # Kafka configuration (KRaft mode with KafkaNodePools - no replicas/storage here)
-  kafka:
-    version: {{ .Values.kafka.cluster.version }}
-    metadataVersion: {{ .Values.kafka.cluster.metadataVersion }}
-    
-    # Listener configuration
-    listeners:
-    {{- range .Values.kafka.cluster.kafka.listeners }}
-    - name: {{ .name }}
-      port: {{ .port }}
-      type: {{ .type }}
-      tls: {{ .tls }}
-      #authentication:
-      #type: scram-sha-512
-    {{- end }}
-
-    metricsConfig:
-      type: jmxPrometheusExporter
-      valueFrom:
-        configMapKeyRef:
-       # key: {{ .Values.kafka.metricsConfig.key }}
-        #name: {{ .Values.kafka.metricsConfig.name }}  
-          name: kafka-metrics
-          key: kafka-metrics-config.yaml
-
-    # Kafka broker configuration
-    config:
-      {{- range $key, $value := .Values.kafka.cluster.kafka.config }}
-      {{- if or (kindIs "float64" $value) (kindIs "int" $value) (kindIs "int64" $value) }}
-      {{ $key }}: {{ $value | int }}
-      {{- else }}
-      {{ $key }}: {{ $value | quote }}
-      {{- end }}
-      {{- end }}
-  
-  # Entity Operator configuration
-  entityOperator:
-    topicOperator: {}
-    userOperator: {}
-  
-  {{- if .Values.kafka.cruiseControl.enabled }}
-  # Cruise Control configuration for cluster rebalancing
-  cruiseControl:
-    resources:
-      {{- if .Values.kafka.cruiseControl.resources.requests }}
-      requests:
-        {{- if .Values.kafka.cruiseControl.resources.requests.memory }}
-        memory: {{ .Values.kafka.cruiseControl.resources.requests.memory }}
-        {{- end }}
-        {{- if .Values.kafka.cruiseControl.resources.requests.cpu }}
-        cpu: {{ .Values.kafka.cruiseControl.resources.requests.cpu }}
-        {{- end }}
-      {{- end }}
-      {{- if .Values.kafka.cruiseControl.resources.limits }}
-      limits:
-        {{- if .Values.kafka.cruiseControl.resources.limits.memory }}
-        memory: {{ .Values.kafka.cruiseControl.resources.limits.memory }}
-        {{- end }}
-        {{- if .Values.kafka.cruiseControl.resources.limits.cpu }}
-        cpu: {{ .Values.kafka.cruiseControl.resources.limits.cpu }}
-        {{- end }}
-      {{- end }}
-    config:
-      {{- range $key, $value := .Values.kafka.cruiseControl.config }}
-      {{- if or (kindIs "float64" $value) (kindIs "int" $value) (kindIs "int64" $value) }}
-      {{ $key }}: {{ $value | int }}
-      {{- else }}
-      {{ $key }}: {{ $value | quote }}
-      {{- end }}
-      {{- end }}
-  {{- end }}
-{{- end }}
+  - controller
+[osuser@bastion ~]$ oc get kafkaconnector -n dev-kafka -o custom-columns='NAME:.m
