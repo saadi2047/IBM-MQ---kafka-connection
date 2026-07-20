@@ -1,55 +1,69 @@
+[osuser@bastion ~]$ oc get pods -A | grep -iE "Crash|Pending|Error|ImagePullBackOff"
+default                                            telnetd-server-548746669-bhjhv                                    0/1     ImagePullBackOff             0                   179d
+default                                            telnetd-server-5595646846-zmfmj                                   0/1     ImagePullBackOff             0                   11d
+dev-bridge                                         epaybridgekeygenservice-fd5846bdb-7l4hd                           1/2     ImagePullBackOff             0                   2d1h
+dev-bridge                                         epaybridgekeygenservice-fd5846bdb-l8mw2                           1/2     ImagePullBackOff             0                   2d1h
+dev-bridge                                         epaybridgemisreport-86797444cc-lb2ng                              1/2     CrashLoopBackOff             26 (3m17s ago)      116m
+dev-bridge                                         epaybridgemisreport-86797444cc-ncxll                              1/2     CrashLoopBackOff             26 (68s ago)        116m
+dev-bridge                                         epaybridgetxn-epaylitebridgetxn-754fc497dc-5crjb                  0/2     Error                        1                   12d
+dev-cache                                          hazelcast-mancenter-0                                             1/2     CrashLoopBackOff             33652 (4m12s ago)   123d
+dev-epay-common                                    grafana-647846d5f4-l4q62                                          0/1     Pending                      0                   3h51m
+dev-offline-jobs                                   telnetd-server-7c48585c9-xwbdh                                    1/2     ImagePullBackOff             0                   179d
+dev-sbiepay                                        cdcadmin-admincdc-9498b4cdc-jsglm                                 1/2     CrashLoopBackOff             31285 (3m30s ago)   123d
+dev-sbiepay                                        payment-bincheck-68cbf4bb4d-tsf4b                                 1/2     CrashLoopBackOff             33354 (3m19s ago)   123d
+dev-simulators                                     orderhash-64d77d796c-pvrtm                                        1/2     CrashLoopBackOff             20824 (57s ago)     77d
+dev-simulators                                     phpsimulator-merchant-api-simulator-php-f6f58db75-chhx9           1/2     ImagePullBackOff             0                   63d
+dev-spark                                          ops-operationsservice-647d745655-w6cfd                            1/2     ImagePullBackOff             0                   179d
+int-simulators                                     perf-perfsimulator-64945b44bf-qthdk                               1/2     ImagePullBackOff             0                   5d1h
+openshift-marketplace                              cs-redhat-operator-index-q6wtd                                    0/1     ImagePullBackOff             0                   44d
+openshift-marketplace                              cs-redhat-operator-index-v416-kztp5                               0/1     ImagePullBackOff             0                   14d
+sit-admin                                          admin-adminservice-54466fd675-69t6z                               1/2     CrashLoopBackOff             12 (5m ago)         43m
+sit-admin                                          admin-portal-adminportalservice-5799c68dcd-7q8t9                  1/2     CrashLoopBackOff             1368 (4m9s ago)     4d23h
+sit-notification                                   notify-notificationservice-9db6c8565-4t5kt                        0/1     ImagePullBackOff             0                   14d
+sit-simulators                                     perf-perfsimulator-cb76f857c-r5tj9                                1/2     ImagePullBackOff             0                   5d4h
+uat-epay-common                                    grafana-647846d5f4-5tlpj                                          0/1     Pending                      0                   102d
+uat-integration                                    integration-integrationservice-84b5d87ccb-95mtx                   1/2     CreateContainerConfigError   0                   6d22h
+uat-simulators                                     perf-perfsimulator-5db66bcfd6-m87r8                               1/2     ImagePullBackOff             0                   5d2h
+[osuser@bastion ~]$ oc adm top pod | grep -iE "Crash|Pending|Error|ImagePullBackOff"
+[osuser@bastion ~]$ oc adm top pod | grep -iE "hazelcast-mancenter-0|cdcadmin-admincdc-9498b4cdc-jsglm|payment-bincheck-68cbf4bb4d-tsf4b|orderhash-64d77d796c-pvrtm|admin-portal-adminportalservice-5799c68dcd-7q8t9"
+orderhash-64d77d796c-pvrtm                                       3m           87Mi
+[osuser@bastion ~]$ oc adm top pod
+NAME                                                             CPU(cores)   MEMORY(bytes)
+demo-merchantsimulator-7478496cc6-6thjs                          2m           69Mi
+dotnetsimulator-merchant-api-simulator-dotnet-657d7b56f8-ht5mq   4m           185Mi
+javasimulator-javautilityapisimulator-6c67896dbf-c27bh           3m           788Mi
+nodejssimulator-merchant-api-simulator-nodejs-8d4f7b4d4-5fpnl    3m           218Mi
+orderhash-64d77d796c-pvrtm                                       2m           87Mi
+perf-perfsimulator-c587f5d8d-cm2lv                               2m           69Mi
+phpsimulator-merchant-api-simulator-php-c4897cd4b-xkjh4          2m           167Mi
+pythonsimulator-merchant-api-simulator-python-6cc767cd5c-7xtpw   8m           146Mi
+sandbox-6f4ddb548c-88kjq                                         5m           364Mi
+stubs-stubsservice-6df4cdfbf4-7snts                              3m           722Mi
+[osuser@bastion ~]$ oc adm top pod -A | grep -iE "hazelcast-mancenter-0|cdcadmin-admincdc-9498b4cdc-jsglm|payment-bincheck-68cbf4bb4d-tsf4b|orderhash-64d77d796c-pvrtm|admin-portal-adminportalservice-5799c68dcd-7q8t9"
+dev-cache                                          hazelcast-mancenter-0                                            2m           65Mi
+dev-sbiepay                                        cdcadmin-admincdc-9498b4cdc-jsglm                                3m           71Mi
+dev-sbiepay                                        payment-bincheck-68cbf4bb4d-tsf4b                                2m           74Mi
+dev-simulators                                     orderhash-64d77d796c-pvrtm                                       2m           87Mi
+sit-admin                                          admin-portal-adminportalservice-5799c68dcd-7q8t9                 2m           63Mi
+[osuser@bastion ~]$
 [osuser@bastion ~]$ oc adm top node
 NAME                      CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
-infra1.dev.sbiepay.sbi    897m         7%     14298Mi         22%
-infra2.dev.sbiepay.sbi    1752m        15%    10606Mi         16%
-infra3.dev.sbiepay.sbi    1167m        10%    10780Mi         17%
-master1.dev.sbiepay.sbi   2894m        18%    35630Mi         56%
-master2.dev.sbiepay.sbi   1679m        10%    32378Mi         51%
-master3.dev.sbiepay.sbi   1512m        9%     31412Mi         49%
-worker1.dev.sbiepay.sbi   2837m        18%    27503Mi         43%
-worker1.integ.epay.sbi    4713m        30%    30341Mi         47%
-worker1.sit.epay.sbi      4589m        29%    31110Mi         49%
-worker1.uat.epay.sbi      1449m        9%     33483Mi         52%
-worker2.dev.sbiepay.sbi   2967m        19%    31584Mi         50%
-worker2.integ.epay.sbi    896m         5%     20523Mi         32%
-worker2.sit.epay.sbi      1270m        8%     26680Mi         42%
-worker2.uat.epay.sbi      3706m        23%    46973Mi         74%
-worker3.dev.sbiepay.sbi   388m         2%     13132Mi         20%
-worker3.integ.epay.sbi    886m         5%     24823Mi         39%
-worker3.sit.epay.sbi      723m         4%     20706Mi         32%
-worker3.uat.epay.sbi      1625m        10%    39447Mi         62%
-[osuser@bastion ~]$ oc adm top pod -n dev-kakfa
-No resources found in dev-kakfa namespace.
-[osuser@bastion ~]$ oc adm top pod -n dev-kaffa
-No resources found in dev-kaffa namespace.
-[osuser@bastion ~]$ oc adm top pod -n dev-kafka
-NAME                                                 CPU(cores)   MEMORY(bytes)
-dev-console-console-deployment-577c797ccf-8dz7g      4m           1104Mi
-dev-kafka-cluster-broker-0                           1061m        2294Mi
-dev-kafka-cluster-broker-1                           286m         2701Mi
-dev-kafka-cluster-broker-2                           325m         2705Mi
-dev-kafka-cluster-controller-3                       97m          505Mi
-dev-kafka-cluster-controller-4                       107m         474Mi
-dev-kafka-cluster-controller-5                       87m          503Mi
-dev-kafka-cluster-cruise-control-7678c88585-cgv6w    20m          1853Mi
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   7m           779Mi
-dev-kafka-connect-mq-connect-0                       11m          4236Mi
-dev-kafka-connect-mq-connect-1                       7m           4224Mi
-dev-kafka-connect-mq-connect-2                       8m           4271Mi
-[osuser@bastion ~]$
-[osuser@bastion ~]$
-[osuser@bastion ~]$ oc get pods -n dev-kafka
-NAME                                                 READY   STATUS    RESTARTS       AGE
-dev-console-console-deployment-577c797ccf-8dz7g      2/2     Running   0              16d
-dev-kafka-cluster-broker-0                           1/1     Running   0              175m
-dev-kafka-cluster-broker-1                           1/1     Running   0              175m
-dev-kafka-cluster-broker-2                           1/1     Running   0              174m
-dev-kafka-cluster-controller-3                       1/1     Running   0              35m
-dev-kafka-cluster-controller-4                       1/1     Running   0              36m
-dev-kafka-cluster-controller-5                       1/1     Running   0              36m
-dev-kafka-cluster-cruise-control-7678c88585-cgv6w    1/1     Running   0              176m
-dev-kafka-cluster-entity-operator-656dcf5cdd-d2nrk   2/2     Running   1 (111d ago)   123d
-dev-kafka-connect-mq-connect-0                       1/1     Running   10 (11d ago)   16d
-dev-kafka-connect-mq-connect-1                       1/1     Running   10 (11d ago)   25d
-dev-kafka-connect-mq-connect-2                       1/1     Running   10 (11d ago)   27d
+infra1.dev.sbiepay.sbi    884m         7%     14345Mi         22%
+infra2.dev.sbiepay.sbi    830m         7%     10837Mi         17%
+infra3.dev.sbiepay.sbi    598m         5%     10957Mi         17%
+master1.dev.sbiepay.sbi   2527m        16%    35557Mi         56%
+master2.dev.sbiepay.sbi   1451m        9%     32628Mi         51%
+master3.dev.sbiepay.sbi   1384m        8%     32839Mi         52%
+worker1.dev.sbiepay.sbi   929m         5%     27999Mi         44%
+worker1.integ.epay.sbi    1932m        12%    30271Mi         47%
+worker1.sit.epay.sbi      975m         6%     30440Mi         48%
+worker1.uat.epay.sbi      1722m        11%    33493Mi         52%
+worker2.dev.sbiepay.sbi   1391m        8%     32195Mi         50%
+worker2.integ.epay.sbi    1009m        6%     20541Mi         32%
+worker2.sit.epay.sbi      2585m        16%    26670Mi         42%
+worker2.uat.epay.sbi      2414m        15%    47035Mi         74%
+worker3.dev.sbiepay.sbi   378m         2%     13149Mi         20%
+worker3.integ.epay.sbi    965m         6%     24976Mi         39%
+worker3.sit.epay.sbi      1090m        7%     23323Mi         36%
+worker3.uat.epay.sbi      1709m        11%    39323Mi         62%
 [osuser@bastion ~]$
