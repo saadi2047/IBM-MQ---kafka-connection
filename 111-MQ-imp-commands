@@ -185,3 +185,17 @@ oc exec dev-kafka-cluster-broker-0 -n dev-kafka -- \
   --topic neft.mis.inbound.kafka.topic \
   --from-beginning \
   --max-messages 20
+
+
+-------------------conector restart and health check---------------------------
+oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/neft-mq-source/tasks/0/restart
+
+oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/rtgs-mq-source/tasks/0/restart
+
+oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/rtgs-mis-mq-source/tasks/0/restart
+
+oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/rtgs-mis-mq-sink/tasks/0/restart
+
+oc get kafkaconnector -n dev-kafka -o custom-columns='NAME:.metadata.name,STATE:.status.connectorStatus.connector.state'
+
+oc get kafkaconnector neft-mq-source rtgs-mq-source rtgs-mis-mq-source rtgs-mis-mq-sink -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": "}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
