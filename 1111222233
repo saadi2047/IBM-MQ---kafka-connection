@@ -1,11 +1,27 @@
-oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/neft-mq-source/tasks/0/restart
 
-oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/rtgs-mq-source/tasks/0/restart
 
-oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/rtgs-mis-mq-source/tasks/0/restart
-
-oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/rtgs-mis-mq-sink/tasks/0/restart
-
-oc get kafkaconnector -n dev-kafka -o custom-columns='NAME:.metadata.name,STATE:.status.connectorStatus.connector.state'
-
-oc get kafkaconnector neft-mq-source rtgs-mq-source rtgs-mis-mq-source rtgs-mis-mq-sink -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": "}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/neft-mq-source/tasks/0/restart
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/rtgs-mq-source/tasks/0/restart
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/rtgs-mis-mq-source/tasks/0/restart
+[osuser@bastion ~]$ oc exec dev-kafka-connect-mq-connect-0 -n dev-kafka -- curl -s -X POST http://localhost:8083/connectors/rtgs-mis-mq-sink/tasks/0/restart
+[osuser@bastion ~]$
+[osuser@bastion ~]$
+[osuser@bastion ~]$
+[osuser@bastion ~]$
+[osuser@bastion ~]$
+[osuser@bastion ~]$ oc get kafkaconnector -n dev-kafka -o custom-columns='NAME:.metadata.name,STATE:.status.connectorStatus.connector.state'
+NAME                 STATE
+mis-mq-sink          RUNNING
+mis-mq-source        RUNNING
+neft-mq-sink         RUNNING
+neft-mq-source       RUNNING
+rtgs-mis-mq-sink     RUNNING
+rtgs-mis-mq-source   RUNNING
+rtgs-mq-sink         RUNNING
+rtgs-mq-source       RUNNING
+[osuser@bastion ~]$ oc get kafkaconnector neft-mq-source rtgs-mq-source rtgs-mis-mq-source rtgs-mis-mq-sink -n dev-kafka -o jsonpath='{range .items[*]}{.metadata.name}{": "}{.status.connectorStatus.tasks[0].state}{"\n"}{end}'
+neft-mq-source: FAILED
+rtgs-mq-source: FAILED
+rtgs-mis-mq-source: FAILED
+rtgs-mis-mq-sink: FAILED
+[osuser@bastion ~]$
